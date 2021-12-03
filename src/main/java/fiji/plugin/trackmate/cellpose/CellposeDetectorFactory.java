@@ -79,8 +79,10 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/**
 	 * The key to the parameter that stores the path to the Python instance that
-	 * can run Cellpose. Something like
-	 * '/opt/anaconda3/envs/cellpose/bin/python'.
+	 * can run Cellpose if you installed it via Conda or the Cellpose executable
+	 * if you have installed the standalone version. Something like
+	 * '/opt/anaconda3/envs/cellpose/bin/python' or
+	 * 'C:\Users\tinevez\Applications\cellpose.exe'.
 	 */
 	public static final String KEY_CELLPOSE_PYTHON_FILEPATH = "CELLPOSE_PYTHON_FILEPATH";
 

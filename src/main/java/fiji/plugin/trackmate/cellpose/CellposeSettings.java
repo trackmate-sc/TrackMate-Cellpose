@@ -38,10 +38,27 @@ public class CellposeSettings
 	public List< String > toCmdLine( final String imagesDir )
 	{
 		final List< String > cmd = new ArrayList<>();
-		// Calling Cellpose from python.
-		cmd.add( cellposePythonPath );
-		cmd.add( "-m" );
-		cmd.add( "cellpose" );
+
+		/*
+		 * First decide whether we are calling Cellpose from python, or directly
+		 * the Cellpose executable. We check the last part of the path to check
+		 * whether this is python or cellpose.
+		 */
+		final String[] split = cellposePythonPath.replace( "\\", "/" ).split( "/" );
+		final String lastItem = split[ split.length - 1 ];
+		if ( lastItem.toLowerCase().startsWith( "python" ) )
+		{
+			// Calling Cellpose from python.
+			cmd.add( cellposePythonPath );
+			cmd.add( "-m" );
+			cmd.add( "cellpose" );
+		}
+		else
+		{
+			// Calling Cellpose executable.
+			cmd.add( cellposePythonPath );
+		}
+
 		// Cellpose command line arguments.
 		cmd.add( "--dir" );
 		cmd.add( imagesDir );
