@@ -30,11 +30,12 @@ import ij.ImagePlus;
 import ij.plugin.Concatenator;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
-import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -92,72 +93,27 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		}
 
 		/*
-		 * Time & Z.
+		 * Do we have time? If yes we need to fetch the min time index to
+		 * reposition the spots in the correct frame at the end of the
+		 * detection.
 		 */
-
-		final int zIndex = img.dimensionIndex( Axes.Z );
-		final int nZSlices = ( zIndex < 0 ) ? 1 : ( int ) img.dimension( zIndex );
-
-		/*
-		 * Interval.
-		 */
-
 		final int timeIndex = img.dimensionIndex( Axes.TIME );
-		final int minT;
-		final int maxT;
-		final int nTimepoints;
-		if ( timeIndex < 0 )
-		{
-			minT = 0;
-			maxT = 0;
-			nTimepoints = 1;
-		}
-		else
-		{
-			// Min and Max timepoint are in the last dimension of the interval.
-			minT = Math.max( 0, ( int ) interval.min( timeIndex ) );
-			maxT = Math.min( ( int ) img.max( timeIndex ), ( int ) interval.max( timeIndex ) );
-			nTimepoints = maxT - minT + 1;
-
-		}
-		// Remove time dimension.
-		final long[] minBounds = new long[ interval.numDimensions() - 1 ];
-		final long[] maxBounds = new long[ interval.numDimensions() - 1 ];
-		int d2 = 0;
-		for ( int d = 0; d < interval.numDimensions(); d++ )
-		{
-			if ( d == timeIndex )
-				continue;
-			minBounds[ d2 ] = interval.min( d );
-			maxBounds[ d2 ] = interval.max( d );
-			d2++;
-		}
-		final Interval spatialInterval;
-		spatialInterval = new FinalInterval( minBounds, maxBounds );
+		final int minT = ( int ) ( ( timeIndex < 0 ) ? 0 : interval.min( interval.numDimensions() - 1 ) );
+		final double frameInterval = ( timeIndex < 0 ) ? 1. : img.averageScale( timeIndex );
 
 		/*
 		 * Save time-points as individual frames.
 		 */
 
-		final Function< Integer, String > nameGen = ( frame ) -> String.format( "%d", frame );
-		if ( timeIndex < 0 )
+		final Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
+		final List< ImagePlus > imps = crop( img, interval, nameGen );
+		// Careful, now time starts at 0, even if in the interval it is not the
+		// case.
+		for ( int t = 0; t < imps.size(); t++ )
 		{
-			final String name = nameGen.apply( 0 ) + ".tif";
-			final IntervalView< T > crop = Views.interval( img, spatialInterval );
-			final ImagePlus tpImp = ImageJFunctions.wrap( crop, name );
-			IJ.saveAsTiff( tpImp, Paths.get( tmpDir.toString(), name ).toString() );
-		}
-		else
-		{
-			// Many time-points.
-			for ( int tp = minT; tp <= maxT; tp++ )
-			{
-				final String name = nameGen.apply( tp ) + ".tif";
-				final ImgPlus< T > tpImg = CellposeUtils.hyperSlice( img, tp );
-				final IntervalView< T > crop = Views.interval( tpImg, spatialInterval );
-				final ImagePlus tpImp = ImageJFunctions.wrap( crop, name );
-				IJ.saveAsTiff( tpImp, Paths.get( tmpDir.toString(), name ).toString() );
-			}
+			final ImagePlus imp = imps.get( t );
+			final String name = nameGen.apply( ( long ) t ) + ".tif";
+			IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
 		}
 
 		/*
@@ -186,45 +142,30 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Get the result masks back.
 		 */
 
-		final ImagePlus output;
-		if ( timeIndex < 0 )
+		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
+		for ( int t = 0; t < imps.size(); t++ )
 		{
-			final String name = nameGen.apply( 0 ) + "_cp_masks.png";
+			final String name = nameGen.apply( ( long ) t ) + "_cp_masks.png";
 			final String path = new File( tmpDir.toString(), name ).getAbsolutePath();
-			output = IJ.openImage( path );
-			if ( null == output )
+			final ImagePlus tpImp = IJ.openImage( path );
+			if ( null == tpImp )
 			{
-				errorMessage = BASE_ERROR_MESSAGE + "Could not find results file for: " + name;
+				errorMessage = BASE_ERROR_MESSAGE + "Could not find results file for timepoint: " + name;
 				return false;
 			}
+			masks.add( tpImp );
 		}
-		else
-		{
-			final List< ImagePlus > masks = new ArrayList<>( nTimepoints );
-			for ( int tp = minT; tp <= maxT; tp++ )
-			{
-				final String name = nameGen.apply( tp ) + "_cp_masks.png";
-				final String path = new File( tmpDir.toString(), name ).getAbsolutePath();
-				final ImagePlus tpImp = IJ.openImage( path );
-				if ( null == tpImp )
-				{
-					errorMessage = BASE_ERROR_MESSAGE + "Could not find results file for timepoint: " + name;
-					return false;
-				}
-				masks.add( tpImp );
-			}
-			final Concatenator concatenator = new Concatenator();
-			output = concatenator.concatenateHyperstacks(
-					masks.toArray( new ImagePlus[] {} ),
-					img.getName() + "_CellposeOutput", false );
-		}
+		final Concatenator concatenator = new Concatenator();
+		final ImagePlus output = concatenator.concatenateHyperstacks(
+				masks.toArray( new ImagePlus[] {} ),
+				img.getName() + "_CellposeOutput", false );
 
 		// Copy calibration.
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
 		output.getCalibration().pixelWidth = calibration[ 0 ];
 		output.getCalibration().pixelHeight = calibration[ 1 ];
 		output.getCalibration().pixelDepth = calibration[ 2 ];
-		output.setDimensions( 1, nZSlices, nTimepoints );
+		output.setDimensions( 1, imps.get( 0 ).getNSlices(), imps.size() );
 		output.setOpenAsHyperStack( true );
 
 		/*
@@ -245,20 +186,26 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			errorMessage = BASE_ERROR_MESSAGE + labelImgTrackMate.getErrorMessage();
 			return false;
 		}
-		this.spots = labelImgTrackMate.getModel().getSpots();
+		final SpotCollection tmpSpots = labelImgTrackMate.getModel().getSpots();
 
 		/*
-		 * Reposition spots with respect to the interval.
+		 * Reposition spots with respect to the interval and time.
 		 */
-
-		for ( final Spot spot : spots.iterable( false ) )
+		final List< Spot > slist = new ArrayList<>();
+		for ( final Spot spot : tmpSpots.iterable( false ) )
 		{
 			for ( int d = 0; d < interval.numDimensions() - 1; d++ )
 			{
 				final double pos = spot.getDoublePosition( d ) + interval.min( d ) * calibration[ d ];
 				spot.putFeature( Spot.POSITION_FEATURES[ d ], Double.valueOf( pos ) );
 			}
+			// Shift in time.
+			final int frame = spot.getFeature( Spot.FRAME ).intValue() + minT;
+			spot.putFeature( Spot.POSITION_T, frame * frameInterval );
+			spot.putFeature( Spot.FRAME, Double.valueOf( frame ) );
+			slist.add( spot );
 		}
+		spots = SpotCollection.fromCollection( slist );
 
 		/*
 		 * End.
@@ -268,6 +215,62 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		this.processingTime = end - start;
 
 		return true;
+	}
+
+	private static final < T extends RealType< T > & NativeType< T > > List< ImagePlus > crop( final ImgPlus< T > img, final Interval interval, final Function< Long, String > nameGen )
+	{
+		final int zIndex = img.dimensionIndex( Axes.Z );
+		final int cIndex = img.dimensionIndex( Axes.CHANNEL );
+		final Interval cropInterval;
+		if ( zIndex < 0 )
+		{
+			// 2D
+			if ( cIndex < 0 )
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ),
+						interval.max( 0 ), interval.max( 1 ) );
+			else
+				// Include all channels
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ), img.min( cIndex ),
+						interval.max( 0 ), interval.max( 1 ), img.max( cIndex ) );
+		}
+		else
+		{
+			if ( cIndex < 0 )
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ),
+						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ) );
+			else
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ), img.min( cIndex ),
+						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ), img.max( cIndex ) );
+		}
+
+		final List< ImagePlus > imps = new ArrayList<>();
+		final int timeIndex = img.dimensionIndex( Axes.TIME );
+		if ( timeIndex < 0 )
+		{
+			// No time.
+			final IntervalView< T > crop = Views.interval( img, cropInterval );
+			final String name = nameGen.apply( 0l ) + ".tif";
+			imps.add( ImageJFunctions.wrap( crop, name ) );
+		}
+		else
+		{
+			// In the interval, time is always the last.
+			final long minT = interval.min( interval.numDimensions() - 1 );
+			final long maxT = interval.max( interval.numDimensions() - 1 );
+			for ( long t = minT; t <= maxT; t++ )
+			{
+				final ImgPlus< T > tp = ImgPlusViews.hyperSlice( img, timeIndex, t );
+				// possibly 2D or 3D with or without channel.
+				final IntervalView< T > crop = Views.interval( tp, cropInterval );
+				final String name = nameGen.apply( t ) + ".tif";
+				imps.add( ImageJFunctions.wrap( crop, name ) );
+			}
+		}
+		return imps;
 	}
 
 	@Override
