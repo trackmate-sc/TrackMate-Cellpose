@@ -20,7 +20,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +40,6 @@ import org.scijava.prefs.PrefService;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.Spot;
-import fiji.plugin.trackmate.SpotCollection;
 import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModel;
 import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
@@ -50,8 +47,6 @@ import fiji.plugin.trackmate.util.FileChooser;
 import fiji.plugin.trackmate.util.FileChooser.DialogType;
 import fiji.plugin.trackmate.util.JLabelLogger;
 import fiji.plugin.trackmate.util.TMUtils;
-import ij.ImagePlus;
-import ij.plugin.Duplicator;
 
 public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 {
@@ -313,43 +308,14 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		 * Listeners and specificities.
 		 */
 
-		btnPreview.addActionListener( e -> 
-		{
-			// Extract current frame.
-			final ImagePlus imp = settings.imp;
-			final int frame = imp.getFrame() - 1;
-			final int minC = 1 ;
-			final int maxC = imp.getNChannels();
-			final int minZ = 1;
-			final int maxZ = imp.getNSlices();
-			final ImagePlus singleTimepoint = new Duplicator().run( settings.imp,
-					minC, maxC,
-					minZ, maxZ, 
-					frame, frame );
-			final Settings settingsCopy = settings.copyOn( singleTimepoint );
-			
-			// Run detection.
-			final Model modelCopy = new Model();
-			DetectionUtils.preview(
-					modelCopy,
-					settingsCopy,
-					new CellposeDetectorFactory<>(),
-					getSettings(),
-					0,
-					localLogger,
-					b -> btnPreview.setEnabled( b ) );
-
-			// Copy results to current model at the right frame.
-			final List< Spot > spotsToCopy = new ArrayList<>();
-			modelCopy.getSpots().iterable( frame, false ).forEach( spotsToCopy::add );
-			model.getSpots().put( frame, spotsToCopy );
-			// Make them visible
-			for ( final Spot spot : spotsToCopy )
-				spot.putFeature( SpotCollection.VISIBILITY, SpotCollection.ONE );
-
-			// Generate event for listener to reflect changes.
-			model.setSpots( model.getSpots(), true );
-		} );
+		btnPreview.addActionListener( e -> DetectionUtils.preview(
+				model,
+				settings,
+				new CellposeDetectorFactory<>(),
+				getSettings(),
+				settings.imp.getFrame() - 1,
+				localLogger,
+				b -> btnPreview.setEnabled( b ) ) );
 
 		final PropertyChangeListener l = e -> prefService.put(
 				CellposeDetectorConfigurationPanel.class,
