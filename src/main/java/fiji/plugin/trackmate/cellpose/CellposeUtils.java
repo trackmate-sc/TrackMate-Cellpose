@@ -1,15 +1,10 @@
 package fiji.plugin.trackmate.cellpose;
 
 import java.awt.Image;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
 
-import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Settings;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -72,36 +67,6 @@ public class CellposeUtils
 		}
 
 		return new ImageIcon( icon.getImage().getScaledInstance( nw, nh, Image.SCALE_DEFAULT ) );
-	}
-
-	public static final void redirectToLogger( final InputStream stream, final Logger logger )
-	{
-		final BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
-		try
-		{
-			for ( String line; ( line = reader.readLine() ) != null; )
-				logger.log( line );
-		}
-		catch ( final IOException e )
-		{
-			logger.error( e.getMessage() );
-			e.printStackTrace();
-		}
-	}
-
-	public static void redirectToErrLogger( final InputStream stream, final Logger logger )
-	{
-		final BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
-		try
-		{
-			for ( String line; ( line = reader.readLine() ) != null; )
-				logger.error( line );
-		}
-		catch ( final IOException e )
-		{
-			logger.error( e.getMessage() );
-			e.printStackTrace();
-		}
 	}
 
 	public static final Interval getIntervalWithTime( final ImgPlus< ? > img, final Settings settings )

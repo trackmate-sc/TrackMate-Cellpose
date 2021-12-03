@@ -16,6 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.io.input.Tailer;
+import org.apache.commons.io.input.TailerListenerAdapter;
 
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Settings;
@@ -43,6 +48,8 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 {
 	private final static String BASE_ERROR_MESSAGE = "CellposeDetector: ";
 
+	private final static File CELLPOSE_LOG_FILE = new File( new File( System.getProperty( "user.home" ), ".cellpose" ), "run.log" );
+
 	protected final ImgPlus< T > img;
 
 	protected final Interval interval;
@@ -68,7 +75,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		this.img = img;
 		this.interval = interval;
 		this.cellposeSettings = cellposeSettings;
-		this.logger = logger;
+		this.logger = ( logger == null ) ? Logger.VOID_LOGGER : logger;
 		this.baseErrorMessage = BASE_ERROR_MESSAGE;
 	}
 
@@ -105,6 +112,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Save time-points as individual frames.
 		 */
 
+		logger.log( "Saving single time-points.\n" );
 		final Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
 		final List< ImagePlus > imps = crop( img, interval, nameGen );
 		// Careful, now time starts at 0, even if in the interval it is not the
@@ -120,16 +128,25 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Run Cellpose.
 		 */
 
+		// Redirect log to logger.
 		try
 		{
 			final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
+			logger.setStatus( "Running Cellpose" );
+			logger.log( "Running Cellpose with args:\n" );
+			logger.log( String.join( " ", cmd ) );
+			logger.log( "\n" );
 			final ProcessBuilder pb = new ProcessBuilder( cmd );
 			pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
 			pb.redirectError( ProcessBuilder.Redirect.INHERIT );
+
 			final Process p = pb.start();
-			CellposeUtils.redirectToLogger( p.getErrorStream(), logger );
-			CellposeUtils.redirectToErrLogger( p.getInputStream(), logger );
+			final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
+			final Thread thread = new Thread( tailer );
+			thread.setDaemon( true );
+			thread.start();
 			p.waitFor();
+			tailer.stop();
 		}
 		catch ( final Exception e )
 		{
@@ -137,11 +154,16 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			e.printStackTrace();
 			return false;
 		}
+		finally
+		{
+			logger.setStatus( "" );
+		}
 
 		/*
 		 * Get the result masks back.
 		 */
 
+		logger.log( "Reading Cellpose masks.\n" );
 		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
 		for ( int t = 0; t < imps.size(); t++ )
 		{
@@ -172,6 +194,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Run in the label detector.
 		 */
 
+		logger.log( "Converting masks to spots.\n" );
 		final Settings labelImgSettings = new Settings( output );
 		final LabeImageDetectorFactory< ? > labeImageDetectorFactory = new LabeImageDetectorFactory<>();
 		final Map< String, Object > detectorSettings = labeImageDetectorFactory.getDefaultSettings();
@@ -349,5 +372,30 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				}
 			}
 		} ) );
+	}
+
+	private static class LoggerTailerListener extends TailerListenerAdapter
+	{
+		private final Logger logger;
+
+		private final static Pattern PERCENTAGE_PATTERN = Pattern.compile( "\\b(?<!\\.)(?!0+(?:\\.0+)?%)(?:\\d|[1-9]\\d|100)(?:(?<!100)\\.\\d+)?%" );
+
+		public LoggerTailerListener( final Logger logger )
+		{
+			this.logger = logger;
+		}
+
+		@Override
+		public void handle( final String line )
+		{
+			logger.log( line + '\n' );
+			// Do we have percentage?
+			final Matcher matcher = PERCENTAGE_PATTERN.matcher( line );
+			if ( matcher.matches() )
+			{
+				final String percent = matcher.group( 1 );
+				logger.setProgress( Double.valueOf( percent ) / 100. );
+			}
+		}
 	}
 }
