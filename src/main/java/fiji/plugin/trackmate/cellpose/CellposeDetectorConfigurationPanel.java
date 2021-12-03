@@ -385,7 +385,6 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		cmbboxCh2.setSelectedIndex( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ) );
 		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
 		chckbxSimplify.setSelected( ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS ) );
-
 	}
 
 	@Override

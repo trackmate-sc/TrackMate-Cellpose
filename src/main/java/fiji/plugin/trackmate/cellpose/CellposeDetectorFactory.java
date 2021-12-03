@@ -169,8 +169,6 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final double diameter = ( double ) settings.get( KEY_CELL_DIAMETER ) / calibration[ 0 ];
 
 		// Logger.
-		final Logger logger = ( Logger ) settings.get( KEY_LOGGER );
-		System.out.println( logger ); // DEBUG
 
 		final CellposeSettings cellposeSettings = CellposeSettings.create()
 				.cellposePythonPath( cellposePythonPath )
@@ -181,6 +179,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 				.simplifyContours( simplifyContours )
 				.get();
 
+		final Logger logger = ( Logger ) settings.get( KEY_LOGGER );
 		final CellposeDetector< T > detector = new CellposeDetector<>(
 				img,
 				interval,
