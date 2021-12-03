@@ -16,6 +16,6 @@ public class CellPoseAttempt
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		ImageJ.main( args );
 
-		new TrackMatePlugIn().run( "samples/P31-crop-2.tif" );
+		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
 	}
 }
