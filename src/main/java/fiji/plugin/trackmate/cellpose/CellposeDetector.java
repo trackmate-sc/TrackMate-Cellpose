@@ -396,7 +396,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	{
 		private final Logger logger;
 
-		private final static Pattern PERCENTAGE_PATTERN = Pattern.compile( "\\b(?<!\\.)(?!0+(?:\\.0+)?%)(?:\\d|[1-9]\\d|100)(?:(?<!100)\\.\\d+)?%" );
+		private final static Pattern PERCENTAGE_PATTERN = Pattern.compile( ".+\\s(\\d*\\.?\\d*)\\%.+" );
 
 		public LoggerTailerListener( final Logger logger )
 		{
