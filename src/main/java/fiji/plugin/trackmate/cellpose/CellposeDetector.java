@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
+import org.scijava.Cancelable;
 
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Settings;
@@ -65,7 +66,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >
+public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable
 {
 	private final static String BASE_ERROR_MESSAGE = "CellposeDetector: ";
 
@@ -87,6 +88,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	protected SpotCollection spots;
 
+	private String cancelReason;
+
+	private boolean isCanceled;
+
+	private Process process;
+
 	public CellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
@@ -104,6 +111,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	public boolean process()
 	{
 		final long start = System.currentTimeMillis();
+		isCanceled = false;
+		cancelReason = null;
+		process = null;
 
 		/*
 		 * Prepare tmp dir.
@@ -161,9 +171,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
 			pb.redirectError( ProcessBuilder.Redirect.INHERIT );
 
-			final Process p = pb.start();
+			process = pb.start();
 			final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
-			p.waitFor();
+			process.waitFor();
 			tailer.stop();
 		}
 		catch ( final Exception e )
@@ -175,6 +185,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		finally
 		{
 			logger.setStatus( "" );
+			process = null;
 		}
 
 		/*
@@ -415,5 +426,28 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				logger.setProgress( Double.valueOf( percent ) / 100. );
 			}
 		}
+	}
+
+	// --- org.scijava.Cancelable methods ---
+
+	@Override
+	public boolean isCanceled()
+	{
+		return isCanceled;
+	}
+
+	@Override
+	public void cancel( final String reason )
+	{
+		isCanceled = true;
+		cancelReason = reason;
+		if ( process != null )
+			process.destroy();
+	}
+
+	@Override
+	public String getCancelReason()
+	{
+		return cancelReason;
 	}
 }
