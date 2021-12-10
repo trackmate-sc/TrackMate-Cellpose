@@ -163,9 +163,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 			final Process p = pb.start();
 			final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
-			final Thread thread = new Thread( tailer );
-			thread.setDaemon( true );
-			thread.start();
 			p.waitFor();
 			tailer.stop();
 		}
