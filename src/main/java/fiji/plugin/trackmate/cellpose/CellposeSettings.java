@@ -38,7 +38,10 @@ public class CellposeSettings
 
 	public final double diameter;
 
+	public final boolean useGPU;
+
 	public final boolean simplifyContours;
+
 
 	public CellposeSettings(
 			final String cellposePythonPath,
@@ -46,6 +49,7 @@ public class CellposeSettings
 			final int chan,
 			final int chan2,
 			final double diameter,
+			final boolean useGPU,
 			final boolean simplifyContours )
 	{
 		this.cellposePythonPath = cellposePythonPath;
@@ -53,6 +57,7 @@ public class CellposeSettings
 		this.chan = chan;
 		this.chan2 = chan2;
 		this.diameter = diameter;
+		this.useGPU = useGPU;
 		this.simplifyContours = simplifyContours;
 	}
 
@@ -90,6 +95,8 @@ public class CellposeSettings
 			cmd.add( "--chan2" );
 			cmd.add( "" + chan2 );
 		}
+		if ( useGPU )
+			cmd.add( "--use_gpu" );
 		cmd.add( "--diameter" );
 		cmd.add( ( diameter > 0 ) ? "" + diameter : "0" );
 		cmd.add( "--pretrained_model" );
@@ -115,7 +122,9 @@ public class CellposeSettings
 		private PretrainedModel model = PretrainedModel.CYTO;
 
 		private double diameter = 30.;
-
+		
+		private boolean useGPU = true;
+		
 		private boolean simplifyContours = true;
 
 		public Builder channel1( final int ch )
@@ -148,6 +157,12 @@ public class CellposeSettings
 			return this;
 		}
 
+		public Builder useGPU( final boolean useGPU )
+		{
+			this.useGPU = useGPU;
+			return this;
+		}
+
 		public Builder simplifyContours( final boolean simplifyContours )
 		{
 			this.simplifyContours = simplifyContours;
@@ -156,7 +171,7 @@ public class CellposeSettings
 
 		public CellposeSettings get()
 		{
-			return new CellposeSettings( cellposePythonPath, model, chan, chan2, diameter, simplifyContours );
+			return new CellposeSettings( cellposePythonPath, model, chan, chan2, diameter, useGPU, simplifyContours );
 		}
 	}
 

@@ -107,6 +107,16 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public static final Double DEFAULT_CELL_DIAMETER = Double.valueOf( 30. );
 
 	/**
+	 * They key to the parameter that configures whether Cellpose will try to
+	 * use GPU acceleration. For this to work, a working Cellpose with working
+	 * GPU support must be present on the system. If not, Cellpose will default
+	 * to using the CPU.
+	 */
+	public static final String KEY_USE_GPU = "USE_GPU";
+
+	public static final Boolean DEFAULT_USE_GPU = Boolean.valueOf( true );
+
+	/**
 	 * The key to the parameter that stores the logger instance, to which
 	 * Cellpose messages wil be sent. Values must be implementing
 	 * {@link Logger}. This parameter won't be serialized.
@@ -133,7 +143,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "or the <b>Cellpose executable</b> directly. "
 			+ "For instance if you used anaconda to install Cellpose, and that you have a "
 			+ "Conda environment called 'cellpose', this path will be something along the line of "
-			+ "'/opt/anaconda3/envs/cellpose/bin/python'. "
+			+ "'/opt/anaconda3/envs/cellpose/bin/python'  or 'C:\\\\Users\\\\tinevez\\\\anaconda3\\\\envs\\\\cellpose_biop_gpu\\\\python.exe' "
 			+ "If you installed the standalone version, the path to it would something like "
 			+ "this on Windows: 'C:\\Users\\tinevez\\Applications\\cellpose.exe'. "
 			+ "<p>"
@@ -164,6 +174,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final String cellposePythonPath = ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH );
 		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_CELLPOSE_MODEL );
 		final boolean simplifyContours = ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
+		final boolean useGPU = ( boolean ) settings.get( KEY_USE_GPU );
 
 		// Channels are 0-based (0: grayscale, then R & G & B).
 		final int channel = ( Integer ) settings.get( KEY_TARGET_CHANNEL );
@@ -173,17 +184,17 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
 		final double diameter = ( double ) settings.get( KEY_CELL_DIAMETER ) / calibration[ 0 ];
 
-		// Logger.
-
 		final CellposeSettings cellposeSettings = CellposeSettings.create()
 				.cellposePythonPath( cellposePythonPath )
 				.model( model )
 				.channel1( channel )
 				.channel2( channel2 )
 				.diameter( diameter )
+				.useGPU( useGPU )
 				.simplifyContours( simplifyContours )
 				.get();
 
+		// Logger.
 		final Logger logger = ( Logger ) settings.get( KEY_LOGGER );
 		final CellposeDetector< T > detector = new CellposeDetector<>(
 				img,
@@ -226,6 +237,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok && writeAttribute( settings, element, KEY_TARGET_CHANNEL, Integer.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_OPTIONAL_CHANNEL_2, Integer.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_CELL_DIAMETER, Double.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, KEY_USE_GPU, Boolean.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 
 		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_CELLPOSE_MODEL );
@@ -247,6 +259,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok && readIntegerAttribute( element, settings, KEY_TARGET_CHANNEL, errorHolder );
 		ok = ok && readIntegerAttribute( element, settings, KEY_OPTIONAL_CHANNEL_2, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_DIAMETER, errorHolder );
+		ok = ok && readBooleanAttribute( element, settings, KEY_USE_GPU, errorHolder );
 		ok = ok && readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
 
 		// Read model.
@@ -276,6 +289,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		settings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
 		settings.put( KEY_OPTIONAL_CHANNEL_2, DEFAULT_OPTIONAL_CHANNEL_2 );
 		settings.put( KEY_CELL_DIAMETER, DEFAULT_CELL_DIAMETER );
+		settings.put( KEY_USE_GPU, DEFAULT_USE_GPU );
 		settings.put( KEY_SIMPLIFY_CONTOURS, true );
 		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
 		return settings;
@@ -291,6 +305,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok & checkParameter( settings, KEY_TARGET_CHANNEL, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_OPTIONAL_CHANNEL_2, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_DIAMETER, Double.class, errorHolder );
+		ok = ok & checkParameter( settings, KEY_USE_GPU, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 
 		// If we have a logger, test it is of the right class.
@@ -308,6 +323,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		mandatoryKeys.add( KEY_TARGET_CHANNEL );
 		mandatoryKeys.add( KEY_OPTIONAL_CHANNEL_2 );
 		mandatoryKeys.add( KEY_CELL_DIAMETER );
+		mandatoryKeys.add( KEY_USE_GPU );
 		mandatoryKeys.add( KEY_SIMPLIFY_CONTOURS );
 		final Set< String > optionalKeys = Collections.singleton( KEY_LOGGER );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
