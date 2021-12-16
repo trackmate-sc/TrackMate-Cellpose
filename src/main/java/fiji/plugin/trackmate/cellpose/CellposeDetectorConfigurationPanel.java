@@ -113,24 +113,24 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 		final JLabel lblSettingsForDetector = new JLabel( "Settings for detector:" );
 		lblSettingsForDetector.setFont( FONT );
-		final GridBagConstraints gbc_lblSettingsForDetector = new GridBagConstraints();
-		gbc_lblSettingsForDetector.gridwidth = 3;
-		gbc_lblSettingsForDetector.insets = new Insets( 0, 5, 5, 0 );
-		gbc_lblSettingsForDetector.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblSettingsForDetector.gridx = 0;
-		gbc_lblSettingsForDetector.gridy = 0;
-		add( lblSettingsForDetector, gbc_lblSettingsForDetector );
+		final GridBagConstraints gbcLblSettingsForDetector = new GridBagConstraints();
+		gbcLblSettingsForDetector.gridwidth = 3;
+		gbcLblSettingsForDetector.insets = new Insets( 0, 5, 5, 0 );
+		gbcLblSettingsForDetector.fill = GridBagConstraints.HORIZONTAL;
+		gbcLblSettingsForDetector.gridx = 0;
+		gbcLblSettingsForDetector.gridy = 0;
+		add( lblSettingsForDetector, gbcLblSettingsForDetector );
 
 		final JLabel lblDetector = new JLabel( TITLE, ICON, JLabel.RIGHT );
 		lblDetector.setFont( BIG_FONT );
 		lblDetector.setHorizontalAlignment( SwingConstants.CENTER );
-		final GridBagConstraints gbc_lblDetector = new GridBagConstraints();
-		gbc_lblDetector.gridwidth = 3;
-		gbc_lblDetector.insets = new Insets( 0, 5, 5, 0 );
-		gbc_lblDetector.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblDetector.gridx = 0;
-		gbc_lblDetector.gridy = 1;
-		add( lblDetector, gbc_lblDetector );
+		final GridBagConstraints gbcLblDetector = new GridBagConstraints();
+		gbcLblDetector.gridwidth = 3;
+		gbcLblDetector.insets = new Insets( 0, 5, 5, 0 );
+		gbcLblDetector.fill = GridBagConstraints.HORIZONTAL;
+		gbcLblDetector.gridx = 0;
+		gbcLblDetector.gridy = 1;
+		add( lblDetector, gbcLblDetector );
 
 		/*
 		 * Help text.
@@ -140,14 +140,14 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 				.replace( "<p>", "<p align=\"justify\">" )
 				.replace( "<html>", "<html><p align=\"justify\">" ) );
 		lblHelptext.setFont( FONT.deriveFont( Font.ITALIC ) );
-		final GridBagConstraints gbc_lblHelptext = new GridBagConstraints();
-		gbc_lblHelptext.anchor = GridBagConstraints.NORTH;
-		gbc_lblHelptext.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblHelptext.gridwidth = 3;
-		gbc_lblHelptext.insets = new Insets( 5, 10, 5, 10 );
-		gbc_lblHelptext.gridx = 0;
-		gbc_lblHelptext.gridy = 2;
-		add( lblHelptext, gbc_lblHelptext );
+		final GridBagConstraints gbcLblHelptext = new GridBagConstraints();
+		gbcLblHelptext.anchor = GridBagConstraints.NORTH;
+		gbcLblHelptext.fill = GridBagConstraints.HORIZONTAL;
+		gbcLblHelptext.gridwidth = 3;
+		gbcLblHelptext.insets = new Insets( 5, 10, 5, 10 );
+		gbcLblHelptext.gridx = 0;
+		gbcLblHelptext.gridy = 2;
+		add( lblHelptext, gbcLblHelptext );
 
 		/*
 		 * Path to Python.
@@ -270,12 +270,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 		final JLabel lblDiameter = new JLabel( "Cell diameter:" );
 		lblDiameter.setFont( SMALL_FONT );
-		final GridBagConstraints gbc_lblDiameter = new GridBagConstraints();
-		gbc_lblDiameter.anchor = GridBagConstraints.EAST;
-		gbc_lblDiameter.insets = new Insets( 0, 5, 5, 5 );
-		gbc_lblDiameter.gridx = 0;
-		gbc_lblDiameter.gridy = 9;
-		add( lblDiameter, gbc_lblDiameter );
+		final GridBagConstraints gbcLblDiameter = new GridBagConstraints();
+		gbcLblDiameter.anchor = GridBagConstraints.EAST;
+		gbcLblDiameter.insets = new Insets( 0, 5, 5, 5 );
+		gbcLblDiameter.gridx = 0;
+		gbcLblDiameter.gridy = 9;
+		add( lblDiameter, gbcLblDiameter );
 
 		ftfDiameter = new JFormattedTextField( DIAMETER_FORMAT );
 		ftfDiameter.setHorizontalAlignment( SwingConstants.CENTER );
@@ -318,11 +318,11 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		add( chckbxSimplify, gbcChckbxSimplify );
 
 		final JLabelLogger labelLogger = new JLabelLogger();
-		final GridBagConstraints gbc_labelLogger = new GridBagConstraints();
-		gbc_labelLogger.gridwidth = 3;
-		gbc_labelLogger.gridx = 0;
-		gbc_labelLogger.gridy = 14;
-		add( labelLogger, gbc_labelLogger );
+		final GridBagConstraints gbcLabelLogger = new GridBagConstraints();
+		gbcLabelLogger.gridwidth = 3;
+		gbcLabelLogger.gridx = 0;
+		gbcLabelLogger.gridy = 14;
+		add( labelLogger, gbcLabelLogger );
 		final Logger localLogger = labelLogger.getLogger();
 
 		/*
@@ -331,13 +331,13 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 		final JButton btnPreview = new JButton( "Preview", PREVIEW_ICON );
 		btnPreview.setFont( FONT );
-		final GridBagConstraints gbc_btnPreview = new GridBagConstraints();
-		gbc_btnPreview.gridwidth = 2;
-		gbc_btnPreview.anchor = GridBagConstraints.SOUTHEAST;
-		gbc_btnPreview.insets = new Insets( 0, 5, 5, 5 );
-		gbc_btnPreview.gridx = 1;
-		gbc_btnPreview.gridy = 13;
-		add( btnPreview, gbc_btnPreview );
+		final GridBagConstraints gbcBtnPreview = new GridBagConstraints();
+		gbcBtnPreview.gridwidth = 2;
+		gbcBtnPreview.anchor = GridBagConstraints.SOUTHEAST;
+		gbcBtnPreview.insets = new Insets( 0, 5, 5, 5 );
+		gbcBtnPreview.gridx = 1;
+		gbcBtnPreview.gridy = 13;
+		add( btnPreview, gbcBtnPreview );
 
 		/*
 		 * Listeners and specificities.
