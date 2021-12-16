@@ -85,23 +85,43 @@ public class CellposeSettings
 			cmd.add( cellposePythonPath );
 		}
 
-		// Cellpose command line arguments.
+		/*
+		 * Cellpose command line arguments.
+		 */
+
+		// Target dir.
 		cmd.add( "--dir" );
 		cmd.add( imagesDir );
+
+		// First channel.
 		cmd.add( "--chan" );
 		cmd.add( "" + chan );
+
+		// Second channel.
 		if ( chan2 >= 0 )
 		{
 			cmd.add( "--chan2" );
 			cmd.add( "" + chan2 );
 		}
+
+		// GPU.
 		if ( useGPU )
 			cmd.add( "--use_gpu" );
+
+		// Diameter.
 		cmd.add( "--diameter" );
 		cmd.add( ( diameter > 0 ) ? "" + diameter : "0" );
+
+		// Model.
 		cmd.add( "--pretrained_model" );
 		cmd.add( model.path );
+
+		// Export results as PNG.
 		cmd.add( "--save_png" );
+
+		// Do not save Numpy files.
+		cmd.add( "--no_npy" );
+
 		return Collections.unmodifiableList( cmd );
 	}
 
