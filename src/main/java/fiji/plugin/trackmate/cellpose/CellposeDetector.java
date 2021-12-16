@@ -54,6 +54,7 @@ import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.util.TMUtils;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.NewImage;
 import ij.plugin.Concatenator;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -201,10 +202,20 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			final ImagePlus tpImp = IJ.openImage( path );
 			if ( null == tpImp )
 			{
-				errorMessage = BASE_ERROR_MESSAGE + "Could not find results file for timepoint: " + name;
-				return false;
+				logger.append( "Could not find results file for timepoint: " + name + '\n' );
+				final ImagePlus blank = NewImage.createImage(
+						"blank_" + t,
+						imps.get( 0 ).getWidth(),
+						imps.get( 0 ).getHeight(),
+						imps.get( 0 ).getNSlices(),
+						imps.get( 0 ).getBitDepth(),
+						NewImage.FILL_BLACK );
+				masks.add( blank );
 			}
-			masks.add( tpImp );
+			else
+			{
+				masks.add( tpImp );
+			}
 		}
 		final Concatenator concatenator = new Concatenator();
 		final ImagePlus output = concatenator.concatenateHyperstacks(
