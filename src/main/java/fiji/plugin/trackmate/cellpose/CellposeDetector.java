@@ -139,8 +139,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		final List< ImagePlus > imps = crop( img, interval, nameGen );
 
+		// If we use GPU, we don't multithread.
+		final int nConcurrentTasks = cellposeSettings.useGPU
+				? 1
+				: Runtime.getRuntime().availableProcessors() / 2;
 		// TODO: instead implement multithreaded and use TrackMate interface.
-		final int nConcurrentTasks = Runtime.getRuntime().availableProcessors() / 2;
+
 		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
 		for ( int i = 0; i < nConcurrentTasks; i++ )
 			timepoints.add( new ArrayList<>() );
@@ -157,7 +161,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Create tasks for each list of imps.
 		 */
 
-		// TODO: Would this work with GPU? If not, skip multithreading.
 		processes.clear();
 		for ( final List< ImagePlus > list : timepoints )
 			processes.add( new CellposeTask( list ) );
