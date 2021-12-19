@@ -169,6 +169,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Pass tasks to executors.
 		 */
 
+		// Redirect log to logger.
+		final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
+
 		final ExecutorService executors = Executors.newFixedThreadPool( nConcurrentTasks );
 		final List< String > resultDirs = new ArrayList<>( nConcurrentTasks );
 		List< Future< String > > results;
@@ -183,6 +186,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage() + '\n';
 			e.printStackTrace();
 			return false;
+		}
+		finally
+		{
+			tailer.stop();
+			logger.setStatus( "" );
+			logger.setProgress( 1. );
 		}
 
 		/*
@@ -541,8 +550,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			 * Run Cellpose.
 			 */
 
-			// Redirect log to logger.
-			final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
 			try
 			{
 				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
@@ -566,8 +573,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 			finally
 			{
-				tailer.stop();
-				logger.setStatus( "" );
 				process = null;
 			}
 			return tmpDir.toString();
