@@ -279,6 +279,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		labelImgSettings.detectorSettings = detectorSettings;
 
 		final TrackMate labelImgTrackMate = new TrackMate( labelImgSettings );
+		labelImgTrackMate.setNumThreads( numThreads );
 		if ( !labelImgTrackMate.execDetection() )
 		{
 			errorMessage = BASE_ERROR_MESSAGE + labelImgTrackMate.getErrorMessage();
