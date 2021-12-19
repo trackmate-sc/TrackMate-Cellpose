@@ -227,13 +227,21 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			// Did we succeed?
 			if ( null == tpImp )
 			{
+				// Try to guess the bit-depth of the mask images. Default to
+				// 16-bit if we can't.
+				final int ijBitDepth;
+				if ( masks.size() > 0 && masks.get( 0 ) != null )
+					ijBitDepth = masks.get( 0 ).getBitDepth();
+				else
+					ijBitDepth = 16;
+
 				logger.append( "Could not find results file for timepoint: " + name + '\n' );
 				final ImagePlus blank = NewImage.createImage(
 						"blank_" + t,
 						imps.get( 0 ).getWidth(),
 						imps.get( 0 ).getHeight(),
 						imps.get( 0 ).getNSlices(),
-						imps.get( 0 ).getBitDepth(),
+						ijBitDepth,
 						NewImage.FILL_BLACK );
 				masks.add( blank );
 			}
