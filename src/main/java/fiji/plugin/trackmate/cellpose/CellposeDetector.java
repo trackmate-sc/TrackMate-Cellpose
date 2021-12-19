@@ -66,6 +66,7 @@ import ij.plugin.Concatenator;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
+import net.imglib2.algorithm.MultiThreaded;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
@@ -74,7 +75,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable
+public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
 	private final static String BASE_ERROR_MESSAGE = "CellposeDetector: ";
 
@@ -103,6 +104,8 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	private boolean isCanceled;
 
 	private final List< CellposeTask > processes = new ArrayList<>();
+
+	private int numThreads;
 
 	public CellposeDetector(
 			final ImgPlus< T > img,
@@ -142,8 +145,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		// If we use GPU, we don't multithread.
 		final int nConcurrentTasks = cellposeSettings.useGPU
 				? 1
-				: Runtime.getRuntime().availableProcessors() / 2;
-		// TODO: instead implement multithreaded and use TrackMate interface.
+				: numThreads;
 
 		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
 		for ( int i = 0; i < nConcurrentTasks; i++ )
@@ -494,6 +496,28 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	{
 		return cancelReason;
 	}
+
+	// --- Multithreaded methods ---
+
+	@Override
+	public void setNumThreads()
+	{
+		this.numThreads = Runtime.getRuntime().availableProcessors() / 2;
+	}
+
+	@Override
+	public void setNumThreads( final int numThreads )
+	{
+		this.numThreads = numThreads;
+	}
+
+	@Override
+	public int getNumThreads()
+	{
+		return numThreads;
+	}
+
+	// --- private classes ---
 
 	private final class CellposeTask implements Callable< String >
 	{
