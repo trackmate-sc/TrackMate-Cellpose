@@ -142,10 +142,8 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		final List< ImagePlus > imps = crop( img, interval, nameGen );
 
-		// If we use GPU, we don't multithread.
-		final int nConcurrentTasks = cellposeSettings.useGPU
-				? 1
-				: numThreads;
+		// Don't multithread for now.
+		final int nConcurrentTasks = 1;
 
 		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
 		for ( int i = 0; i < nConcurrentTasks; i++ )
