@@ -242,6 +242,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = writeTargetChannel( settings, element, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_CELLPOSE_PYTHON_FILEPATH, String.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_TARGET_CHANNEL, Integer.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_OPTIONAL_CHANNEL_2, Integer.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_CELL_DIAMETER, Double.class, errorHolder );
@@ -264,6 +265,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = true;
 		ok = ok && readStringAttribute( element, settings, KEY_CELLPOSE_PYTHON_FILEPATH, errorHolder );
+		ok = ok && readStringAttribute( element, settings, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, errorHolder );
 		ok = ok && readIntegerAttribute( element, settings, KEY_TARGET_CHANNEL, errorHolder );
 		ok = ok && readIntegerAttribute( element, settings, KEY_OPTIONAL_CHANNEL_2, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_DIAMETER, errorHolder );
