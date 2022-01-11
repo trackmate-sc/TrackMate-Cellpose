@@ -124,7 +124,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		lblSettingsForDetector.setFont( FONT );
 		final GridBagConstraints gbcLblSettingsForDetector = new GridBagConstraints();
 		gbcLblSettingsForDetector.gridwidth = 3;
-		gbcLblSettingsForDetector.insets = new Insets( 5, 5, 5, 0 );
+		gbcLblSettingsForDetector.insets = new Insets( 5, 5, 5, 5 );
 		gbcLblSettingsForDetector.fill = GridBagConstraints.HORIZONTAL;
 		gbcLblSettingsForDetector.gridx = 0;
 		gbcLblSettingsForDetector.gridy = 0;
@@ -135,7 +135,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		lblDetector.setHorizontalAlignment( SwingConstants.CENTER );
 		final GridBagConstraints gbcLblDetector = new GridBagConstraints();
 		gbcLblDetector.gridwidth = 3;
-		gbcLblDetector.insets = new Insets( 0, 5, 5, 0 );
+		gbcLblDetector.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblDetector.fill = GridBagConstraints.HORIZONTAL;
 		gbcLblDetector.gridx = 0;
 		gbcLblDetector.gridy = 1;
@@ -213,7 +213,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		btnBrowseCellposePath = new JButton( "Browse" );
 		btnBrowseCellposePath.setFont( FONT );
 		final GridBagConstraints gbc_btnBrowseCellposePath = new GridBagConstraints();
-		gbc_btnBrowseCellposePath.insets = new Insets( 0, 5, 5, 0 );
+		gbc_btnBrowseCellposePath.insets = new Insets( 0, 5, 5, 5 );
 		gbc_btnBrowseCellposePath.anchor = GridBagConstraints.SOUTHEAST;
 		gbc_btnBrowseCellposePath.gridx = 2;
 		gbc_btnBrowseCellposePath.gridy = 4;
@@ -223,7 +223,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		tfCellposeExecutable.setFont( SMALL_FONT );
 		final GridBagConstraints gbcTfCellpose = new GridBagConstraints();
 		gbcTfCellpose.gridwidth = 3;
-		gbcTfCellpose.insets = new Insets( 0, 5, 5, 0 );
+		gbcTfCellpose.insets = new Insets( 0, 5, 5, 5 );
 		gbcTfCellpose.fill = GridBagConstraints.BOTH;
 		gbcTfCellpose.gridx = 0;
 		gbcTfCellpose.gridy = 5;
@@ -248,7 +248,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		btnBrowseCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
 		final GridBagConstraints gbc_btnBrowseCustomModel = new GridBagConstraints();
 		gbc_btnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
-		gbc_btnBrowseCustomModel.insets = new Insets( 0, 0, 5, 0 );
+		gbc_btnBrowseCustomModel.insets = new Insets( 0, 0, 5, 5 );
 		gbc_btnBrowseCustomModel.gridx = 2;
 		gbc_btnBrowseCustomModel.gridy = 7;
 		add( btnBrowseCustomModel, gbc_btnBrowseCustomModel );
@@ -258,7 +258,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		tfCustomPath.setColumns( 15 );
 		final GridBagConstraints gbc_tfCustomPath = new GridBagConstraints();
 		gbc_tfCustomPath.gridwidth = 3;
-		gbc_tfCustomPath.insets = new Insets( 0, 5, 5, 0 );
+		gbc_tfCustomPath.insets = new Insets( 0, 5, 5, 5 );
 		gbc_tfCustomPath.fill = GridBagConstraints.BOTH;
 		gbc_tfCustomPath.gridx = 0;
 		gbc_tfCustomPath.gridy = 8;
@@ -281,7 +281,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		cmbboxPretrainedModel.setFont( SMALL_FONT );
 		final GridBagConstraints gbcCmbboxPretrainedModel = new GridBagConstraints();
 		gbcCmbboxPretrainedModel.gridwidth = 2;
-		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 0 );
+		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
 		gbcCmbboxPretrainedModel.gridx = 1;
 		gbcCmbboxPretrainedModel.gridy = 9;
@@ -310,7 +310,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		final GridBagConstraints gbcSpinner = new GridBagConstraints();
 		gbcSpinner.fill = GridBagConstraints.HORIZONTAL;
 		gbcSpinner.gridwidth = 2;
-		gbcSpinner.insets = new Insets( 0, 5, 5, 0 );
+		gbcSpinner.insets = new Insets( 0, 5, 5, 5 );
 		gbcSpinner.gridx = 1;
 		gbcSpinner.gridy = 10;
 		add( cmbboxCh1, gbcSpinner );
@@ -338,7 +338,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		final GridBagConstraints gbcSpinnerCh2 = new GridBagConstraints();
 		gbcSpinnerCh2.fill = GridBagConstraints.HORIZONTAL;
 		gbcSpinnerCh2.gridwidth = 2;
-		gbcSpinnerCh2.insets = new Insets( 0, 5, 5, 0 );
+		gbcSpinnerCh2.insets = new Insets( 0, 5, 5, 5 );
 		gbcSpinnerCh2.gridx = 1;
 		gbcSpinnerCh2.gridy = 11;
 		add( cmbboxCh2, gbcSpinnerCh2 );
@@ -369,7 +369,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		final JLabel lblSpaceUnits = new JLabel( model.getSpaceUnits() );
 		lblSpaceUnits.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblSpaceUnits = new GridBagConstraints();
-		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 0 );
+		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSpaceUnits.gridx = 2;
 		gbcLblSpaceUnits.gridy = 12;
 		add( lblSpaceUnits, gbcLblSpaceUnits );
@@ -414,7 +414,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		final GridBagConstraints gbcBtnPreview = new GridBagConstraints();
 		gbcBtnPreview.gridwidth = 2;
 		gbcBtnPreview.anchor = GridBagConstraints.SOUTHEAST;
-		gbcBtnPreview.insets = new Insets( 0, 5, 5, 0 );
+		gbcBtnPreview.insets = new Insets( 0, 5, 5, 5 );
 		gbcBtnPreview.gridx = 1;
 		gbcBtnPreview.gridy = 16;
 		add( btnPreview, gbcBtnPreview );
