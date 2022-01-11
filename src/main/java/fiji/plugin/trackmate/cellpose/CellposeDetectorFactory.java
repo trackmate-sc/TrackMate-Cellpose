@@ -33,12 +33,10 @@ import static fiji.plugin.trackmate.io.IOUtils.writeTargetChannel;
 import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.ImageIcon;
 
@@ -87,6 +85,14 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public static final String KEY_CELLPOSE_PYTHON_FILEPATH = "CELLPOSE_PYTHON_FILEPATH";
 
 	public static final String DEFAULT_CELLPOSE_PYTHON_FILEPATH = "/opt/anaconda3/envs/cellpose/bin/python";
+
+	/**
+	 * The key to the parameter that stores the path to the custom model file to
+	 * use with Cellpose. It must be an absolute file path.
+	 */
+	public static final String KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH = "CELLPOSE_MODEL_FILEPATH";
+
+	public static final String DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH = "";
 
 	/**
 	 * The key to the parameter that stores the second optional channel to
@@ -173,6 +179,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	{
 		final String cellposePythonPath = ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH );
 		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_CELLPOSE_MODEL );
+		final String customModelPath = ( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH );
 		final boolean simplifyContours = ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
 		final boolean useGPU = ( boolean ) settings.get( KEY_USE_GPU );
 
@@ -186,6 +193,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 		final CellposeSettings cellposeSettings = CellposeSettings.create()
 				.cellposePythonPath( cellposePythonPath )
+				.customModel( customModelPath )
 				.model( model )
 				.channel1( channel )
 				.channel2( channel2 )
@@ -292,6 +300,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		settings.put( KEY_USE_GPU, DEFAULT_USE_GPU );
 		settings.put( KEY_SIMPLIFY_CONTOURS, true );
 		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
+		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH );
 		return settings;
 	}
 
@@ -301,6 +310,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		boolean ok = true;
 		final StringBuilder errorHolder = new StringBuilder();
 		ok = ok & checkParameter( settings, KEY_CELLPOSE_PYTHON_FILEPATH, String.class, errorHolder );
+		ok = ok & checkParameter( settings, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELLPOSE_MODEL, PretrainedModel.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_TARGET_CHANNEL, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_OPTIONAL_CHANNEL_2, Integer.class, errorHolder );
@@ -317,15 +327,17 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			ok = false;
 		}
 
-		final List< String > mandatoryKeys = new ArrayList<>();
-		mandatoryKeys.add( KEY_CELLPOSE_PYTHON_FILEPATH );
-		mandatoryKeys.add( KEY_CELLPOSE_MODEL );
-		mandatoryKeys.add( KEY_TARGET_CHANNEL );
-		mandatoryKeys.add( KEY_OPTIONAL_CHANNEL_2 );
-		mandatoryKeys.add( KEY_CELL_DIAMETER );
-		mandatoryKeys.add( KEY_USE_GPU );
-		mandatoryKeys.add( KEY_SIMPLIFY_CONTOURS );
-		final Set< String > optionalKeys = Collections.singleton( KEY_LOGGER );
+		final List< String > mandatoryKeys = Arrays.asList(
+				KEY_CELLPOSE_PYTHON_FILEPATH,
+				KEY_CELLPOSE_MODEL,
+				KEY_TARGET_CHANNEL,
+				KEY_OPTIONAL_CHANNEL_2,
+				KEY_CELL_DIAMETER,
+				KEY_USE_GPU,
+				KEY_SIMPLIFY_CONTOURS );
+		final List< String > optionalKeys = Arrays.asList(
+				KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH,
+				KEY_LOGGER );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();

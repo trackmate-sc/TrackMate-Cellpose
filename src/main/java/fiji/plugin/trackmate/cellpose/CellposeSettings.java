@@ -36,6 +36,8 @@ public class CellposeSettings
 
 	public final PretrainedModel model;
 
+	public final String customModelPath;
+
 	public final double diameter;
 
 	public final boolean useGPU;
@@ -46,6 +48,7 @@ public class CellposeSettings
 	public CellposeSettings(
 			final String cellposePythonPath,
 			final PretrainedModel model,
+			final String customModelPath,
 			final int chan,
 			final int chan2,
 			final double diameter,
@@ -54,6 +57,7 @@ public class CellposeSettings
 	{
 		this.cellposePythonPath = cellposePythonPath;
 		this.model = model;
+		this.customModelPath = customModelPath;
 		this.chan = chan;
 		this.chan2 = chan2;
 		this.diameter = diameter;
@@ -114,7 +118,10 @@ public class CellposeSettings
 
 		// Model.
 		cmd.add( "--pretrained_model" );
-		cmd.add( model.path );
+		if ( model == PretrainedModel.CUSTOM )
+			cmd.add( customModelPath );
+		else
+			cmd.add( model.path );
 
 		// Export results as PNG.
 		cmd.add( "--save_png" );
@@ -146,6 +153,8 @@ public class CellposeSettings
 		private boolean useGPU = true;
 		
 		private boolean simplifyContours = true;
+
+		private String customModelPath = "";
 
 		public Builder channel1( final int ch )
 		{
@@ -189,16 +198,32 @@ public class CellposeSettings
 			return this;
 		}
 
+		public Builder customModel( final String customModelPath )
+		{
+			this.customModelPath = customModelPath;
+			return this;
+		}
+
 		public CellposeSettings get()
 		{
-			return new CellposeSettings( cellposePythonPath, model, chan, chan2, diameter, useGPU, simplifyContours );
+			return new CellposeSettings(
+					cellposePythonPath,
+					model,
+					customModelPath,
+					chan,
+					chan2,
+					diameter,
+					useGPU,
+					simplifyContours );
 		}
+
 	}
 
 	public enum PretrainedModel
 	{
 		CYTO( "Cytoplasm", "cyto" ),
-		NUCLEI( "Nucleus", "nuclei" );
+		NUCLEI( "Nucleus", "nuclei" ),
+		CUSTOM( "Custom", "" );
 
 		private final String name;
 
