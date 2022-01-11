@@ -37,6 +37,7 @@ public class CellPoseAttempt
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		ImageJ.main( args );
 
-		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
+//		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
+		new TrackMatePlugIn().run( "D:/Projects/JYTinevez/TrackMate-StarDist/CTCMetrics/Brightfield/01.tif" );
 	}
 }
