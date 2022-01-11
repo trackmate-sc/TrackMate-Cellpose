@@ -380,6 +380,22 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
+		final String cellposePath = ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH );
+		if ( cellposePath.equals( CellposeDetectorFactory.DEFAULT_CELLPOSE_PYTHON_FILEPATH ) )
+		{
+			// Try to fetch the prefs saved value, it is more interesting than
+			// the default one.
+			final String prefsPath = prefService.get( CellposeDetectorConfigurationPanel.class, KEY_CELLPOSE_PYTHON_FILEPATH );
+			if ( prefsPath != null && !prefsPath.isEmpty() )
+				tfCellposeExecutable.setText( prefsPath );
+			else
+				tfCellposeExecutable.setText( cellposePath );
+		}
+		else
+		{
+			tfCellposeExecutable.setText( cellposePath );
+		}
+
 		tfCellposeExecutable.setText( ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ) );
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_CELLPOSE_MODEL ) );
 		cmbboxCh1.setSelectedIndex( ( int ) settings.get( KEY_TARGET_CHANNEL ) );

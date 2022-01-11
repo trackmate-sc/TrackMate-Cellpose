@@ -34,8 +34,15 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +66,7 @@ import ij.plugin.Concatenator;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
+import net.imglib2.algorithm.MultiThreaded;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
@@ -67,11 +75,13 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable
+public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
 	private final static String BASE_ERROR_MESSAGE = "CellposeDetector: ";
 
 	private final static File CELLPOSE_LOG_FILE = new File( new File( System.getProperty( "user.home" ), ".cellpose" ), "run.log" );
+
+	private final static Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
 
 	protected final ImgPlus< T > img;
 
@@ -93,7 +103,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private boolean isCanceled;
 
-	private Process process;
+	private final List< CellposeTask > processes = new ArrayList<>();
+
+	private int numThreads;
 
 	public CellposeDetector(
 			final ImgPlus< T > img,
@@ -114,22 +126,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final long start = System.currentTimeMillis();
 		isCanceled = false;
 		cancelReason = null;
-		process = null;
-
-		/*
-		 * Prepare tmp dir.
-		 */
-		Path tmpDir = null;
-		try
-		{
-			tmpDir = Files.createTempDirectory( "TrackMate-Cellpose_" );
-			recursiveDeleteOnShutdownHook( tmpDir );
-		}
-		catch ( final IOException e1 )
-		{
-			errorMessage = BASE_ERROR_MESSAGE + "Could not create tmp dir to save and load images:\n" + e1.getMessage();
-			return false;
-		}
 
 		/*
 		 * Do we have time? If yes we need to fetch the min time index to
@@ -141,52 +137,71 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final double frameInterval = ( timeIndex < 0 ) ? 1. : img.averageScale( timeIndex );
 
 		/*
-		 * Save time-points as individual frames.
+		 * Dispatch time-points to several tasks.
 		 */
 
-		logger.log( "Saving single time-points.\n" );
-		final Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
 		final List< ImagePlus > imps = crop( img, interval, nameGen );
-		// Careful, now time starts at 0, even if in the interval it is not the
-		// case.
+
+		// Don't multithread for now.
+		final int nConcurrentTasks = 1;
+
+		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
+		for ( int i = 0; i < nConcurrentTasks; i++ )
+			timepoints.add( new ArrayList<>() );
+
+		Iterator< List< ImagePlus > > it = timepoints.iterator();
 		for ( int t = 0; t < imps.size(); t++ )
 		{
-			final ImagePlus imp = imps.get( t );
-			final String name = nameGen.apply( ( long ) t ) + ".tif";
-			IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
+			if ( !it.hasNext() )
+				it = timepoints.iterator();
+			it.next().add( imps.get( t ) );
 		}
 
 		/*
-		 * Run Cellpose.
+		 * Create tasks for each list of imps.
+		 */
+
+		processes.clear();
+		for ( final List< ImagePlus > list : timepoints )
+			processes.add( new CellposeTask( list ) );
+
+		/*
+		 * Pass tasks to executors.
 		 */
 
 		// Redirect log to logger.
+		final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
+
+		final ExecutorService executors = Executors.newFixedThreadPool( nConcurrentTasks );
+		final List< String > resultDirs = new ArrayList<>( nConcurrentTasks );
+		List< Future< String > > results;
 		try
 		{
-			final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
-			logger.setStatus( "Running Cellpose" );
-			logger.log( "Running Cellpose with args:\n" );
-			logger.log( String.join( " ", cmd ) );
-			logger.log( "\n" );
-			final ProcessBuilder pb = new ProcessBuilder( cmd );
-			pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
-			pb.redirectError( ProcessBuilder.Redirect.INHERIT );
-
-			process = pb.start();
-			final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
-			process.waitFor();
-			tailer.stop();
+			results = executors.invokeAll( processes );
+			for ( final Future< String > future : results )
+				resultDirs.add( future.get() );
 		}
-		catch ( final Exception e )
+		catch ( final InterruptedException | ExecutionException e )
 		{
-			errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+			errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage() + '\n';
 			e.printStackTrace();
 			return false;
 		}
 		finally
 		{
+			tailer.stop();
 			logger.setStatus( "" );
-			process = null;
+			logger.setProgress( 1. );
+		}
+
+		/*
+		 * Did we have a problem with independent tasks?
+		 */
+
+		for ( final CellposeTask task : processes )
+		{
+			if ( !task.isOk() )
+				return false;
 		}
 
 		/*
@@ -198,17 +213,35 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		for ( int t = 0; t < imps.size(); t++ )
 		{
 			final String name = nameGen.apply( ( long ) t ) + "_cp_masks.png";
-			final String path = new File( tmpDir.toString(), name ).getAbsolutePath();
-			final ImagePlus tpImp = IJ.openImage( path );
+
+			// Try to find corresponding mask in any of the result dirs we got.
+			ImagePlus tpImp = null;
+			for ( final String tmpDir : resultDirs )
+			{
+				final String path = new File( tmpDir.toString(), name ).getAbsolutePath();
+				tpImp = IJ.openImage( path );
+				if ( null != tpImp )
+					break;
+			}
+
+			// Did we succeed?
 			if ( null == tpImp )
 			{
+				// Try to guess the bit-depth of the mask images. Default to
+				// 16-bit if we can't.
+				final int ijBitDepth;
+				if ( masks.size() > 0 && masks.get( 0 ) != null )
+					ijBitDepth = masks.get( 0 ).getBitDepth();
+				else
+					ijBitDepth = 16;
+
 				logger.append( "Could not find results file for timepoint: " + name + '\n' );
 				final ImagePlus blank = NewImage.createImage(
 						"blank_" + t,
 						imps.get( 0 ).getWidth(),
 						imps.get( 0 ).getHeight(),
 						imps.get( 0 ).getNSlices(),
-						imps.get( 0 ).getBitDepth(),
+						ijBitDepth,
 						NewImage.FILL_BLACK );
 				masks.add( blank );
 			}
@@ -244,6 +277,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		labelImgSettings.detectorSettings = detectorSettings;
 
 		final TrackMate labelImgTrackMate = new TrackMate( labelImgSettings );
+		labelImgTrackMate.setNumThreads( numThreads );
 		if ( !labelImgTrackMate.execDetection() )
 		{
 			errorMessage = BASE_ERROR_MESSAGE + labelImgTrackMate.getErrorMessage();
@@ -452,13 +486,127 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	{
 		isCanceled = true;
 		cancelReason = reason;
-		if ( process != null )
-			process.destroy();
+		for ( final CellposeTask task : processes )
+			task.cancel();
 	}
 
 	@Override
 	public String getCancelReason()
 	{
 		return cancelReason;
+	}
+
+	// --- Multithreaded methods ---
+
+	@Override
+	public void setNumThreads()
+	{
+		this.numThreads = Runtime.getRuntime().availableProcessors() / 2;
+	}
+
+	@Override
+	public void setNumThreads( final int numThreads )
+	{
+		this.numThreads = numThreads;
+	}
+
+	@Override
+	public int getNumThreads()
+	{
+		return numThreads;
+	}
+
+	// --- private classes ---
+
+	private final class CellposeTask implements Callable< String >
+	{
+
+		private Process process;
+
+		private final AtomicBoolean ok;
+
+		private final List< ImagePlus > imps;
+
+		public CellposeTask( final List< ImagePlus > imps )
+		{
+			this.imps = imps;
+			this.ok = new AtomicBoolean( true );
+		}
+
+		public boolean isOk()
+		{
+			return ok.get();
+		}
+
+		private void cancel()
+		{
+			if ( process != null )
+				process.destroy();
+		}
+
+		@Override
+		public String call() throws Exception
+		{
+
+			/*
+			 * Prepare tmp dir.
+			 */
+			Path tmpDir = null;
+			try
+			{
+				tmpDir = Files.createTempDirectory( "TrackMate-Cellpose_" );
+				recursiveDeleteOnShutdownHook( tmpDir );
+			}
+			catch ( final IOException e1 )
+			{
+				errorMessage = BASE_ERROR_MESSAGE + "Could not create tmp dir to save and load images:\n" + e1.getMessage();
+				ok.set( false );
+				return null;
+			}
+
+			/*
+			 * Save time-points as individual frames.
+			 */
+
+			logger.log( "Saving single time-points.\n" );
+			// Careful, now time starts at 0, even if in the interval it is not
+			// the case.
+			for ( final ImagePlus imp : imps )
+			{
+				final String name = imp.getShortTitle() + ".tif";
+				IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
+			}
+
+			/*
+			 * Run Cellpose.
+			 */
+
+			try
+			{
+				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
+				logger.setStatus( "Running Cellpose" );
+				logger.log( "Running Cellpose with args:\n" );
+				logger.log( String.join( " ", cmd ) );
+				logger.log( "\n" );
+				final ProcessBuilder pb = new ProcessBuilder( cmd );
+				pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
+				pb.redirectError( ProcessBuilder.Redirect.INHERIT );
+
+				process = pb.start();
+				process.waitFor();
+			}
+			catch ( final Exception e )
+			{
+				errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+				e.printStackTrace();
+				ok.set( false );
+				return null;
+			}
+			finally
+			{
+				process = null;
+			}
+			return tmpDir.toString();
+		}
 	}
 }
