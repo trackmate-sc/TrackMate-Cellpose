@@ -212,7 +212,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
 		for ( int t = 0; t < imps.size(); t++ )
 		{
-			final String name = nameGen.apply( ( long ) t ) + "_cp_masks.png";
+			final String name = nameGen.apply( ( long ) minT + t ) + "_cp_masks.png";
 
 			// Try to find corresponding mask in any of the result dirs we got.
 			ImagePlus tpImp = null;
@@ -594,6 +594,23 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 				process = pb.start();
 				process.waitFor();
+			}
+			catch ( final IOException e )
+			{
+				final String msg = e.getMessage();
+				if ( msg.matches( ".+error=13.+" ) )
+				{
+					errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n"
+							+ "The executable does not have the file permission to run.\n"
+							+ "Please see https://github.com/MouseLand/cellpose#run-cellpose-without-local-python-installation for more information.\n";
+				}
+				else
+				{
+					errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+				}
+				e.printStackTrace();
+				ok.set( false );
+				return null;
 			}
 			catch ( final Exception e )
 			{
