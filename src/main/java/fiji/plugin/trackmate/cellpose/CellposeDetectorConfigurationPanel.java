@@ -73,6 +73,7 @@ import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.FileChooser;
 import fiji.plugin.trackmate.util.FileChooser.DialogType;
+import fiji.plugin.trackmate.util.FileChooser.SelectionMode;
 import fiji.plugin.trackmate.util.JLabelLogger;
 
 public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
@@ -451,7 +452,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		try
 		{
 			final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
-					"Browse to a Cellpose custom model", DialogType.LOAD );
+					"Browse to a Cellpose custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
 				tfCustomPath.setText( file.getAbsolutePath() );
 		}
@@ -467,7 +468,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		try
 		{
 			final File file = FileChooser.chooseFile( this, tfCellposeExecutable.getText(), null,
-					"Browse to the Cellpose Python executable", DialogType.LOAD );
+					"Browse to the Cellpose Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
 				tfCellposeExecutable.setText( file.getAbsolutePath() );
 		}
