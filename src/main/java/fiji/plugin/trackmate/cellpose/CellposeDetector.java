@@ -63,6 +63,8 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.NewImage;
 import ij.plugin.Concatenator;
+import ij.process.ImageConverter;
+import ij.process.StackConverter;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
@@ -142,8 +144,27 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		final List< ImagePlus > imps = crop( img, interval, nameGen );
 
-		// Don't multithread for now.
-		final int nConcurrentTasks = 1;
+		final int nConcurrentTasks;
+		/*
+		 * We use multiprocessing ONLY if the user stated that they want to use
+		 * the CPU and if we are on Mac. I tested multiprocessing on CPU under
+		 * windows, and there is no benefit for Windows. But there is a strong
+		 * speedup on Mac.
+		 * 
+		 * On a PC with Windows, forcing Cellpose to run with the CPU: There is
+		 * no benefit from splitting the load between 1,2, 10 or 20 processes.
+		 * It seems like 1 Cellpose process can already use ALL the cores by
+		 * itself and running several Cellpose processes concurrently does not
+		 * lead to shorter processing time.
+		 * 
+		 * For a source image 1024x502 over 92 time-points, 3 channels: - 1
+		 * thread -> 24.4 min - 8 thread -> 4.1 min (there is not a x8 speedup
+		 * factor, which is to be expected)
+		 */
+		if ( !cellposeSettings.useGPU && IJ.isMacintosh() )
+			nConcurrentTasks = numThreads;
+		else
+			nConcurrentTasks = 1;
 
 		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
 		for ( int i = 0; i < nConcurrentTasks; i++ )
@@ -221,27 +242,29 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				final String path = new File( tmpDir.toString(), name ).getAbsolutePath();
 				tpImp = IJ.openImage( path );
 				if ( null != tpImp )
+				{
+					// Found it. Convert it to 16-bit if we have to.
+					if ( tpImp.getType() != ImagePlus.GRAY16 )
+					{
+						if ( tpImp.getStackSize() > 1 )
+							new StackConverter( tpImp ).convertToGray16();
+						else
+							new ImageConverter( tpImp ).convertToGray16();
+					}
 					break;
+				}
 			}
 
 			// Did we succeed?
 			if ( null == tpImp )
 			{
-				// Try to guess the bit-depth of the mask images. Default to
-				// 16-bit if we can't.
-				final int ijBitDepth;
-				if ( masks.size() > 0 && masks.get( 0 ) != null )
-					ijBitDepth = masks.get( 0 ).getBitDepth();
-				else
-					ijBitDepth = 16;
-
 				logger.append( "Could not find results file for timepoint: " + name + '\n' );
 				final ImagePlus blank = NewImage.createImage(
 						"blank_" + t,
 						imps.get( 0 ).getWidth(),
 						imps.get( 0 ).getHeight(),
 						imps.get( 0 ).getNSlices(),
-						ijBitDepth,
+						16, // bitdepth
 						NewImage.FILL_BLACK );
 				masks.add( blank );
 			}
