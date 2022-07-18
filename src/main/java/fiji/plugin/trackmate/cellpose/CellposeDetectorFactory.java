@@ -68,7 +68,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	 */
 
 	/**
-	 * The key to the parameter that stores the path the Cellpose model to use.
+	 * The key to the parameter that stores the path the cellpose model to use.
 	 * Value can be {@link CellposeSettings.PretrainedModel}.
 	 */
 	public static final String KEY_CELLPOSE_MODEL = "CELLPOSE_MODEL";
@@ -77,7 +77,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/**
 	 * The key to the parameter that stores the path to the Python instance that
-	 * can run Cellpose if you installed it via Conda or the Cellpose executable
+	 * can run cellpose if you installed it via Conda or the cellpose executable
 	 * if you have installed the standalone version. Something like
 	 * '/opt/anaconda3/envs/cellpose/bin/python' or
 	 * 'C:\Users\tinevez\Applications\cellpose.exe'.
@@ -138,16 +138,16 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
-			+ "This detector relies on Cellpose to detect objects."
+			+ "This detector relies on cellpose to detect objects."
 			+ "<p>"
-			+ "The detector simply calls an external Cellpose installation. So for this "
-			+ "to work, you must have a Cellpose installation running on your computer. "
-			+ "Please follow the instructions from the Cellpose website: "
+			+ "The detector simply calls an external cellpose installation. So for this "
+			+ "to work, you must have a cellpose installation running on your computer. "
+			+ "Please follow the instructions from the cellpose website: "
 			+ "<u><a http=\"https://github.com/MouseLand/cellpose#local-installation\">https://github.com/MouseLand/cellpose#local-installation</a></u>"
 			+ "<p>"
-			+ "You will also need to specify the path to the <b>Python executable</b> that can run Cellpose "
-			+ "or the <b>Cellpose executable</b> directly. "
-			+ "For instance if you used anaconda to install Cellpose, and that you have a "
+			+ "You will also need to specify the path to the <b>Python executable</b> that can run cellpose "
+			+ "or the <b>cellpose executable</b> directly. "
+			+ "For instance if you used anaconda to install cellpose, and that you have a "
 			+ "Conda environment called 'cellpose', this path will be something along the line of "
 			+ "'/opt/anaconda3/envs/cellpose/bin/python'  or 'C:\\\\Users\\\\tinevez\\\\anaconda3\\\\envs\\\\cellpose_biop_gpu\\\\python.exe' "
 			+ "If you installed the standalone version, the path to it would something like "

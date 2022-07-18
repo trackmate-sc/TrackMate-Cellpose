@@ -145,7 +145,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		/*
 		 * Help text.
 		 */
-		final JLabel lblHelptext = new JLabel( "This detector relies on Cellpose to detect objects in the image." );
+		final JLabel lblHelptext = new JLabel( "This detector relies on cellpose to detect objects in the image." );
 		lblHelptext.setFont( FONT.deriveFont( Font.ITALIC ) );
 		final GridBagConstraints gbcLblHelptext = new GridBagConstraints();
 		gbcLblHelptext.anchor = GridBagConstraints.NORTH;
@@ -201,7 +201,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		 * Path to Python or Cellpose.
 		 */
 
-		final JLabel lblCusstomModelFile = new JLabel( "Path to Cellpose / Python executable:" );
+		final JLabel lblCusstomModelFile = new JLabel( "Path to cellpose / python executable:" );
 		lblCusstomModelFile.setFont( FONT );
 		final GridBagConstraints gbcLblCusstomModelFile = new GridBagConstraints();
 		gbcLblCusstomModelFile.gridwidth = 2;
