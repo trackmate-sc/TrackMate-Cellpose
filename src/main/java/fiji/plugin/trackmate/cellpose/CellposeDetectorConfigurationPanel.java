@@ -213,12 +213,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 		btnBrowseCellposePath = new JButton( "Browse" );
 		btnBrowseCellposePath.setFont( FONT );
-		final GridBagConstraints gbc_btnBrowseCellposePath = new GridBagConstraints();
-		gbc_btnBrowseCellposePath.insets = new Insets( 0, 5, 5, 5 );
-		gbc_btnBrowseCellposePath.anchor = GridBagConstraints.SOUTHEAST;
-		gbc_btnBrowseCellposePath.gridx = 2;
-		gbc_btnBrowseCellposePath.gridy = 4;
-		add( btnBrowseCellposePath, gbc_btnBrowseCellposePath );
+		final GridBagConstraints gbcBtnBrowseCellposePath = new GridBagConstraints();
+		gbcBtnBrowseCellposePath.insets = new Insets( 0, 5, 5, 5 );
+		gbcBtnBrowseCellposePath.anchor = GridBagConstraints.SOUTHEAST;
+		gbcBtnBrowseCellposePath.gridx = 2;
+		gbcBtnBrowseCellposePath.gridy = 4;
+		add( btnBrowseCellposePath, gbcBtnBrowseCellposePath );
 
 		tfCellposeExecutable = new JTextField( "" );
 		tfCellposeExecutable.setFont( SMALL_FONT );
@@ -237,33 +237,33 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 		final JLabel lblPathToCustomModel = new JLabel( "Path to custom model:" );
 		lblPathToCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		final GridBagConstraints gbc_lblPathToCustomModel = new GridBagConstraints();
-		gbc_lblPathToCustomModel.anchor = GridBagConstraints.SOUTHWEST;
-		gbc_lblPathToCustomModel.gridwidth = 2;
-		gbc_lblPathToCustomModel.insets = new Insets( 0, 5, 5, 5 );
-		gbc_lblPathToCustomModel.gridx = 0;
-		gbc_lblPathToCustomModel.gridy = 7;
-		add( lblPathToCustomModel, gbc_lblPathToCustomModel );
+		final GridBagConstraints gbcLblPathToCustomModel = new GridBagConstraints();
+		gbcLblPathToCustomModel.anchor = GridBagConstraints.SOUTHWEST;
+		gbcLblPathToCustomModel.gridwidth = 2;
+		gbcLblPathToCustomModel.insets = new Insets( 0, 5, 5, 5 );
+		gbcLblPathToCustomModel.gridx = 0;
+		gbcLblPathToCustomModel.gridy = 7;
+		add( lblPathToCustomModel, gbcLblPathToCustomModel );
 
 		btnBrowseCustomModel = new JButton( "Browse" );
 		btnBrowseCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		final GridBagConstraints gbc_btnBrowseCustomModel = new GridBagConstraints();
-		gbc_btnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
-		gbc_btnBrowseCustomModel.insets = new Insets( 0, 0, 5, 5 );
-		gbc_btnBrowseCustomModel.gridx = 2;
-		gbc_btnBrowseCustomModel.gridy = 7;
-		add( btnBrowseCustomModel, gbc_btnBrowseCustomModel );
+		final GridBagConstraints gbcBtnBrowseCustomModel = new GridBagConstraints();
+		gbcBtnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
+		gbcBtnBrowseCustomModel.insets = new Insets( 0, 0, 5, 5 );
+		gbcBtnBrowseCustomModel.gridx = 2;
+		gbcBtnBrowseCustomModel.gridy = 7;
+		add( btnBrowseCustomModel, gbcBtnBrowseCustomModel );
 
 		tfCustomPath = new JTextField( " " );
 		tfCustomPath.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
 		tfCustomPath.setColumns( 15 );
-		final GridBagConstraints gbc_tfCustomPath = new GridBagConstraints();
-		gbc_tfCustomPath.gridwidth = 3;
-		gbc_tfCustomPath.insets = new Insets( 0, 5, 5, 5 );
-		gbc_tfCustomPath.fill = GridBagConstraints.BOTH;
-		gbc_tfCustomPath.gridx = 0;
-		gbc_tfCustomPath.gridy = 8;
-		add( tfCustomPath, gbc_tfCustomPath );
+		final GridBagConstraints gbcTfCustomPath = new GridBagConstraints();
+		gbcTfCustomPath.gridwidth = 3;
+		gbcTfCustomPath.insets = new Insets( 0, 5, 5, 5 );
+		gbcTfCustomPath.fill = GridBagConstraints.BOTH;
+		gbcTfCustomPath.gridx = 0;
+		gbcTfCustomPath.gridy = 8;
+		add( tfCustomPath, gbcTfCustomPath );
 
 		/*
 		 * Pretrained model.
