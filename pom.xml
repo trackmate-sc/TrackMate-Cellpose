@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>31.1.0</version>
+		<version>32.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -15,11 +15,11 @@
 
 	<name>TrackMate-Cellpose</name>
 	<description>TrackMate detector based on Cellpose.</description>
-	<url>https://imagej.net/TrackMate</url>
+	<url>https://github.com/trackmate-sc/TrackMate-Cellpose</url>
 	<inceptionYear>2021</inceptionYear>
 	<organization>
-		<name>Fiji</name>
-		<url>https://fiji.sc/</url>
+		<name>TrackMate</name>
+		<url>https://github.com/trackmate-sc</url>
 	</organization>
 	<licenses>
 		<license>
@@ -44,18 +44,12 @@
 				<role>maintainer</role>
 			</roles>
 		</developer>
-		<developer>
-			<id>ctrueden</id>
-			<name>Curtis Rueden</name>
-			<url>https://imagej.net/people/ctrueden</url>
-			<roles>
-				<role>maintainer</role>
-			</roles>
-		</developer>
 	</developers>
 	<contributors>
 		<contributor>
-			<name>None</name>
+			<name>Curtis Rueden</name>
+			<url>https://imagej.net/people/ctrueden</url>
+			<properties><id>ctrueden</id></properties>
 		</contributor>
 	</contributors>
 
@@ -67,30 +61,51 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/fiji/TrackMate-Cellpose</connection>
-		<developerConnection>scm:git:git@github.com:fiji/TrackMate-Cellpose</developerConnection>
+		<connection>scm:git:https://github.com/trackmate-sc/TrackMate-Cellpose</connection>
+		<developerConnection>scm:git:git@github.com:trackmate-sc/TrackMate-Cellpose</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/fiji/TrackMate-Cellpose</url>
+		<url>https://github.com/trackmate-sc/TrackMate-Cellpose</url>
 	</scm>
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/fiji/TrackMate-Cellpose/issues</url>
+		<url>https://github.com/trackmate-sc/TrackMate-Cellpose/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>GitHub Actions</system>
-		<url>https://github.com/fiji/TrackMate-Cellpose/actions</url>
+		<url>https://github.com/trackmate-sc/TrackMate-Cellpose</url>
 	</ciManagement>
 
 	<properties>
 		<package-name>fiji.plugin.trackmate</package-name>
 		<license.licenseName>gpl_v3</license.licenseName>
-		<license.copyrightOwners>The Institut Pasteur.</license.copyrightOwners>
-		<license.projectName>Fiji distribution of ImageJ for the life sciences.</license.projectName>
+		<license.copyrightOwners>TrackMate developers.</license.copyrightOwners>
+		<license.projectName>TrackMate: your buddy for everyday tracking.</license.projectName>
+
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<TrackMate.version>7.7.0</TrackMate.version>
 	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>TrackMate</artifactId>
+		</dependency>
+
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<repositories>
 		<repository>
@@ -98,26 +113,4 @@
 			<url>https://maven.scijava.org/content/groups/public</url>
 		</repository>
 	</repositories>
-
-	<dependencies>
-
-		<!-- Fiji dependencies -->
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
-		</dependency>
-
-		<!-- TrackMate -->
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>TrackMate</artifactId>
-		</dependency>
-
-		<!-- Test -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 </project>
