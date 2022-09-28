@@ -21,24 +21,21 @@
  */
 package fiji.plugin.trackmate;
 
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import java.io.IOException;
 
-import ij.ImageJ;
 
 /**
  * Inspired by the BIOP approach.
  */
-public class CellPoseAttempt
+public class CellPoseAttempt3
 {
 
-	public static void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
+	public static void main( final String[] args ) throws IOException, InterruptedException
 	{
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-		ImageJ.main( args );
-
-//		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
-//		new TrackMatePlugIn().run( "D:/Projects/JYTinevez/TrackMate-StarDist/CTCMetrics/Brightfield/01.tif" );
-		new TrackMatePlugIn().run( "D:/IAH/Projects/MLenormand_YeastCellsTracking/Data/Dataset-20220909/pos0_gfp_maxz_c2-t1-t3.tif" );
+		final String cellposePythonPath = "/Users/phan/anaconda3/envs/cellpose/python.exe";
+		final String[] split = cellposePythonPath.replace( "\\", "/" ).split( "/" );
+		final String envname = split[ split.length - 2 ];
+		System.out.println(envname);
+		
 	}
 }

@@ -44,11 +44,24 @@ public class CellPoseAttempt2
 	{
 		ImageJ.main( args );
 
-		final ImagePlus imp = IJ.openImage( "samples/P31-crop-2.tif" );
+//		final ImagePlus imp = IJ.openImage( "samples/P31-crop-2.tif" );
+		final ImagePlus imp = IJ.openImage( "D:/IAH/Projects/MLenormand_YeastCellsTracking/Data/Dataset-20220909/pos0_gfp_maxz_c2-t1-t3.tif" );
 		imp.show();
 		
 		// Cellpose command line options.
-		final CellposeSettings cp = CellposeSettings.DEFAULT;
+//		final CellposeSettings cp = CellposeSettings.DEFAULT;
+		
+		CellposeSettings cp = CellposeSettings.create()					
+//			.cellposePythonPath("C:/Users/mphan/Desktop/testcellpose/cellpose.exe")
+			.cellposePythonPath("C:/Users/mphan/Anaconda3/envs/cellpose/python.exe")
+			.channel1(0)
+			.channel2(0)
+			.diameter(5.)
+			.model(CellposeSettings.PretrainedModel.NUCLEI)
+			.useGPU(true)
+			.simplifyContours(true)
+			.get();
+
 		
 		final ImgPlus img = TMUtils.rawWraps( imp );
 		final CellposeDetector detector = new CellposeDetector( img, img, cp, Logger.DEFAULT_LOGGER );
