@@ -1,8 +1,8 @@
 /*-
  * #%L
- * Fiji distribution of ImageJ for the life sciences.
+ * TrackMate: your buddy for everyday tracking.
  * %%
- * Copyright (C) 2021 - 2022 The Institut Pasteur.
+ * Copyright (C) 2021 - 2022 TrackMate developers.
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
