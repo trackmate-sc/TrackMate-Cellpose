@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/trackmate-sc/TrackMate-Cellpose/actions/workflows/build-main.yml/badge.svg)](https://github.com/trackmate-sc/TrackMate-Cellpose/actions/workflows/build-main.yml)
+[![Build Status](https://github.com/trackmate-sc/TrackMate-Cellpose/actions/workflows/build.yml/badge.svg)](https://github.com/trackmate-sc/TrackMate-Cellpose/actions/workflows/build.yml)
 
 # TrackMate-Cellpose
 
