@@ -143,7 +143,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "The detector simply calls an external cellpose installation. So for this "
 			+ "to work, you must have a cellpose installation running on your computer. "
 			+ "Please follow the instructions from the cellpose website: "
-			+ "<u><a http=\"https://github.com/MouseLand/cellpose#local-installation\">https://github.com/MouseLand/cellpose#local-installation</a></u>"
+			+ "<u><a href=\"https://github.com/MouseLand/cellpose#local-installation\">https://github.com/MouseLand/cellpose#local-installation</a></u>"
 			+ "<p>"
 			+ "You will also need to specify the path to the <b>Python executable</b> that can run cellpose "
 			+ "or the <b>cellpose executable</b> directly. "
@@ -154,9 +154,12 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "this on Windows: 'C:\\Users\\tinevez\\Applications\\cellpose.exe'. "
 			+ "<p>"
 			+ "If you use this detector for your work, please be so kind as to "
-			+ "also cite the Cellpose paper: <i>Stringer, C., Wang, T., Michaelos, M. et al. "
+			+ "also cite the Cellpose paper: <a href=\"https://doi.org/10.1038/s41592-020-01018-x\">Stringer, C., Wang, T., Michaelos, M. et al. "
 			+ "Cellpose: a generalist algorithm for cellular segmentation. "
-			+ "Nat Methods 18, 100–106 (2021)</i>"
+			+ "Nat Methods 18, 100–106 (2021)</a>"
+			+ "<p>"
+			+ "Documentation for this module "
+			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-cellpose\">on the ImageJ Wiki</a>."
 			+ "</html>";
 
 	/*
