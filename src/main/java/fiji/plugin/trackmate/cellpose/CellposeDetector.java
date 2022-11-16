@@ -34,7 +34,6 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -607,16 +606,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 			try
 			{
-				
-//				// Activate conda envs
-//				final List< String > cmd0 = new ArrayList<>();
-//		        cmd0.addAll(Arrays.asList("cmd.exe", "/c", "conda", "activate", "cellpose"));
-//		        final ProcessBuilder pb0 = new ProcessBuilder(cmd0 );
-//		        pb0.redirectOutput( ProcessBuilder.Redirect.INHERIT );
-//				pb0.redirectError( ProcessBuilder.Redirect.INHERIT );
-//				final Process process0 = pb0.start();
-//				process0.waitFor();
-				
 				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
 				logger.setStatus( "Running Cellpose" );
 				logger.log( "Running Cellpose with args:\n" );
