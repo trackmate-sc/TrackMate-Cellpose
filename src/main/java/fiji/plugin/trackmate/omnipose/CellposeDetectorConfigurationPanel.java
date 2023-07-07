@@ -19,15 +19,15 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.omnipose;
 
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_MODEL;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_PYTHON_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELL_DIAMETER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_LOGGER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_OPTIONAL_CHANNEL_2;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_USE_GPU;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_MODEL;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_PYTHON_FILEPATH;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_CELL_DIAMETER;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_LOGGER;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OPTIONAL_CHANNEL_2;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_USE_GPU;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
@@ -67,29 +67,29 @@ import javax.swing.SwingConstants;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModel;
+import fiji.plugin.trackmate.omnipose.OmniposeSettings.PretrainedModel;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.DetectionPreview;
 import fiji.plugin.trackmate.util.FileChooser;
 import fiji.plugin.trackmate.util.FileChooser.DialogType;
 import fiji.plugin.trackmate.util.FileChooser.SelectionMode;
 
-public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
+public class OmniposeDetectorConfigurationPanel extends ConfigurationPanel
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String TITLE = CellposeDetectorFactory.NAME;
+	private static final String TITLE = OmniposeDetectorFactory.NAME;
 
-	private static final ImageIcon ICON = CellposeUtils.logo64();
+	private static final ImageIcon ICON = OmniposeUtils.logo64();
 
 	private static final NumberFormat DIAMETER_FORMAT = new DecimalFormat( "#.#" );
 
-	protected static final String DOC1_URL = "https://imagej.net/plugins/trackmate/trackmate-cellpose";
+	protected static final String DOC1_URL = "";
 
-	private final JButton btnBrowseCellposePath;
+	private final JButton btnBrowseOmniposePath;
 
-	private final JTextField tfCellposeExecutable;
+	private final JTextField tfOmniposeExecutable;
 
 	private final JComboBox< PretrainedModel > cmbboxPretrainedModel;
 
@@ -109,7 +109,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private final JButton btnBrowseCustomModel;
 
-	public CellposeDetectorConfigurationPanel( final Settings settings, final Model model )
+	public OmniposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
 		this.logger = model.getLogger();
 
@@ -172,10 +172,10 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		add( lblUrl, gbcLblUrl );
 
 		/*
-		 * Path to Python or Cellpose.
+		 * Path to Python or Omnipose.
 		 */
 
-		final JLabel lblCusstomModelFile = new JLabel( "Path to cellpose / python executable:" );
+		final JLabel lblCusstomModelFile = new JLabel( "Path to omnipose / python executable:" );
 		lblCusstomModelFile.setFont( FONT );
 		final GridBagConstraints gbcLblCusstomModelFile = new GridBagConstraints();
 		gbcLblCusstomModelFile.gridwidth = 2;
@@ -185,25 +185,25 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblCusstomModelFile.gridy = 2;
 		add( lblCusstomModelFile, gbcLblCusstomModelFile );
 
-		btnBrowseCellposePath = new JButton( "Browse" );
-		btnBrowseCellposePath.setFont( FONT );
-		final GridBagConstraints gbcBtnBrowseCellposePath = new GridBagConstraints();
-		gbcBtnBrowseCellposePath.insets = new Insets( 0, 0, 5, 0 );
-		gbcBtnBrowseCellposePath.anchor = GridBagConstraints.SOUTHEAST;
-		gbcBtnBrowseCellposePath.gridx = 2;
-		gbcBtnBrowseCellposePath.gridy = 2;
-		add( btnBrowseCellposePath, gbcBtnBrowseCellposePath );
+		btnBrowseOmniposePath = new JButton( "Browse" );
+		btnBrowseOmniposePath.setFont( FONT );
+		final GridBagConstraints gbcBtnBrowseOmniposePath = new GridBagConstraints();
+		gbcBtnBrowseOmniposePath.insets = new Insets( 0, 0, 5, 0 );
+		gbcBtnBrowseOmniposePath.anchor = GridBagConstraints.SOUTHEAST;
+		gbcBtnBrowseOmniposePath.gridx = 2;
+		gbcBtnBrowseOmniposePath.gridy = 2;
+		add( btnBrowseOmniposePath, gbcBtnBrowseOmniposePath );
 
-		tfCellposeExecutable = new JTextField( "" );
-		tfCellposeExecutable.setFont( SMALL_FONT );
-		final GridBagConstraints gbcTfCellpose = new GridBagConstraints();
-		gbcTfCellpose.gridwidth = 3;
-		gbcTfCellpose.insets = new Insets( 0, 5, 5, 0 );
-		gbcTfCellpose.fill = GridBagConstraints.BOTH;
-		gbcTfCellpose.gridx = 0;
-		gbcTfCellpose.gridy = 3;
-		add( tfCellposeExecutable, gbcTfCellpose );
-		tfCellposeExecutable.setColumns( 15 );
+		tfOmniposeExecutable = new JTextField( "" );
+		tfOmniposeExecutable.setFont( SMALL_FONT );
+		final GridBagConstraints gbcTfOmnipose = new GridBagConstraints();
+		gbcTfOmnipose.gridwidth = 3;
+		gbcTfOmnipose.insets = new Insets( 0, 5, 5, 0 );
+		gbcTfOmnipose.fill = GridBagConstraints.BOTH;
+		gbcTfOmnipose.gridx = 0;
+		gbcTfOmnipose.gridy = 3;
+		add( tfOmniposeExecutable, gbcTfOmnipose );
+		tfOmniposeExecutable.setColumns( 15 );
 
 		/*
 		 * Custom model.
@@ -373,7 +373,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		final DetectionPreview detectionPreview = DetectionPreview.create()
 				.model( model )
 				.settings( settings )
-				.detectorFactory( new CellposeDetectorFactory<>() )
+				.detectorFactory( new OmniposeDetectorFactory<>() )
 				.detectionSettingsSupplier( () -> getSettings() )
 				.axisLabel( "Area histogram" )
 				.get();
@@ -403,7 +403,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		cmbboxPretrainedModel.addItemListener( l3 );
 		l3.itemStateChanged( null );
 
-		btnBrowseCellposePath.addActionListener( l -> browseCellposePath() );
+		btnBrowseOmniposePath.addActionListener( l -> browseOmniposePath() );
 		btnBrowseCustomModel.addActionListener( l -> browseCustomModelPath() );
 	}
 
@@ -413,7 +413,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		try
 		{
 			final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
-					"Browse to a Cellpose custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
+					"Browse to a Omnipose custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
 				tfCustomPath.setText( file.getAbsolutePath() );
 		}
@@ -423,28 +423,28 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		}
 	}
 
-	protected void browseCellposePath()
+	protected void browseOmniposePath()
 	{
-		btnBrowseCellposePath.setEnabled( false );
+		btnBrowseOmniposePath.setEnabled( false );
 		try
 		{
-			final File file = FileChooser.chooseFile( this, tfCellposeExecutable.getText(), null,
-					"Browse to the Cellpose Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
+			final File file = FileChooser.chooseFile( this, tfOmniposeExecutable.getText(), null,
+					"Browse to the Omnipose Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
-				tfCellposeExecutable.setText( file.getAbsolutePath() );
+				tfOmniposeExecutable.setText( file.getAbsolutePath() );
 		}
 		finally
 		{
-			btnBrowseCellposePath.setEnabled( true );
+			btnBrowseOmniposePath.setEnabled( true );
 		}
 	}
 
 	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
-		tfCellposeExecutable.setText( ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ) );
-		tfCustomPath.setText( ( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH ) );
-		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_CELLPOSE_MODEL ) );
+		tfOmniposeExecutable.setText( ( String ) settings.get( KEY_OMNIPOSE_PYTHON_FILEPATH ) );
+		tfCustomPath.setText( ( String ) settings.get( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH ) );
+		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_OMNIPOSE_MODEL ) );
 		cmbboxCh1.setSelectedIndex( ( int ) settings.get( KEY_TARGET_CHANNEL ) );
 		cmbboxCh2.setSelectedIndex( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ) );
 		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
@@ -457,9 +457,9 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 	{
 		final HashMap< String, Object > settings = new HashMap<>( 9 );
 
-		settings.put( KEY_CELLPOSE_PYTHON_FILEPATH, tfCellposeExecutable.getText() );
-		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
-		settings.put( KEY_CELLPOSE_MODEL, cmbboxPretrainedModel.getSelectedItem() );
+		settings.put( KEY_OMNIPOSE_PYTHON_FILEPATH, tfOmniposeExecutable.getText() );
+		settings.put( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
+		settings.put( KEY_OMNIPOSE_MODEL, cmbboxPretrainedModel.getSelectedItem() );
 
 		settings.put( KEY_TARGET_CHANNEL, cmbboxCh1.getSelectedIndex() );
 		settings.put( KEY_OPTIONAL_CHANNEL_2, cmbboxCh2.getSelectedIndex() );
