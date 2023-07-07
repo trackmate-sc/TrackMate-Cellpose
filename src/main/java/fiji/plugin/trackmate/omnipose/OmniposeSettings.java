@@ -222,7 +222,6 @@ public class OmniposeSettings
 	public enum PretrainedModel
 	{
 		BACT_PHASE( "Bacterial phase contrast", "bact_phase_omni" ),
-                CYTO2( "Cytoplasm 2.0", "cyto2" ),
 		CUSTOM( "Custom", "" );
 
 		private final String name;
