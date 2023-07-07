@@ -70,27 +70,27 @@ public class OmniposeSettings
 		final List< String > cmd = new ArrayList<>();
 
 		/*
-		 * First decide whether we are calling Cellpose from python, or directly
-		 * the Cellpose executable. We check the last part of the path to check
-		 * whether this is python or cellpose.
+		 * First decide whether we are calling Omnipose from python, or directly
+		 * the Omnipose executable. We check the last part of the path to check
+		 * whether this is python or omnipose.
 		 */
 		final String[] split = omniposePythonPath.replace( "\\", "/" ).split( "/" );
 		final String lastItem = split[ split.length - 1 ];
 		if ( lastItem.toLowerCase().startsWith( "python" ) )
 		{
-			// Calling Cellpose from python.
+			// Calling Omnipose from python.
 			cmd.add( omniposePythonPath );
 			cmd.add( "-m" );
 			cmd.add( "omnipose" );
 		}
 		else
 		{
-			// Calling Cellpose executable.
+			// Calling Omnipose executable.
 			cmd.add( omniposePythonPath );
 		}
 
 		/*
-		 * Cellpose command line arguments.
+		 * Omnipose command line arguments.
 		 */
 
 		// Target dir.
