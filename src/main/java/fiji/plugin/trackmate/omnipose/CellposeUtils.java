@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.omnipose;
 
 import java.awt.Image;
 import java.net.URL;
@@ -34,7 +34,7 @@ import net.imglib2.Interval;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.Type;
 
-public class CellposeUtils
+public class OmniposeUtils
 {
 
 	public static < T extends Type< T > > ImgPlus< T > hyperSlice( final ImgPlus< T > img, final long frame )
@@ -57,7 +57,7 @@ public class CellposeUtils
 
 	public static URL getResource( final String name )
 	{
-		return CellposeDetectorFactory.class.getClassLoader().getResource( name );
+		return OmniposeDetectorFactory.class.getClassLoader().getResource( name );
 	}
 
 	public static final ImageIcon logo()
