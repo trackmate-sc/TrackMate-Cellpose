@@ -8,7 +8,7 @@ Tentative Omnipose integration in TrackMate starting from the already existing [
 ## Version
 This code works with the Omnipose version 0.3.6. It doesn't work with the last version of Omnipose (same issue as for the [Omnipose wrapper of the BIOP](https://github.com/BIOP/ijl-utilities-wrappers)).
 
-## I set my installation as follows
+I set my installation as follows:
 ```
 conda create -n omnipose
 conda activate omnipose
