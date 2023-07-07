@@ -17,3 +17,4 @@ pip install omnipose==0.3.6
 pip install cellpose-omni==0.7.3
 ```
 
+The default *bact_phase_omni* is stored in cellpose pretrained models folder.
