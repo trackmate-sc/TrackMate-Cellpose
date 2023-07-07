@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.omnipose;
 
 import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
@@ -77,11 +77,11 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
+public class OmniposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
-	private final static String BASE_ERROR_MESSAGE = "CellposeDetector: ";
+	private final static String BASE_ERROR_MESSAGE = "OmniposeDetector: ";
 
-	private final static File CELLPOSE_LOG_FILE = new File( new File( System.getProperty( "user.home" ), ".cellpose" ), "run.log" );
+	private final static File OMNIPOSE_LOG_FILE = new File( new File( System.getProperty( "user.home" ), ".omnipose" ), "run.log" );
 
 	private final static Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
 
@@ -89,7 +89,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	protected final Interval interval;
 
-	private final CellposeSettings cellposeSettings;
+	private final OmniposeSettings omniposeSettings;
 
 	private final Logger logger;
 
@@ -105,19 +105,19 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private boolean isCanceled;
 
-	private final List< CellposeTask > processes = new ArrayList<>();
+	private final List< OmniposeTask > processes = new ArrayList<>();
 
 	private int numThreads;
 
-	public CellposeDetector(
+	public OmniposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final CellposeSettings cellposeSettings,
+			final OmniposeSettings omniposeSettings,
 			final Logger logger )
 	{
 		this.img = img;
 		this.interval = interval;
-		this.cellposeSettings = cellposeSettings;
+		this.omniposeSettings = omniposeSettings;
 		this.logger = ( logger == null ) ? Logger.VOID_LOGGER : logger;
 		this.baseErrorMessage = BASE_ERROR_MESSAGE;
 	}
@@ -151,17 +151,17 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * windows, and there is no benefit for Windows. But there is a strong
 		 * speedup on Mac.
 		 * 
-		 * On a PC with Windows, forcing Cellpose to run with the CPU: There is
+		 * On a PC with Windows, forcing Omnipose to run with the CPU: There is
 		 * no benefit from splitting the load between 1,2, 10 or 20 processes.
-		 * It seems like 1 Cellpose process can already use ALL the cores by
-		 * itself and running several Cellpose processes concurrently does not
+		 * It seems like 1 Omnipose process can already use ALL the cores by
+		 * itself and running several Omnipose processes concurrently does not
 		 * lead to shorter processing time.
 		 * 
 		 * For a source image 1024x502 over 92 time-points, 3 channels: - 1
 		 * thread -> 24.4 min - 8 thread -> 4.1 min (there is not a x8 speedup
 		 * factor, which is to be expected)
 		 */
-		if ( !cellposeSettings.useGPU && IJ.isMacintosh() )
+		if ( !omniposeSettings.useGPU && IJ.isMacintosh() )
 			nConcurrentTasks = numThreads;
 		else
 			nConcurrentTasks = 1;
@@ -184,14 +184,14 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		processes.clear();
 		for ( final List< ImagePlus > list : timepoints )
-			processes.add( new CellposeTask( list ) );
+			processes.add( new OmniposeTask( list ) );
 
 		/*
 		 * Pass tasks to executors.
 		 */
 
 		// Redirect log to logger.
-		final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
+		final Tailer tailer = Tailer.create( OMNIPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
 
 		final ExecutorService executors = Executors.newFixedThreadPool( nConcurrentTasks );
 		final List< String > resultDirs = new ArrayList<>( nConcurrentTasks );
@@ -204,7 +204,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		}
 		catch ( final InterruptedException | ExecutionException e )
 		{
-			errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage() + '\n';
+			errorMessage = BASE_ERROR_MESSAGE + "Problem running Omnipose:\n" + e.getMessage() + '\n';
 			e.printStackTrace();
 			return false;
 		}
@@ -219,7 +219,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Did we have a problem with independent tasks?
 		 */
 
-		for ( final CellposeTask task : processes )
+		for ( final OmniposeTask task : processes )
 		{
 			if ( !task.isOk() )
 				return false;
@@ -229,7 +229,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Get the result masks back.
 		 */
 
-		logger.log( "Reading Cellpose masks.\n" );
+		logger.log( "Reading Omnipose masks.\n" );
 		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
 		for ( int t = 0; t < imps.size(); t++ )
 		{
@@ -276,7 +276,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final Concatenator concatenator = new Concatenator();
 		final ImagePlus output = concatenator.concatenateHyperstacks(
 				masks.toArray( new ImagePlus[] {} ),
-				img.getName() + "_CellposeOutput", false );
+				img.getName() + "_OmniposeOutput", false );
 
 		// Copy calibration.
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
@@ -295,7 +295,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final LabelImageDetectorFactory< ? > labeImageDetectorFactory = new LabelImageDetectorFactory<>();
 		final Map< String, Object > detectorSettings = labeImageDetectorFactory.getDefaultSettings();
 		detectorSettings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
-		detectorSettings.put( KEY_SIMPLIFY_CONTOURS, cellposeSettings.simplifyContours );
+		detectorSettings.put( KEY_SIMPLIFY_CONTOURS, omniposeSettings.simplifyContours );
 		labelImgSettings.detectorFactory = labeImageDetectorFactory;
 		labelImgSettings.detectorSettings = detectorSettings;
 
@@ -509,7 +509,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	{
 		isCanceled = true;
 		cancelReason = reason;
-		for ( final CellposeTask task : processes )
+		for ( final OmniposeTask task : processes )
 			task.cancel();
 	}
 
@@ -541,7 +541,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	// --- private classes ---
 
-	private final class CellposeTask implements Callable< String >
+	private final class OmniposeTask implements Callable< String >
 	{
 
 		private Process process;
@@ -550,7 +550,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		private final List< ImagePlus > imps;
 
-		public CellposeTask( final List< ImagePlus > imps )
+		public OmniposeTask( final List< ImagePlus > imps )
 		{
 			this.imps = imps;
 			this.ok = new AtomicBoolean( true );
@@ -577,7 +577,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			Path tmpDir = null;
 			try
 			{
-				tmpDir = Files.createTempDirectory( "TrackMate-Cellpose_" );
+				tmpDir = Files.createTempDirectory( "TrackMate-Omnipose_" );
 				recursiveDeleteOnShutdownHook( tmpDir );
 			}
 			catch ( final IOException e1 )
@@ -601,14 +601,14 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 
 			/*
-			 * Run Cellpose.
+			 * Run Omnipose.
 			 */
 
 			try
 			{
-				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
-				logger.setStatus( "Running Cellpose" );
-				logger.log( "Running Cellpose with args:\n" );
+				final List< String > cmd = omniposeSettings.toCmdLine( tmpDir.toString() );
+				logger.setStatus( "Running Omnipose" );
+				logger.log( "Running Omnipose with args:\n" );
 				logger.log( String.join( " ", cmd ) );
 				logger.log( "\n" );
 				final ProcessBuilder pb = new ProcessBuilder( cmd );
@@ -623,13 +623,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				final String msg = e.getMessage();
 				if ( msg.matches( ".+error=13.+" ) )
 				{
-					errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n"
-							+ "The executable does not have the file permission to run.\n"
-							+ "Please see https://github.com/MouseLand/cellpose#run-cellpose-without-local-python-installation for more information.\n";
+					errorMessage = BASE_ERROR_MESSAGE + "Problem running Omnipose:\n"
+							+ "The executable does not have the file permission to run.\n";
 				}
 				else
 				{
-					errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+					errorMessage = BASE_ERROR_MESSAGE + "Problem running Omnipose:\n" + e.getMessage();
 				}
 				e.printStackTrace();
 				ok.set( false );
@@ -637,7 +636,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 			catch ( final Exception e )
 			{
-				errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+				errorMessage = BASE_ERROR_MESSAGE + "Problem running Omnipose:\n" + e.getMessage();
 				e.printStackTrace();
 				ok.set( false );
 				return null;
