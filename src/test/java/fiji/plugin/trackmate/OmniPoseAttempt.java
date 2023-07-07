@@ -29,7 +29,7 @@ import ij.ImageJ;
 /**
  * Inspired by the BIOP approach.
  */
-public class CellPoseAttempt
+public class OmniPoseAttempt
 {
 
 	public static void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
