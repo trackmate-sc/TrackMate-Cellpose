@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -14,12 +16,11 @@
 	<version>0.1.3-SNAPSHOT</version>
 
 	<name>TrackMate-Omnipose</name>
-	<description>TrackMate detector based on Cellpose.</description>
-	<url>https://github.com/trackmate-sc/TrackMate-Cellpose</url>
-	<inceptionYear>2021</inceptionYear>
+	<description>TrackMate detector based on Omnipose.</description>
+	<url>https://github.com/marieanselmet/TrackMate-Omnipose_/tree/main</url>
+	<inceptionYear>2023</inceptionYear>
 	<organization>
-		<name>TrackMate</name>
-		<url>https://github.com/trackmate-sc</url>
+		<name>Institut Pasteur</name>
 	</organization>
 	<licenses>
 		<license>
@@ -29,7 +30,7 @@
 		</license>
 	</licenses>
 
-	<developers>
+        <developers>
 		<developer>
 			<id>tinevez</id>
 			<name>Jean-Yves Tinevez</name>
@@ -51,6 +52,11 @@
 			<url>https://imagej.net/people/ctrueden</url>
 			<properties><id>ctrueden</id></properties>
 		</contributor>
+                <contributor>
+			<name>Marie Anselmet</name>
+			<url>https://research.pasteur.fr/fr/member/marie-anselmet/</url>
+			<properties><id>manselmet</id></properties>
+		</contributor>
 	</contributors>
 
 	<mailingLists>
@@ -59,7 +65,7 @@
 			<archive>https://forum.image.sc/tag/trackmate</archive>
 		</mailingList>
 	</mailingLists>
-
+        
 	<scm>
 		<connection>scm:git:https://github.com/trackmate-sc/TrackMate-Cellpose</connection>
 		<developerConnection>scm:git:git@github.com:trackmate-sc/TrackMate-Cellpose</developerConnection>
