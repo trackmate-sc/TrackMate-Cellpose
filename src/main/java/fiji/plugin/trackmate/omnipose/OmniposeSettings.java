@@ -221,9 +221,8 @@ public class OmniposeSettings
 
 	public enum PretrainedModel
 	{
-		CYTO( "Cytoplasm", "cyto" ),
-		NUCLEI( "Nucleus", "nuclei" ),
-		CYTO2( "Cytoplasm 2.0", "cyto2" ),
+		BACT_PHASE( "Bacterial phase contrast", "bact_phase_omni" ),
+                CYTO2( "Cytoplasm 2.0", "cyto2" ),
 		CUSTOM( "Custom", "" );
 
 		private final String name;

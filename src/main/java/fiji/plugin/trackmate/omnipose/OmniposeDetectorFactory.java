@@ -73,7 +73,7 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	 */
 	public static final String KEY_OMNIPOSE_MODEL = "OMNIPOSE_MODEL";
 
-	public static final PretrainedModel DEFAULT_OMNIPOSE_MODEL = PretrainedModel.CYTO;
+	public static final PretrainedModel DEFAULT_OMNIPOSE_MODEL = PretrainedModel.BACT_PHASE;
 
 	/**
 	 * The key to the parameter that stores the path to the Python instance that
