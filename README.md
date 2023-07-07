@@ -2,7 +2,7 @@
 
 # TrackMate-Omnipose
 Tentative Omnipose integration in TrackMate starting from the already existing [Cellpose integration in TrackMate](https://github.com/trackmate-sc/TrackMate-Cellpose).
-It works with only little code changes and should also work under TrackMate-Cellpose by just replacing env and model paths.
+It works with only little code changes.
 
 ## Example
 [Time-lapse captured by Rodrigo Arias Cartin, Frédéric Barras lab, Institut Pasteur](https://github.com/marieanselmet/TrackMate-Omnipose_/assets/32811540/01abec13-a270-4f09-8a55-36acb7576f3f)
