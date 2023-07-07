@@ -19,16 +19,16 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.omnipose;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CellposeSettings
+public class OmniposeSettings
 {
 
-	public final String cellposePythonPath;
+	public final String omniposePythonPath;
 	
 	public final int chan;
 
@@ -45,8 +45,8 @@ public class CellposeSettings
 	public final boolean simplifyContours;
 
 
-	public CellposeSettings(
-			final String cellposePythonPath,
+	public OmniposeSettings(
+			final String omniposePythonPath,
 			final PretrainedModel model,
 			final String customModelPath,
 			final int chan,
@@ -55,7 +55,7 @@ public class CellposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours )
 	{
-		this.cellposePythonPath = cellposePythonPath;
+		this.omniposePythonPath = omniposePythonPath;
 		this.model = model;
 		this.customModelPath = customModelPath;
 		this.chan = chan;
@@ -74,19 +74,19 @@ public class CellposeSettings
 		 * the Cellpose executable. We check the last part of the path to check
 		 * whether this is python or cellpose.
 		 */
-		final String[] split = cellposePythonPath.replace( "\\", "/" ).split( "/" );
+		final String[] split = omniposePythonPath.replace( "\\", "/" ).split( "/" );
 		final String lastItem = split[ split.length - 1 ];
 		if ( lastItem.toLowerCase().startsWith( "python" ) )
 		{
 			// Calling Cellpose from python.
-			cmd.add( cellposePythonPath );
+			cmd.add( omniposePythonPath );
 			cmd.add( "-m" );
-			cmd.add( "cellpose" );
+			cmd.add( "omnipose" );
 		}
 		else
 		{
 			// Calling Cellpose executable.
-			cmd.add( cellposePythonPath );
+			cmd.add( omniposePythonPath );
 		}
 
 		/*
@@ -140,7 +140,7 @@ public class CellposeSettings
 	public static final class Builder
 	{
 
-		private String cellposePythonPath = "/opt/anaconda3/envs/cellpose/bin/python";
+		private String omniposePythonPath = "/opt/anaconda3/envs/omnipose/bin/python";
 
 		private int chan = 0;
 
@@ -168,9 +168,9 @@ public class CellposeSettings
 			return this;
 		}
 
-		public Builder cellposePythonPath( final String cellposePythonPath )
+		public Builder omniposePythonPath( final String omniposePythonPath )
 		{
-			this.cellposePythonPath = cellposePythonPath;
+			this.omniposePythonPath = omniposePythonPath;
 			return this;
 		}
 
@@ -204,10 +204,10 @@ public class CellposeSettings
 			return this;
 		}
 
-		public CellposeSettings get()
+		public OmniposeSettings get()
 		{
-			return new CellposeSettings(
-					cellposePythonPath,
+			return new OmniposeSettings(
+					omniposePythonPath,
 					model,
 					customModelPath,
 					chan,
@@ -242,12 +242,12 @@ public class CellposeSettings
 			return name;
 		}
 
-		public String cellposeName()
+		public String omniposeName()
 		{
 			return path;
 		}
 	}
 
-	public static final CellposeSettings DEFAULT = new Builder().get();
+	public static final OmniposeSettings DEFAULT = new Builder().get();
 
 }
