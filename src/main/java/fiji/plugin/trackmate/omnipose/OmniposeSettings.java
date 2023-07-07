@@ -146,7 +146,7 @@ public class OmniposeSettings
 
 		private int chan2 = -1;
 
-		private PretrainedModel model = PretrainedModel.CYTO;
+		private PretrainedModel model = PretrainedModel.CUSTOM;
 
 		private double diameter = 30.;
 		
