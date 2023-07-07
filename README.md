@@ -3,3 +3,16 @@
 # TrackMate-Omnipose
 
 Tentative Omnipose integration in TrackMate starting from the already existing [Cellpose integration in TrackMate](https://github.com/trackmate-sc/TrackMate-Cellpose).
+
+
+## Version
+This code works with the Omnipose version 0.3.6. It doesn't work with the last version of Omnipose (same issue as for the [Omnipose wrapper of the BIOP](https://github.com/BIOP/ijl-utilities-wrappers)).
+
+## I set my installation as follows
+```
+conda create -n omnipose
+conda activate omnipose
+conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+pip install omnipose==0.3.6
+pip install cellpose-omni==0.7.3
+```
