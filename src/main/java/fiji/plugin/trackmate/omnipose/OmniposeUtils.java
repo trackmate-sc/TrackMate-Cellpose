@@ -62,7 +62,7 @@ public class OmniposeUtils
 
 	public static final ImageIcon logo()
 	{
-		return new ImageIcon( getResource( "images/cellposelogo.png" ) );
+		return new ImageIcon( getResource( "images/omniposelogo.png" ) );
 	}
 
 	public static final ImageIcon logo64()
