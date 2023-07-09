@@ -5,11 +5,7 @@ Tentative Omnipose integration in TrackMate starting from the already existing [
 It works with only little code changes.
 
 ## Example
-[Time-lapse captured by Rodrigo Arias Cartin, Frédéric Barras lab, Institut Pasteur](
-
 https://github.com/marieanselmet/TrackMate-Omnipose/assets/32811540/3c2365c9-8d1b-4057-b4d1-2939e4e2b818
-
-)
 
 *Time-lapse captured by Rodrigo Arias Cartin, Frédéric Barras lab, Institut Pasteur*
 
