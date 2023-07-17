@@ -60,14 +60,24 @@ public class CellposeUtils
 		return CellposeDetectorFactory.class.getClassLoader().getResource( name );
 	}
 
-	public static final ImageIcon logo()
+	public static final ImageIcon cellposeLogo()
 	{
 		return new ImageIcon( getResource( "images/cellposelogo.png" ) );
 	}
 
-	public static final ImageIcon logo64()
+	public static final ImageIcon cellposeLogo64()
 	{
-		return scaleImage( logo(), 64, 64 );
+		return scaleImage( cellposeLogo(), 64, 64 );
+	}
+
+	public static final ImageIcon omniposeLogo()
+	{
+		return new ImageIcon( getResource( "images/omniposelogo.png" ) );
+	}
+
+	public static final ImageIcon omniposeLogo64()
+	{
+		return scaleImage( omniposeLogo(), 64, 64 );
 	}
 
 	public static final ImageIcon scaleImage( final ImageIcon icon, final int w, final int h )

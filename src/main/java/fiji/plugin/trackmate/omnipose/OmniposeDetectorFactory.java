@@ -38,29 +38,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
-
 import org.jdom2.Element;
+import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.omnipose.OmniposeSettings.PretrainedModel;
+import fiji.plugin.trackmate.cellpose.CellposeDetector;
+import fiji.plugin.trackmate.cellpose.CellposeDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
-import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.io.IOUtils;
+import fiji.plugin.trackmate.omnipose.OmniposeSettings.PretrainedModelOmnipose;
 import fiji.plugin.trackmate.util.TMUtils;
-import net.imagej.ImgPlus;
 import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-@Plugin( type = SpotDetectorFactory.class )
-public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetectorFactory< T >
+@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
+public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > > extends CellposeDetectorFactory< T >
 {
 
 	/*
@@ -69,11 +68,11 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/**
 	 * The key to the parameter that stores the path the omnipose model to use.
-	 * Value can be {@link OmniposeSettings.PretrainedModel}.
+	 * Value can be {@link OmniposeSettings.PretrainedModelOmnipose}.
 	 */
 	public static final String KEY_OMNIPOSE_MODEL = "OMNIPOSE_MODEL";
 
-	public static final PretrainedModel DEFAULT_OMNIPOSE_MODEL = PretrainedModel.BACT_PHASE;
+	public static final PretrainedModelOmnipose DEFAULT_OMNIPOSE_MODEL = PretrainedModelOmnipose.BACT_PHASE;
 
 	/**
 	 * The key to the parameter that stores the path to the Python instance that
@@ -93,42 +92,6 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public static final String KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH = "OMNIPOSE_MODEL_FILEPATH";
 
 	public static final String DEFAULT_OMNIPOSE_CUSTOM_MODEL_FILEPATH = "";
-
-	/**
-	 * The key to the parameter that stores the second optional channel to
-	 * segment. Use -1 to ignore.
-	 */
-	public static final String KEY_OPTIONAL_CHANNEL_2 = "OPTIONAL_CHANNEL_2";
-
-	public static final Integer DEFAULT_OPTIONAL_CHANNEL_2 = Integer.valueOf( 0 );
-
-	/**
-	 * The key to the parameter that store the estimated cell diameter. Contrary
-	 * to Omnipose, this must be specified in physical units (e.g. µm) and
-	 * TrackMate wil do the conversion. Use 0 or a negative value to have
-	 * Omnipose determine this automatically (but it will take a bit longer).
-	 */
-	public static final String KEY_CELL_DIAMETER = "CELL_DIAMETER";
-
-	public static final Double DEFAULT_CELL_DIAMETER = Double.valueOf( 30. );
-
-	/**
-	 * They key to the parameter that configures whether Omnipose will try to
-	 * use GPU acceleration. For this to work, a working Omnipose with working
-	 * GPU support must be present on the system. If not, Omnipose will default
-	 * to using the CPU.
-	 */
-	public static final String KEY_USE_GPU = "USE_GPU";
-
-	public static final Boolean DEFAULT_USE_GPU = Boolean.valueOf( true );
-
-	/**
-	 * The key to the parameter that stores the logger instance, to which
-	 * Omnipose messages wil be sent. Values must be implementing
-	 * {@link Logger}. This parameter won't be serialized.
-	 * 
-	 */
-	public static final String KEY_LOGGER = "LOGGER";
 
 	/** A string key identifying this factory. */
 	public static final String DETECTOR_KEY = "OMNIPOSE_DETECTOR";
@@ -153,24 +116,11 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "If you installed the standalone version, the path to it would something like "
 			+ "this on Windows: 'C:\\Users\\tinevez\\Applications\\omnipose.exe'. "
 			+ "<p>"
-//			+ "If you use this detector for your work, please be so kind as to "
-//			+ "also cite the Cellpose paper: <a href=\"https://doi.org/10.1038/s41592-020-01018-x\">Stringer, C., Wang, T., Michaelos, M. et al. "
-//			+ "Cellpose: a generalist algorithm for cellular segmentation. "
-//			+ "Nat Methods 18, 100–106 (2021)</a>"
-//			+ "<p>"
-//			+ "Documentation for this module "
-//			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-cellpose\">on the ImageJ Wiki</a>."
+			+ "If you use this detector for your work, please be so kind as to "
+			+ "also cite the omnipose paper: <a href=\"https://doi.org/10.1038/s41592-022-01639-4\">Cutler, Kevin J., et al., "
+			+ "'Omnipose: A High-Precision Morphology-Independent Solution for Bacterial Cell Segmentation.' "
+			+ "Nature Methods 19, no. 11 (November 2022): 1438–48."
 			+ "</html>";
-	/*
-	 * FIELDS
-	 */
-
-	/** The image to operate on. Multiple frames, single channel. */
-	protected ImgPlus< T > img;
-
-	protected Map< String, Object > settings;
-
-	protected String errorMessage;
 
 	/*
 	 * METHODS
@@ -180,7 +130,7 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public SpotGlobalDetector< T > getDetector( final Interval interval )
 	{
 		final String omniposePythonPath = ( String ) settings.get( KEY_OMNIPOSE_PYTHON_FILEPATH );
-		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_OMNIPOSE_MODEL );
+		final PretrainedModelOmnipose model = ( PretrainedModelOmnipose ) settings.get( KEY_OMNIPOSE_MODEL );
 		final String customModelPath = ( String ) settings.get( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH );
 		final boolean simplifyContours = ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
 		final boolean useGPU = ( boolean ) settings.get( KEY_USE_GPU );
@@ -206,36 +156,12 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 		// Logger.
 		final Logger logger = ( Logger ) settings.get( KEY_LOGGER );
-		final OmniposeDetector< T > detector = new OmniposeDetector<>(
+		final CellposeDetector< T > detector = new CellposeDetector<>(
 				img,
 				interval,
 				omniposeSettings,
 				logger );
 		return detector;
-	}
-
-	@Override
-	public boolean forbidMultithreading()
-	{
-		/*
-		 * We want to run one frame after another, because the inference for one
-		 * frame takes all the resources anyway.
-		 */
-		return true;
-	}
-
-	@Override
-	public boolean setTarget( final ImgPlus< T > img, final Map< String, Object > settings )
-	{
-		this.img = img;
-		this.settings = settings;
-		return checkSettings( settings );
-	}
-
-	@Override
-	public String getErrorMessage()
-	{
-		return errorMessage;
 	}
 
 	@Override
@@ -251,7 +177,7 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok && writeAttribute( settings, element, KEY_USE_GPU, Boolean.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 
-		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_OMNIPOSE_MODEL );
+		final PretrainedModelOmnipose model = ( PretrainedModelOmnipose ) settings.get( KEY_OMNIPOSE_MODEL );
 		element.setAttribute( KEY_OMNIPOSE_MODEL, model.name() );
 
 		if ( !ok )
@@ -281,7 +207,7 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			errorHolder.append( "Attribute " + KEY_OMNIPOSE_MODEL + " could not be found in XML element.\n" );
 			ok = false;
 		}
-		settings.put( KEY_OMNIPOSE_MODEL, PretrainedModel.valueOf( str ) );
+		settings.put( KEY_OMNIPOSE_MODEL, PretrainedModelOmnipose.valueOf( str ) );
 
 		return checkSettings( settings );
 	}
@@ -315,7 +241,7 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final StringBuilder errorHolder = new StringBuilder();
 		ok = ok & checkParameter( settings, KEY_OMNIPOSE_PYTHON_FILEPATH, String.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_OMNIPOSE_MODEL, PretrainedModel.class, errorHolder );
+		ok = ok & checkParameter( settings, KEY_OMNIPOSE_MODEL, PretrainedModelOmnipose.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_TARGET_CHANNEL, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_OPTIONAL_CHANNEL_2, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_DIAMETER, Double.class, errorHolder );
@@ -373,12 +299,6 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	}
 
 	@Override
-	public ImageIcon getIcon()
-	{
-		return null;
-	}
-
-	@Override
 	public String getKey()
 	{
 		return DETECTOR_KEY;
@@ -388,12 +308,6 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public String getName()
 	{
 		return NAME;
-	}
-
-	@Override
-	public boolean has2Dsegmentation()
-	{
-		return true;
 	}
 
 	@Override

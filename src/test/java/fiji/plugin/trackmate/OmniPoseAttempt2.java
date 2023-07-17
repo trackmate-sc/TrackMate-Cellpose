@@ -23,9 +23,9 @@ package fiji.plugin.trackmate;
 
 import java.io.IOException;
 
-import fiji.plugin.trackmate.omnipose.OmniposeDetector;
-import fiji.plugin.trackmate.omnipose.OmniposeSettings;
+import fiji.plugin.trackmate.cellpose.CellposeDetector;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettingsIO;
+import fiji.plugin.trackmate.omnipose.OmniposeSettings;
 import fiji.plugin.trackmate.util.TMUtils;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.IJ;
@@ -51,7 +51,7 @@ public class OmniPoseAttempt2
 		final OmniposeSettings cp = OmniposeSettings.DEFAULT;
 		
 		final ImgPlus img = TMUtils.rawWraps( imp );
-		final OmniposeDetector detector = new OmniposeDetector( img, img, cp, Logger.DEFAULT_LOGGER );
+		final CellposeDetector detector = new CellposeDetector( img, img, cp, Logger.DEFAULT_LOGGER );
 		if ( !detector.checkInput() )
 		{
 			System.err.println( detector.getErrorMessage() );

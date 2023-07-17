@@ -21,33 +21,14 @@
  */
 package fiji.plugin.trackmate.omnipose;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
 
-public class OmniposeSettings
+public class OmniposeSettings extends AbstractCellposeSettings
 {
-
-	public final String omniposePythonPath;
-	
-	public final int chan;
-
-	public final int chan2;
-
-	public final PretrainedModel model;
-
-	public final String customModelPath;
-
-	public final double diameter;
-
-	public final boolean useGPU;
-
-	public final boolean simplifyContours;
-
 
 	public OmniposeSettings(
 			final String omniposePythonPath,
-			final PretrainedModel model,
+			final PretrainedModelOmnipose model,
 			final String customModelPath,
 			final int chan,
 			final int chan2,
@@ -55,81 +36,13 @@ public class OmniposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours )
 	{
-		this.omniposePythonPath = omniposePythonPath;
-		this.model = model;
-		this.customModelPath = customModelPath;
-		this.chan = chan;
-		this.chan2 = chan2;
-		this.diameter = diameter;
-		this.useGPU = useGPU;
-		this.simplifyContours = simplifyContours;
+		super( omniposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 	}
 
-	public List< String > toCmdLine( final String imagesDir )
+	@Override
+	public String getExecutableName()
 	{
-		final List< String > cmd = new ArrayList<>();
-
-		/*
-		 * First decide whether we are calling Omnipose from python, or directly
-		 * the Omnipose executable. We check the last part of the path to check
-		 * whether this is python or omnipose.
-		 */
-		final String[] split = omniposePythonPath.replace( "\\", "/" ).split( "/" );
-		final String lastItem = split[ split.length - 1 ];
-		if ( lastItem.toLowerCase().startsWith( "python" ) )
-		{
-			// Calling Omnipose from python.
-			cmd.add( omniposePythonPath );
-			cmd.add( "-m" );
-			cmd.add( "omnipose" );
-		}
-		else
-		{
-			// Calling Omnipose executable.
-			cmd.add( omniposePythonPath );
-		}
-
-		/*
-		 * Omnipose command line arguments.
-		 */
-
-		// Target dir.
-		cmd.add( "--dir" );
-		cmd.add( imagesDir );
-
-		// First channel.
-		cmd.add( "--chan" );
-		cmd.add( "" + chan );
-
-		// Second channel.
-		if ( chan2 >= 0 )
-		{
-			cmd.add( "--chan2" );
-			cmd.add( "" + chan2 );
-		}
-
-		// GPU.
-		if ( useGPU )
-			cmd.add( "--use_gpu" );
-
-		// Diameter.
-		cmd.add( "--diameter" );
-		cmd.add( ( diameter > 0 ) ? "" + diameter : "0" );
-
-		// Model.
-		cmd.add( "--pretrained_model" );
-		if ( model == PretrainedModel.CUSTOM )
-			cmd.add( customModelPath );
-		else
-			cmd.add( model.path );
-
-		// Export results as PNG.
-		cmd.add( "--save_png" );
-
-		// Do not save Numpy files.
-		cmd.add( "--no_npy" );
-
-		return Collections.unmodifiableList( cmd );
+		return "omnipose";
 	}
 
 	public static Builder create()
@@ -146,7 +59,7 @@ public class OmniposeSettings
 
 		private int chan2 = -1;
 
-		private PretrainedModel model = PretrainedModel.CUSTOM;
+		private PretrainedModelOmnipose model = PretrainedModelOmnipose.BACT_PHASE;
 
 		private double diameter = 30.;
 		
@@ -174,7 +87,7 @@ public class OmniposeSettings
 			return this;
 		}
 
-		public Builder model( final PretrainedModel model )
+		public Builder model( final PretrainedModelOmnipose model )
 		{
 			this.model = model;
 			return this;
@@ -219,19 +132,22 @@ public class OmniposeSettings
 
 	}
 
-	public enum PretrainedModel
+	public enum PretrainedModelOmnipose implements PretrainedModel
 	{
-		BACT_PHASE( "Bacterial phase contrast", "bact_phase_omni" ),
-		CUSTOM( "Custom", "" );
+		BACT_PHASE( "Bacterial phase contrast", "bact_phase_omni", false ),
+		CUSTOM( "Custom", "", true );
 
 		private final String name;
 
 		private final String path;
 
-		PretrainedModel( final String name, final String path )
+		private final boolean isCustom;
+
+		PretrainedModelOmnipose( final String name, final String path, final boolean isCustom )
 		{
 			this.name = name;
 			this.path = path;
+			this.isCustom = isCustom;
 		}
 
 		@Override
@@ -240,12 +156,19 @@ public class OmniposeSettings
 			return name;
 		}
 
-		public String omniposeName()
+		@Override
+		public boolean isCustom()
+		{
+			return isCustom;
+		}
+
+		@Override
+		public String getPath()
 		{
 			return path;
 		}
+
 	}
 
 	public static final OmniposeSettings DEFAULT = new Builder().get();
-
 }

@@ -23,6 +23,7 @@ package fiji.plugin.trackmate;
 
 import java.io.IOException;
 
+import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
 import fiji.plugin.trackmate.cellpose.CellposeDetector;
 import fiji.plugin.trackmate.cellpose.CellposeSettings;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettingsIO;
@@ -48,7 +49,7 @@ public class CellPoseAttempt2
 		imp.show();
 		
 		// Cellpose command line options.
-		final CellposeSettings cp = CellposeSettings.DEFAULT;
+		final AbstractCellposeSettings cp = CellposeSettings.DEFAULT;
 		
 		final ImgPlus img = TMUtils.rawWraps( imp );
 		final CellposeDetector detector = new CellposeDetector( img, img, cp, Logger.DEFAULT_LOGGER );

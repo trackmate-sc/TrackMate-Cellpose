@@ -41,12 +41,13 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 
 import org.jdom2.Element;
+import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModel;
+import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
@@ -59,7 +60,7 @@ import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-@Plugin( type = SpotDetectorFactory.class )
+@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
 public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetectorFactory< T >
 {
 
@@ -69,11 +70,11 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/**
 	 * The key to the parameter that stores the path the cellpose model to use.
-	 * Value can be {@link CellposeSettings.PretrainedModel}.
+	 * Value can be {@link CellposeSettings.PretrainedModelCellpose}.
 	 */
 	public static final String KEY_CELLPOSE_MODEL = "CELLPOSE_MODEL";
 
-	public static final PretrainedModel DEFAULT_CELLPOSE_MODEL = PretrainedModel.CYTO;
+	public static final PretrainedModelCellpose DEFAULT_CELLPOSE_MODEL = PretrainedModelCellpose.CYTO;
 
 	/**
 	 * The key to the parameter that stores the path to the Python instance that
@@ -181,7 +182,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public SpotGlobalDetector< T > getDetector( final Interval interval )
 	{
 		final String cellposePythonPath = ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH );
-		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_CELLPOSE_MODEL );
+		final PretrainedModelCellpose model = ( PretrainedModelCellpose ) settings.get( KEY_CELLPOSE_MODEL );
 		final String customModelPath = ( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH );
 		final boolean simplifyContours = ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
 		final boolean useGPU = ( boolean ) settings.get( KEY_USE_GPU );
@@ -252,7 +253,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok && writeAttribute( settings, element, KEY_USE_GPU, Boolean.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 
-		final PretrainedModel model = ( PretrainedModel ) settings.get( KEY_CELLPOSE_MODEL );
+		final PretrainedModelCellpose model = ( PretrainedModelCellpose ) settings.get( KEY_CELLPOSE_MODEL );
 		element.setAttribute( KEY_CELLPOSE_MODEL, model.name() );
 
 		if ( !ok )
@@ -282,7 +283,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			errorHolder.append( "Attribute " + KEY_CELLPOSE_MODEL + " could not be found in XML element.\n" );
 			ok = false;
 		}
-		settings.put( KEY_CELLPOSE_MODEL, PretrainedModel.valueOf( str ) );
+		settings.put( KEY_CELLPOSE_MODEL, PretrainedModelCellpose.valueOf( str ) );
 
 		return checkSettings( settings );
 	}
@@ -316,7 +317,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final StringBuilder errorHolder = new StringBuilder();
 		ok = ok & checkParameter( settings, KEY_CELLPOSE_PYTHON_FILEPATH, String.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_CELLPOSE_MODEL, PretrainedModel.class, errorHolder );
+		ok = ok & checkParameter( settings, KEY_CELLPOSE_MODEL, PretrainedModelCellpose.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_TARGET_CHANNEL, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_OPTIONAL_CHANNEL_2, Integer.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_DIAMETER, Double.class, errorHolder );

@@ -21,33 +21,12 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-public class CellposeSettings
+public class CellposeSettings extends AbstractCellposeSettings
 {
-
-	public final String cellposePythonPath;
-	
-	public final int chan;
-
-	public final int chan2;
-
-	public final PretrainedModel model;
-
-	public final String customModelPath;
-
-	public final double diameter;
-
-	public final boolean useGPU;
-
-	public final boolean simplifyContours;
-
 
 	public CellposeSettings(
 			final String cellposePythonPath,
-			final PretrainedModel model,
+			final PretrainedModelCellpose model,
 			final String customModelPath,
 			final int chan,
 			final int chan2,
@@ -55,81 +34,13 @@ public class CellposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours )
 	{
-		this.cellposePythonPath = cellposePythonPath;
-		this.model = model;
-		this.customModelPath = customModelPath;
-		this.chan = chan;
-		this.chan2 = chan2;
-		this.diameter = diameter;
-		this.useGPU = useGPU;
-		this.simplifyContours = simplifyContours;
+		super( cellposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 	}
 
-	public List< String > toCmdLine( final String imagesDir )
+	@Override
+	public String getExecutableName()
 	{
-		final List< String > cmd = new ArrayList<>();
-
-		/*
-		 * First decide whether we are calling Cellpose from python, or directly
-		 * the Cellpose executable. We check the last part of the path to check
-		 * whether this is python or cellpose.
-		 */
-		final String[] split = cellposePythonPath.replace( "\\", "/" ).split( "/" );
-		final String lastItem = split[ split.length - 1 ];
-		if ( lastItem.toLowerCase().startsWith( "python" ) )
-		{
-			// Calling Cellpose from python.
-			cmd.add( cellposePythonPath );
-			cmd.add( "-m" );
-			cmd.add( "cellpose" );
-		}
-		else
-		{
-			// Calling Cellpose executable.
-			cmd.add( cellposePythonPath );
-		}
-
-		/*
-		 * Cellpose command line arguments.
-		 */
-
-		// Target dir.
-		cmd.add( "--dir" );
-		cmd.add( imagesDir );
-
-		// First channel.
-		cmd.add( "--chan" );
-		cmd.add( "" + chan );
-
-		// Second channel.
-		if ( chan2 >= 0 )
-		{
-			cmd.add( "--chan2" );
-			cmd.add( "" + chan2 );
-		}
-
-		// GPU.
-		if ( useGPU )
-			cmd.add( "--use_gpu" );
-
-		// Diameter.
-		cmd.add( "--diameter" );
-		cmd.add( ( diameter > 0 ) ? "" + diameter : "0" );
-
-		// Model.
-		cmd.add( "--pretrained_model" );
-		if ( model == PretrainedModel.CUSTOM )
-			cmd.add( customModelPath );
-		else
-			cmd.add( model.path );
-
-		// Export results as PNG.
-		cmd.add( "--save_png" );
-
-		// Do not save Numpy files.
-		cmd.add( "--no_npy" );
-
-		return Collections.unmodifiableList( cmd );
+		return "cellpose";
 	}
 
 	public static Builder create()
@@ -146,7 +57,7 @@ public class CellposeSettings
 
 		private int chan2 = -1;
 
-		private PretrainedModel model = PretrainedModel.CYTO;
+		private PretrainedModelCellpose model = PretrainedModelCellpose.CYTO;
 
 		private double diameter = 30.;
 		
@@ -174,7 +85,7 @@ public class CellposeSettings
 			return this;
 		}
 
-		public Builder model( final PretrainedModel model )
+		public Builder model( final PretrainedModelCellpose model )
 		{
 			this.model = model;
 			return this;
@@ -219,21 +130,24 @@ public class CellposeSettings
 
 	}
 
-	public enum PretrainedModel
+	public enum PretrainedModelCellpose implements PretrainedModel
 	{
-		CYTO( "Cytoplasm", "cyto" ),
-		NUCLEI( "Nucleus", "nuclei" ),
-		CYTO2( "Cytoplasm 2.0", "cyto2" ),
-		CUSTOM( "Custom", "" );
+		CYTO( "Cytoplasm", "cyto", false ),
+		NUCLEI( "Nucleus", "nuclei", false ),
+		CYTO2( "Cytoplasm 2.0", "cyto2", false ),
+		CUSTOM( "Custom", "", true );
 
 		private final String name;
 
-		private final String path;
+		final String path;
 
-		PretrainedModel( final String name, final String path )
+		private final boolean isCustom;
+
+		PretrainedModelCellpose( final String name, final String path, final boolean isCustom )
 		{
 			this.name = name;
 			this.path = path;
+			this.isCustom = isCustom;
 		}
 
 		@Override
@@ -242,12 +156,18 @@ public class CellposeSettings
 			return name;
 		}
 
-		public String cellposeName()
+		@Override
+		public boolean isCustom()
+		{
+			return isCustom;
+		}
+
+		@Override
+		public String getPath()
 		{
 			return path;
 		}
 	}
 
 	public static final CellposeSettings DEFAULT = new Builder().get();
-
 }

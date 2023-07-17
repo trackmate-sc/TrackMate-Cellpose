@@ -21,9 +21,6 @@
  */
 package fiji.plugin.trackmate;
 
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 import ij.ImageJ;
 
 /**
@@ -32,12 +29,9 @@ import ij.ImageJ;
 public class OmniPoseAttempt
 {
 
-	public static void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
+	public static void main( final String[] args )
 	{
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		ImageJ.main( args );
-
-//		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
-		new TrackMatePlugIn().run( "D:/Projects/JYTinevez/TrackMate-StarDist/CTCMetrics/Brightfield/01.tif" );
+		new TrackMatePlugIn().run( "samples/20230331_washed_XY1.ome-1_stabilized_cropped.tif" );
 	}
 }

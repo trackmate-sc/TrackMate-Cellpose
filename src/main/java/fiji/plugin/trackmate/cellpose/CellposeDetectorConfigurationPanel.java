@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -67,7 +68,9 @@ import javax.swing.SwingConstants;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModel;
+import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings.PretrainedModel;
+import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
+import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.DetectionPreview;
 import fiji.plugin.trackmate.util.FileChooser;
@@ -81,7 +84,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private static final String TITLE = CellposeDetectorFactory.NAME;
 
-	private static final ImageIcon ICON = CellposeUtils.logo64();
+	private static final ImageIcon ICON = CellposeUtils.cellposeLogo64();
 
 	private static final NumberFormat DIAMETER_FORMAT = new DecimalFormat( "#.#" );
 
@@ -89,28 +92,45 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private final JButton btnBrowseCellposePath;
 
-	private final JTextField tfCellposeExecutable;
+	protected final JTextField tfCellposeExecutable;
 
-	private final JComboBox< PretrainedModel > cmbboxPretrainedModel;
+	protected final JComboBox< PretrainedModel > cmbboxPretrainedModel;
 
-	private final JComboBox< String > cmbboxCh1;
+	protected final JComboBox< String > cmbboxCh1;
 
-	private final JComboBox< String > cmbboxCh2;
+	protected final JComboBox< String > cmbboxCh2;
 
-	private final JFormattedTextField ftfDiameter;
+	protected final JFormattedTextField ftfDiameter;
 
-	private final JCheckBox chckbxSimplify;
+	protected final JCheckBox chckbxSimplify;
 
-	private final Logger logger;
+	protected final Logger logger;
 
-	private final JCheckBox chckbxUseGPU;
+	protected final JCheckBox chckbxUseGPU;
 
-	private final JTextField tfCustomPath;
+	protected final JTextField tfCustomPath;
 
 	private final JButton btnBrowseCustomModel;
 
-	public CellposeDetectorConfigurationPanel( final Settings settings, final Model model )
+	private final String executableName;
+
+	public CellposeDetectorConfigurationPanel(
+			final Settings settings,
+			final Model model )
 	{
+		this( settings, model, TITLE, ICON, DOC1_URL, "cellpose", PretrainedModelCellpose.values() );
+	}
+
+	protected CellposeDetectorConfigurationPanel(
+			final Settings settings,
+			final Model model,
+			final String title,
+			final Icon icon,
+			final String docURL,
+			final String executableName,
+			final PretrainedModel[] pretrainedModels )
+	{
+		this.executableName = executableName;
 		this.logger = model.getLogger();
 
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -119,7 +139,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
 		setLayout( gridBagLayout );
 
-		final JLabel lblDetector = new JLabel( TITLE, ICON, JLabel.RIGHT );
+		final JLabel lblDetector = new JLabel( title, icon, JLabel.RIGHT );
 		lblDetector.setFont( BIG_FONT );
 		lblDetector.setHorizontalAlignment( SwingConstants.CENTER );
 		final GridBagConstraints gbcLblDetector = new GridBagConstraints();
@@ -143,7 +163,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 			{
 				try
 				{
-					Desktop.getDesktop().browse( new URI( DOC1_URL ) );
+					Desktop.getDesktop().browse( new URI( docURL ) );
 				}
 				catch ( URISyntaxException | IOException ex )
 				{
@@ -160,7 +180,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 			@Override
 			public void mouseEntered( final java.awt.event.MouseEvent e )
 			{
-				lblUrl.setText( "<html><a href=''>" + DOC1_URL + "</a></html>" );
+				lblUrl.setText( "<html><a href=''>" + docURL + "</a></html>" );
 			}
 		} );
 		final GridBagConstraints gbcLblUrl = new GridBagConstraints();
@@ -175,7 +195,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		 * Path to Python or Cellpose.
 		 */
 
-		final JLabel lblCusstomModelFile = new JLabel( "Path to cellpose / python executable:" );
+		final JLabel lblCusstomModelFile = new JLabel( "Path to " + executableName + " / python executable:" );
 		lblCusstomModelFile.setFont( FONT );
 		final GridBagConstraints gbcLblCusstomModelFile = new GridBagConstraints();
 		gbcLblCusstomModelFile.gridwidth = 2;
@@ -252,7 +272,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblPretrainedModel.gridy = 6;
 		add( lblPretrainedModel, gbcLblPretrainedModel );
 
-		cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( PretrainedModel.values() ) ) );
+		cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( pretrainedModels ) ) );
 		cmbboxPretrainedModel.setFont( SMALL_FONT );
 		final GridBagConstraints gbcCmbboxPretrainedModel = new GridBagConstraints();
 		gbcCmbboxPretrainedModel.gridwidth = 2;
@@ -373,7 +393,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		final DetectionPreview detectionPreview = DetectionPreview.create()
 				.model( model )
 				.settings( settings )
-				.detectorFactory( new CellposeDetectorFactory<>() )
+				.detectorFactory( getDetectorFactory() )
 				.detectionSettingsSupplier( () -> getSettings() )
 				.axisLabel( "Area histogram" )
 				.get();
@@ -395,7 +415,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		 */
 
 		final ItemListener l3 = e -> {
-			final boolean isCustom = cmbboxPretrainedModel.getSelectedItem() == PretrainedModel.CUSTOM;
+			final boolean isCustom = ( ( PretrainedModel ) cmbboxPretrainedModel.getSelectedItem() ).isCustom();
 			tfCustomPath.setVisible( isCustom );
 			lblPathToCustomModel.setVisible( isCustom );
 			btnBrowseCustomModel.setVisible( isCustom );
@@ -407,13 +427,18 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		btnBrowseCustomModel.addActionListener( l -> browseCustomModelPath() );
 	}
 
-	protected void browseCustomModelPath()
+	protected SpotDetectorFactoryBase< ? > getDetectorFactory()
+	{
+		return new CellposeDetectorFactory<>();
+	}
+
+	private void browseCustomModelPath()
 	{
 		btnBrowseCustomModel.setEnabled( false );
 		try
 		{
 			final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
-					"Browse to a Cellpose custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
+					"Browse to a " + executableName + " custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
 				tfCustomPath.setText( file.getAbsolutePath() );
 		}
@@ -423,13 +448,13 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		}
 	}
 
-	protected void browseCellposePath()
+	private void browseCellposePath()
 	{
 		btnBrowseCellposePath.setEnabled( false );
 		try
 		{
 			final File file = FileChooser.chooseFile( this, tfCellposeExecutable.getText(), null,
-					"Browse to the Cellpose Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
+					"Browse to the " + executableName + " Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
 				tfCellposeExecutable.setText( file.getAbsolutePath() );
 		}
