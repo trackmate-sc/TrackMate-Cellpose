@@ -134,7 +134,8 @@ public class OmniposeSettings extends AbstractCellposeSettings
 
 	public enum PretrainedModelOmnipose implements PretrainedModel
 	{
-		BACT_PHASE( "Bacterial phase contrast", "bact_phase_omni", false ),
+		BACT_PHASE( "Bacteria phase contrast", "bact_phase_omni", false ),
+		BACT_FLUO( "Bacteria fluorescence", "bact_fluor_omni", false ),
 		CUSTOM( "Custom", "", true );
 
 		private final String name;
