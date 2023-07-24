@@ -50,13 +50,18 @@ public class OmniposeDetectorConfigurationPanel extends CellposeDetectorConfigur
 
 	private static final String TITLE = OmniposeDetectorFactory.NAME;
 
-	private static final ImageIcon ICON = CellposeUtils.omniposeLogo64();
+	protected static final ImageIcon ICON = CellposeUtils.omniposeLogo64();
 
 	protected static final String DOC1_URL = "";
 
 	public OmniposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		super( settings, model, TITLE, ICON, DOC1_URL, "omnipose", PretrainedModelOmnipose.values() );
+		this( settings, model, TITLE, ICON, DOC1_URL, "omnipose", PretrainedModelOmnipose.values() );
+	}
+
+	protected OmniposeDetectorConfigurationPanel( final Settings settings, final Model model, final String title, final ImageIcon icon, final String docUrl, final String executableName, final PretrainedModelOmnipose[] pretrainedModels )
+	{
+		super( settings, model, title, icon, docUrl, executableName, pretrainedModels );
 	}
 
 	@Override
