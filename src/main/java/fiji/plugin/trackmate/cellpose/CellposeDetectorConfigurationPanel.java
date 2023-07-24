@@ -84,7 +84,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private static final String TITLE = CellposeDetectorFactory.NAME;
 
-	private static final ImageIcon ICON = CellposeUtils.cellposeLogo64();
+	protected static final ImageIcon ICON = CellposeUtils.cellposeLogo64();
 
 	private static final NumberFormat DIAMETER_FORMAT = new DecimalFormat( "#.#" );
 
@@ -519,7 +519,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 		private final String text;
 
-		public MyMouseAdapter( JLabel lblUrl, String docURL, String text )
+		public MyMouseAdapter( final JLabel lblUrl, final String docURL, final String text )
 		{
 			this.lblUrl = lblUrl;
 			this.docURL = docURL;
