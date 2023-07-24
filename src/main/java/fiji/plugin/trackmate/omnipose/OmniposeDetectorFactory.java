@@ -21,7 +21,6 @@
  */
 package fiji.plugin.trackmate.omnipose;
 
-import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
 import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
@@ -119,7 +118,7 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "If you use this detector for your work, please be so kind as to "
 			+ "also cite the omnipose paper: <a href=\"https://doi.org/10.1038/s41592-022-01639-4\">Cutler, Kevin J., et al., "
 			+ "'Omnipose: A High-Precision Morphology-Independent Solution for Bacterial Cell Segmentation.' "
-			+ "Nature Methods 19, no. 11 (November 2022): 1438–48."
+			+ "Nature Methods 19, no. 11 (November 2022): 1438–48.</a>"
 			+ "</html>";
 
 	/*
@@ -224,9 +223,9 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		final Map< String, Object > settings = new HashMap<>();
 		settings.put( KEY_OMNIPOSE_PYTHON_FILEPATH, DEFAULT_OMNIPOSE_PYTHON_FILEPATH );
 		settings.put( KEY_OMNIPOSE_MODEL, DEFAULT_OMNIPOSE_MODEL );
-		settings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
-		settings.put( KEY_OPTIONAL_CHANNEL_2, DEFAULT_OPTIONAL_CHANNEL_2 );
-		settings.put( KEY_CELL_DIAMETER, DEFAULT_CELL_DIAMETER );
+		settings.put( KEY_TARGET_CHANNEL, 0 );
+		settings.put( KEY_OPTIONAL_CHANNEL_2, 0 );
+		settings.put( KEY_CELL_DIAMETER, 3 );
 		settings.put( KEY_USE_GPU, DEFAULT_USE_GPU );
 		settings.put( KEY_SIMPLIFY_CONTOURS, true );
 		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
