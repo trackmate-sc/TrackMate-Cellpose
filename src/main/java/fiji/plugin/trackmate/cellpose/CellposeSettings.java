@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -48,24 +48,24 @@ public class CellposeSettings extends AbstractCellposeSettings
 		return new Builder();
 	}
 
-	public static final class Builder
+	public static class Builder
 	{
 
-		private String cellposePythonPath = "/opt/anaconda3/envs/cellpose/bin/python";
+		protected String cellposePythonPath = "/opt/anaconda3/envs/cellpose/bin/python";
 
-		private int chan = 0;
+		protected int chan = 0;
 
-		private int chan2 = -1;
+		protected int chan2 = -1;
 
-		private PretrainedModelCellpose model = PretrainedModelCellpose.CYTO;
+		protected PretrainedModelCellpose model = PretrainedModelCellpose.CYTO;
 
-		private double diameter = 30.;
-		
-		private boolean useGPU = true;
-		
-		private boolean simplifyContours = true;
+		protected double diameter = 30.;
 
-		private String customModelPath = "";
+		protected boolean useGPU = true;
+
+		protected boolean simplifyContours = true;
+
+		protected String customModelPath = "";
 
 		public Builder channel1( final int ch )
 		{
@@ -127,7 +127,6 @@ public class CellposeSettings extends AbstractCellposeSettings
 					useGPU,
 					simplifyContours );
 		}
-
 	}
 
 	public enum PretrainedModelCellpose implements PretrainedModel
