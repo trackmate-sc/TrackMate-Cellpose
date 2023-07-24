@@ -21,7 +21,6 @@
  */
 package fiji.plugin.trackmate.cellpose.advanced;
 
-import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
 import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
@@ -33,7 +32,6 @@ import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -217,24 +215,15 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	}
 
 	@Override
-	public AdvancedCellPoseDetectorConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
+	public AdvancedCellposeDetectorConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		return new AdvancedCellPoseDetectorConfigurationPanel( settings, model );
+		return new AdvancedCellposeDetectorConfigurationPanel( settings, model );
 	}
 
 	@Override
 	public Map< String, Object > getDefaultSettings()
 	{
-		final Map< String, Object > settings = new HashMap<>();
-		settings.put( KEY_CELLPOSE_PYTHON_FILEPATH, DEFAULT_CELLPOSE_PYTHON_FILEPATH );
-		settings.put( KEY_CELLPOSE_MODEL, DEFAULT_CELLPOSE_MODEL );
-		settings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
-		settings.put( KEY_OPTIONAL_CHANNEL_2, DEFAULT_OPTIONAL_CHANNEL_2 );
-		settings.put( KEY_CELL_DIAMETER, DEFAULT_CELL_DIAMETER );
-		settings.put( KEY_USE_GPU, DEFAULT_USE_GPU );
-		settings.put( KEY_SIMPLIFY_CONTOURS, true );
-		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
-		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH );
+		final Map< String, Object > settings = super.getDefaultSettings();
 		settings.put( KEY_FLOW_THRESHOLD, DEFAULT_FLOW_THRESHOLD );
 		settings.put( KEY_CELL_PROB_THRESHOLD, DEFAULT_CELL_PROB_THRESHOLD );
 		return settings;
