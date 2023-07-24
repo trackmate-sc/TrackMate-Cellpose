@@ -21,6 +21,10 @@
  */
 package fiji.plugin.trackmate.omnipose;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
 
 public class OmniposeSettings extends AbstractCellposeSettings
@@ -40,6 +44,15 @@ public class OmniposeSettings extends AbstractCellposeSettings
 	}
 
 	@Override
+	public List< String > toCmdLine( final String imagesDir )
+	{
+		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir ) );
+		// omnipose executable adds it anyway, but let's make sure.
+		cmd.add( "--omni" );
+		return Collections.unmodifiableList( cmd );
+	}
+
+	@Override
 	public String getExecutableName()
 	{
 		return "omnipose";
@@ -50,24 +63,24 @@ public class OmniposeSettings extends AbstractCellposeSettings
 		return new Builder();
 	}
 
-	public static final class Builder
+	public static class Builder
 	{
 
-		private String omniposePythonPath = "/opt/anaconda3/envs/omnipose/bin/python";
+		protected String omniposePythonPath = "/opt/anaconda3/envs/omnipose/bin/python";
 
-		private int chan = 0;
+		protected int chan = 0;
 
-		private int chan2 = -1;
+		protected int chan2 = -1;
 
-		private PretrainedModelOmnipose model = PretrainedModelOmnipose.BACT_PHASE;
+		protected PretrainedModelOmnipose model = PretrainedModelOmnipose.BACT_PHASE;
 
-		private double diameter = 30.;
+		protected double diameter = 30.;
 		
-		private boolean useGPU = true;
+		protected boolean useGPU = true;
 		
-		private boolean simplifyContours = true;
+		protected boolean simplifyContours = true;
 
-		private String customModelPath = "";
+		protected String customModelPath = "";
 
 		public Builder channel1( final int ch )
 		{
