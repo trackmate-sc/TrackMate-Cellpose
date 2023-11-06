@@ -21,6 +21,7 @@
  */
 package fiji.plugin.trackmate;
 
+import ij.IJ;
 import ij.ImageJ;
 
 /**
@@ -31,8 +32,17 @@ public class CellPoseAttempt
 
 	public static void main( final String[] args )
 	{
-		ImageJ.main( args );
-		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
+		try
+		{
+			ImageJ.main( args );
+			IJ.openImage( "samples/cellpose3D-crop.tif" ).show();
+			new TrackMatePlugIn().run( null );
+//		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
 //		new TrackMatePlugIn().run( "D:/Projects/JYTinevez/TrackMate-StarDist/CTCMetrics/Brightfield/01.tif" );
+		}
+		catch ( final Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 }
