@@ -75,7 +75,7 @@ public abstract class AbstractCellposeSettings
 	 */
 	public abstract String getExecutableName();
 
-	public List< String > toCmdLine( final String imagesDir )
+	public List< String > toCmdLine( final String imagesDir, final boolean is3D, final double anisotropy )
 	{
 		final List< String > cmd = new ArrayList<>();
 
@@ -103,6 +103,8 @@ public abstract class AbstractCellposeSettings
 		 * Cellpose command line arguments.
 		 */
 
+		cmd.add( "--verbose" );
+
 		// Target dir.
 		cmd.add( "--dir" );
 		cmd.add( imagesDir );
@@ -126,6 +128,14 @@ public abstract class AbstractCellposeSettings
 		cmd.add( "--diameter" );
 		cmd.add( ( diameter > 0 ) ? "" + diameter : "0" );
 
+		// 3D?
+		if ( is3D )
+		{
+			cmd.add( "--do_3D" );
+			cmd.add( "--anisotropy" );
+			cmd.add( Double.toString( anisotropy ) );
+		}
+
 		// Model.
 		cmd.add( "--pretrained_model" );
 		if ( model.isCustom() )
@@ -133,8 +143,8 @@ public abstract class AbstractCellposeSettings
 		else
 			cmd.add( model.getPath() );
 
-		// Export results as PNG.
-		cmd.add( "--save_png" );
+		// Export results as TIF.
+		cmd.add( "--save_tif" );
 
 		// Do not save Numpy files.
 		cmd.add( "--no_npy" );

@@ -35,6 +35,7 @@ import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.SpotCollection;
 import fiji.plugin.trackmate.TrackMate;
+import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.util.TMUtils;
@@ -119,6 +120,22 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final double frameInterval = ( timeIndex < 0 ) ? 1. : img.averageScale( timeIndex );
 
 		/*
+		 * Do we have Z?
+		 */
+		final boolean is3d = !DetectionUtils.is2D( img );
+		final double anisotropy;
+		if ( is3d )
+		{
+			final int xIndex = img.dimensionIndex( Axes.X );
+			final int zIndex = img.dimensionIndex( Axes.Z );
+			anisotropy = img.averageScale( zIndex ) / img.averageScale( xIndex );
+		}
+		else
+		{
+			anisotropy = 1.;
+		}
+
+		/*
 		 * Dispatch time-points to several tasks.
 		 */
 
@@ -164,7 +181,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		processes.clear();
 		for ( final List< ImagePlus > list : timepoints )
-			processes.add( new CellposeTask( list ) );
+			processes.add( new CellposeTask( list, is3d, anisotropy ) );
 
 		/*
 		 * Pass tasks to executors.
@@ -215,7 +232,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
 		for ( int t = 0; t < imps.size(); t++ )
 		{
-			final String name = nameGen.apply( ( long ) minT + t ) + "_cp_masks.png";
+			final String name = nameGen.apply( ( long ) minT + t ) + "_cp_masks.tif";
 
 			// Try to find corresponding mask in any of the result dirs we got.
 			ImagePlus tpImp = null;
@@ -377,11 +394,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			errorMessage = baseErrorMessage + "Image is null.";
 			return false;
 		}
-		if ( img.dimensionIndex( Axes.Z ) >= 0 )
-		{
-			errorMessage = baseErrorMessage + "Image must be 2D over time, got an image with multiple Z.";
-			return false;
-		}
 		return true;
 	}
 
@@ -476,9 +488,15 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		private final List< ImagePlus > imps;
 
-		public CellposeTask( final List< ImagePlus > imps )
+		private final boolean is3D;
+
+		private final double anisotropy;
+
+		public CellposeTask( final List< ImagePlus > imps, final boolean is3D, final double anisotropy )
 		{
 			this.imps = imps;
+			this.is3D = is3D;
+			this.anisotropy = anisotropy;
 			this.ok = new AtomicBoolean( true );
 		}
 
@@ -532,7 +550,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 			try
 			{
-				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
+				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString(), is3D, anisotropy );
 				logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
 				logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
 				logger.log( String.join( " ", cmd ) );

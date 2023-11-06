@@ -30,9 +30,9 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 	}
 
 	@Override
-	public List< String > toCmdLine( final String imagesDir )
+	public List< String > toCmdLine( final String imagesDir, final boolean is3D, final double anisotropy )
 	{
-		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir ) );
+		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir, is3D, anisotropy ) );
 		cmd.add( "--flow_threshold" );
 		cmd.add( String.valueOf( flowThreshold ) );
 		/*

@@ -44,9 +44,9 @@ public class OmniposeSettings extends AbstractCellposeSettings
 	}
 
 	@Override
-	public List< String > toCmdLine( final String imagesDir )
+	public List< String > toCmdLine( final String imagesDir, final boolean is3D, final double anisotropy )
 	{
-		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir ) );
+		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir, is3D, anisotropy ) );
 		// omnipose executable adds it anyway, but let's make sure.
 		cmd.add( "--omni" );
 		return Collections.unmodifiableList( cmd );
