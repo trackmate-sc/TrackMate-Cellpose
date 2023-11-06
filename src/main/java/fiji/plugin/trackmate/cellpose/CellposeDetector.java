@@ -1,24 +1,3 @@
-/*-
- * #%L
- * TrackMate: your buddy for everyday tracking.
- * %%
- * Copyright (C) 2021 - 2023 TrackMate developers.
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
- */
 package fiji.plugin.trackmate.cellpose;
 
 import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
@@ -79,27 +58,22 @@ import net.imglib2.view.Views;
 
 public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
-	private final static String BASE_ERROR_MESSAGE = "CellposeDetector: ";
 
-	private final static File CELLPOSE_LOG_FILE = new File( new File( System.getProperty( "user.home" ), ".cellpose" ), "run.log" );
+	private static final Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
 
-	private final static Function< Long, String > nameGen = ( frame ) -> String.format( "%d", frame );
+	private final ImgPlus< T > img;
 
-	protected final ImgPlus< T > img;
-
-	protected final Interval interval;
-
-	private final CellposeSettings cellposeSettings;
+	private final Interval interval;
 
 	private final Logger logger;
 
-	protected String baseErrorMessage;
+	private final String baseErrorMessage;
 
-	protected String errorMessage;
+	private String errorMessage;
 
-	protected long processingTime;
+	private long processingTime;
 
-	protected SpotCollection spots;
+	private SpotCollection spots;
 
 	private String cancelReason;
 
@@ -109,18 +83,24 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private int numThreads;
 
+	private final AbstractCellposeSettings cellposeSettings;
+
+	private final File cellposeLogFile;
+
 	public CellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final CellposeSettings cellposeSettings,
+			final AbstractCellposeSettings cellposeSettings,
 			final Logger logger )
 	{
 		this.img = img;
 		this.interval = interval;
 		this.cellposeSettings = cellposeSettings;
 		this.logger = ( logger == null ) ? Logger.VOID_LOGGER : logger;
-		this.baseErrorMessage = BASE_ERROR_MESSAGE;
+		this.cellposeLogFile = new File( new File( System.getProperty( "user.home" ), "." + cellposeSettings.getExecutableName() ), "run.log" );
+		this.baseErrorMessage = "[" + cellposeSettings.getExecutableName() + "Detector] ";
 	}
+
 
 	@Override
 	public boolean process()
@@ -191,7 +171,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 */
 
 		// Redirect log to logger.
-		final Tailer tailer = Tailer.create( CELLPOSE_LOG_FILE, new LoggerTailerListener( logger ), 200, true );
+		final Tailer tailer = Tailer.create( cellposeLogFile, new LoggerTailerListener( logger ), 200, true );
 
 		final ExecutorService executors = Executors.newFixedThreadPool( nConcurrentTasks );
 		final List< String > resultDirs = new ArrayList<>( nConcurrentTasks );
@@ -204,7 +184,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		}
 		catch ( final InterruptedException | ExecutionException e )
 		{
-			errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage() + '\n';
+			errorMessage = baseErrorMessage + "Problem running "
+					+ cellposeSettings.getExecutableName()
+					+ ":\n" + e.getMessage() + '\n';
 			e.printStackTrace();
 			return false;
 		}
@@ -229,7 +211,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Get the result masks back.
 		 */
 
-		logger.log( "Reading Cellpose masks.\n" );
+		logger.log( "Reading " + cellposeSettings.getExecutableName() + " masks.\n" );
 		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
 		for ( int t = 0; t < imps.size(); t++ )
 		{
@@ -276,7 +258,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final Concatenator concatenator = new Concatenator();
 		final ImagePlus output = concatenator.concatenateHyperstacks(
 				masks.toArray( new ImagePlus[] {} ),
-				img.getName() + "_CellposeOutput", false );
+				img.getName() + "_" + cellposeSettings.getExecutableName() + "Output", false );
 
 		// Copy calibration.
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
@@ -303,7 +285,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		labelImgTrackMate.setNumThreads( numThreads );
 		if ( !labelImgTrackMate.execDetection() )
 		{
-			errorMessage = BASE_ERROR_MESSAGE + labelImgTrackMate.getErrorMessage();
+			errorMessage = baseErrorMessage + labelImgTrackMate.getErrorMessage();
 			return false;
 		}
 		final SpotCollection tmpSpots = labelImgTrackMate.getModel().getSpots();
@@ -337,103 +319,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		return true;
 	}
 
-	private static final < T extends RealType< T > & NativeType< T > > List< ImagePlus > crop( final ImgPlus< T > img, final Interval interval, final Function< Long, String > nameGen )
-	{
-		final int zIndex = img.dimensionIndex( Axes.Z );
-		final int cIndex = img.dimensionIndex( Axes.CHANNEL );
-		final Interval cropInterval;
-		if ( zIndex < 0 )
-		{
-			// 2D
-			if ( cIndex < 0 )
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ),
-						interval.max( 0 ), interval.max( 1 ) );
-			else
-				// Include all channels
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ), img.min( cIndex ),
-						interval.max( 0 ), interval.max( 1 ), img.max( cIndex ) );
-		}
-		else
-		{
-			if ( cIndex < 0 )
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ),
-						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ) );
-			else
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ), img.min( cIndex ),
-						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ), img.max( cIndex ) );
-		}
-
-		final List< ImagePlus > imps = new ArrayList<>();
-		final int timeIndex = img.dimensionIndex( Axes.TIME );
-		if ( timeIndex < 0 )
-		{
-			// No time.
-			final IntervalView< T > crop = Views.interval( img, cropInterval );
-			final String name = nameGen.apply( 0l ) + ".tif";
-			imps.add( ImageJFunctions.wrap( crop, name ) );
-		}
-		else
-		{
-			// In the interval, time is always the last.
-			final long minT = interval.min( interval.numDimensions() - 1 );
-			final long maxT = interval.max( interval.numDimensions() - 1 );
-			for ( long t = minT; t <= maxT; t++ )
-			{
-				final ImgPlus< T > tp = ImgPlusViews.hyperSlice( img, timeIndex, t );
-				// possibly 2D or 3D with or without channel.
-				final IntervalView< T > crop = Views.interval( tp, cropInterval );
-				final String name = nameGen.apply( t ) + ".tif";
-				imps.add( ImageJFunctions.wrap( crop, name ) );
-			}
-		}
-		return imps;
-	}
-
-	@Override
-	public SpotCollection getResult()
-	{
-		return spots;
-	}
-
-	@Override
-	public boolean checkInput()
-	{
-		if ( null == img )
-		{
-			errorMessage = baseErrorMessage + "Image is null.";
-			return false;
-		}
-		if ( img.dimensionIndex( Axes.Z ) >= 0 )
-		{
-			errorMessage = baseErrorMessage + "Image must be 2D over time, got an image with multiple Z.";
-			return false;
-		}
-		return true;
-	}
-
-	@Override
-	public String getErrorMessage()
-	{
-		return errorMessage;
-	}
-
-	@Override
-	public long getProcessingTime()
-	{
-		return processingTime;
-	}
-
 	/**
 	 * Add a hook to delete the content of given path when Fiji quits. Taken
 	 * from https://stackoverflow.com/a/20280989/201698
 	 * 
 	 * @param path
 	 */
-	private static void recursiveDeleteOnShutdownHook( final Path path )
+	protected static void recursiveDeleteOnShutdownHook( final Path path )
 	{
 		Runtime.getRuntime().addShutdownHook( new Thread( new Runnable()
 		{
@@ -469,6 +361,40 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				}
 			}
 		} ) );
+	}
+
+	@Override
+	public SpotCollection getResult()
+	{
+		return spots;
+	}
+
+	@Override
+	public boolean checkInput()
+	{
+		if ( null == img )
+		{
+			errorMessage = baseErrorMessage + "Image is null.";
+			return false;
+		}
+		if ( img.dimensionIndex( Axes.Z ) >= 0 )
+		{
+			errorMessage = baseErrorMessage + "Image must be 2D over time, got an image with multiple Z.";
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String getErrorMessage()
+	{
+		return errorMessage;
+	}
+
+	@Override
+	public long getProcessingTime()
+	{
+		return processingTime;
 	}
 
 	private static class LoggerTailerListener extends TailerListenerAdapter
@@ -541,7 +467,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	// --- private classes ---
 
-	private final class CellposeTask implements Callable< String >
+	final class CellposeTask implements Callable< String >
 	{
 
 		private Process process;
@@ -561,7 +487,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			return ok.get();
 		}
 
-		private void cancel()
+		void cancel()
 		{
 			if ( process != null )
 				process.destroy();
@@ -577,12 +503,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			Path tmpDir = null;
 			try
 			{
-				tmpDir = Files.createTempDirectory( "TrackMate-Cellpose_" );
+				tmpDir = Files.createTempDirectory( "TrackMate-" + cellposeSettings.getExecutableName() + "_" );
 				recursiveDeleteOnShutdownHook( tmpDir );
 			}
 			catch ( final IOException e1 )
 			{
-				errorMessage = BASE_ERROR_MESSAGE + "Could not create tmp dir to save and load images:\n" + e1.getMessage();
+				errorMessage = baseErrorMessage + "Could not create tmp dir to save and load images:\n" + e1.getMessage();
 				ok.set( false );
 				return null;
 			}
@@ -607,8 +533,8 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			try
 			{
 				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
-				logger.setStatus( "Running Cellpose" );
-				logger.log( "Running Cellpose with args:\n" );
+				logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
+				logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
 				logger.log( String.join( " ", cmd ) );
 				logger.log( "\n" );
 				final ProcessBuilder pb = new ProcessBuilder( cmd );
@@ -623,13 +549,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				final String msg = e.getMessage();
 				if ( msg.matches( ".+error=13.+" ) )
 				{
-					errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n"
+					errorMessage = baseErrorMessage + "Problem running " + cellposeSettings.getExecutableName() + ":\n"
 							+ "The executable does not have the file permission to run.\n"
 							+ "Please see https://github.com/MouseLand/cellpose#run-cellpose-without-local-python-installation for more information.\n";
 				}
 				else
 				{
-					errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+					errorMessage = baseErrorMessage + "Problem running " + cellposeSettings.getExecutableName() + ":\n" + e.getMessage();
 				}
 				e.printStackTrace();
 				ok.set( false );
@@ -637,7 +563,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 			catch ( final Exception e )
 			{
-				errorMessage = BASE_ERROR_MESSAGE + "Problem running Cellpose:\n" + e.getMessage();
+				errorMessage = baseErrorMessage + "Problem running " + cellposeSettings.getExecutableName() + ":\n" + e.getMessage();
 				e.printStackTrace();
 				ok.set( false );
 				return null;
@@ -648,5 +574,61 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 			return tmpDir.toString();
 		}
+	}
+
+	private static final < T extends RealType< T > & NativeType< T > > List< ImagePlus > crop( final ImgPlus< T > img, final Interval interval, final Function< Long, String > nameGen )
+	{
+		final int zIndex = img.dimensionIndex( Axes.Z );
+		final int cIndex = img.dimensionIndex( Axes.CHANNEL );
+		final Interval cropInterval;
+		if ( zIndex < 0 )
+		{
+			// 2D
+			if ( cIndex < 0 )
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ),
+						interval.max( 0 ), interval.max( 1 ) );
+			else
+				// Include all channels
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ), img.min( cIndex ),
+						interval.max( 0 ), interval.max( 1 ), img.max( cIndex ) );
+		}
+		else
+		{
+			if ( cIndex < 0 )
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ),
+						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ) );
+			else
+				cropInterval = Intervals.createMinMax(
+						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ), img.min( cIndex ),
+						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ), img.max( cIndex ) );
+		}
+
+		final List< ImagePlus > imps = new ArrayList<>();
+		final int timeIndex = img.dimensionIndex( Axes.TIME );
+		if ( timeIndex < 0 )
+		{
+			// No time.
+			final IntervalView< T > crop = Views.interval( img, cropInterval );
+			final String name = nameGen.apply( 0l ) + ".tif";
+			imps.add( ImageJFunctions.wrap( crop, name ) );
+		}
+		else
+		{
+			// In the interval, time is always the last.
+			final long minT = interval.min( interval.numDimensions() - 1 );
+			final long maxT = interval.max( interval.numDimensions() - 1 );
+			for ( long t = minT; t <= maxT; t++ )
+			{
+				final ImgPlus< T > tp = ImgPlusViews.hyperSlice( img, timeIndex, t );
+				// possibly 2D or 3D with or without channel.
+				final IntervalView< T > crop = Views.interval( tp, cropInterval );
+				final String name = nameGen.apply( t ) + ".tif";
+				imps.add( ImageJFunctions.wrap( crop, name ) );
+			}
+		}
+		return imps;
 	}
 }

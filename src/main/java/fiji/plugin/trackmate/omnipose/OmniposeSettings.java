@@ -19,14 +19,16 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.omnipose;
 
-public class CellposeSettings extends AbstractCellposeSettings
+import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
+
+public class OmniposeSettings extends AbstractCellposeSettings
 {
 
-	public CellposeSettings(
-			final String cellposePythonPath,
-			final PretrainedModelCellpose model,
+	public OmniposeSettings(
+			final String omniposePythonPath,
+			final PretrainedModelOmnipose model,
 			final String customModelPath,
 			final int chan,
 			final int chan2,
@@ -34,13 +36,13 @@ public class CellposeSettings extends AbstractCellposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours )
 	{
-		super( cellposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
+		super( omniposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 	}
 
 	@Override
 	public String getExecutableName()
 	{
-		return "cellpose";
+		return "omnipose";
 	}
 
 	public static Builder create()
@@ -51,13 +53,13 @@ public class CellposeSettings extends AbstractCellposeSettings
 	public static final class Builder
 	{
 
-		private String cellposePythonPath = "/opt/anaconda3/envs/cellpose/bin/python";
+		private String omniposePythonPath = "/opt/anaconda3/envs/omnipose/bin/python";
 
 		private int chan = 0;
 
 		private int chan2 = -1;
 
-		private PretrainedModelCellpose model = PretrainedModelCellpose.CYTO;
+		private PretrainedModelOmnipose model = PretrainedModelOmnipose.BACT_PHASE;
 
 		private double diameter = 30.;
 		
@@ -79,13 +81,13 @@ public class CellposeSettings extends AbstractCellposeSettings
 			return this;
 		}
 
-		public Builder cellposePythonPath( final String cellposePythonPath )
+		public Builder omniposePythonPath( final String omniposePythonPath )
 		{
-			this.cellposePythonPath = cellposePythonPath;
+			this.omniposePythonPath = omniposePythonPath;
 			return this;
 		}
 
-		public Builder model( final PretrainedModelCellpose model )
+		public Builder model( final PretrainedModelOmnipose model )
 		{
 			this.model = model;
 			return this;
@@ -115,10 +117,10 @@ public class CellposeSettings extends AbstractCellposeSettings
 			return this;
 		}
 
-		public CellposeSettings get()
+		public OmniposeSettings get()
 		{
-			return new CellposeSettings(
-					cellposePythonPath,
+			return new OmniposeSettings(
+					omniposePythonPath,
 					model,
 					customModelPath,
 					chan,
@@ -130,20 +132,19 @@ public class CellposeSettings extends AbstractCellposeSettings
 
 	}
 
-	public enum PretrainedModelCellpose implements PretrainedModel
+	public enum PretrainedModelOmnipose implements PretrainedModel
 	{
-		CYTO( "Cytoplasm", "cyto", false ),
-		NUCLEI( "Nucleus", "nuclei", false ),
-		CYTO2( "Cytoplasm 2.0", "cyto2", false ),
+		BACT_PHASE( "Bacteria phase contrast", "bact_phase_omni", false ),
+		BACT_FLUO( "Bacteria fluorescence", "bact_fluor_omni", false ),
 		CUSTOM( "Custom", "", true );
 
 		private final String name;
 
-		final String path;
+		private final String path;
 
 		private final boolean isCustom;
 
-		PretrainedModelCellpose( final String name, final String path, final boolean isCustom )
+		PretrainedModelOmnipose( final String name, final String path, final boolean isCustom )
 		{
 			this.name = name;
 			this.path = path;
@@ -167,7 +168,8 @@ public class CellposeSettings extends AbstractCellposeSettings
 		{
 			return path;
 		}
+
 	}
 
-	public static final CellposeSettings DEFAULT = new Builder().get();
+	public static final OmniposeSettings DEFAULT = new Builder().get();
 }

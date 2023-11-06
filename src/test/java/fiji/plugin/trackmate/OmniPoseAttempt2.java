@@ -23,10 +23,9 @@ package fiji.plugin.trackmate;
 
 import java.io.IOException;
 
-import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
 import fiji.plugin.trackmate.cellpose.CellposeDetector;
-import fiji.plugin.trackmate.cellpose.CellposeSettings;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettingsIO;
+import fiji.plugin.trackmate.omnipose.OmniposeSettings;
 import fiji.plugin.trackmate.util.TMUtils;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.IJ;
@@ -37,7 +36,7 @@ import net.imagej.ImgPlus;
 /**
  * Inspired by the BIOP approach.
  */
-public class CellPoseAttempt2
+public class OmniPoseAttempt2
 {
 
 	@SuppressWarnings( { "rawtypes", "unchecked" } )
@@ -48,8 +47,8 @@ public class CellPoseAttempt2
 		final ImagePlus imp = IJ.openImage( "samples/P31-crop-2.tif" );
 		imp.show();
 		
-		// Cellpose command line options.
-		final AbstractCellposeSettings cp = CellposeSettings.DEFAULT;
+		// Omnipose command line options.
+		final OmniposeSettings cp = OmniposeSettings.DEFAULT;
 		
 		final ImgPlus img = TMUtils.rawWraps( imp );
 		final CellposeDetector detector = new CellposeDetector( img, img, cp, Logger.DEFAULT_LOGGER );

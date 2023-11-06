@@ -26,13 +26,12 @@ import ij.ImageJ;
 /**
  * Inspired by the BIOP approach.
  */
-public class CellPoseAttempt
+public class OmniPoseAttempt
 {
 
 	public static void main( final String[] args )
 	{
 		ImageJ.main( args );
-		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
-//		new TrackMatePlugIn().run( "D:/Projects/JYTinevez/TrackMate-StarDist/CTCMetrics/Brightfield/01.tif" );
+		new TrackMatePlugIn().run( "samples/20230331_washed_XY1.ome-1_stabilized_cropped.tif" );
 	}
 }
