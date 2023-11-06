@@ -291,7 +291,16 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	@Override
 	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		return new CellposeDetectorConfigurationPanel( settings, model );
+		try
+		{
+			return new CellposeDetectorConfigurationPanel( settings, model );
+
+		}
+		catch ( final Exception e )
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
@@ -394,6 +403,12 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	@Override
 	public boolean has2Dsegmentation()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean has3Dsegmentation()
 	{
 		return true;
 	}
