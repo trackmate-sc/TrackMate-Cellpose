@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>34.0.0</version>
+		<version>37.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -89,7 +89,7 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-		<TrackMate.version>7.11.1</TrackMate.version>
+		<TrackMate.version>8.0.0-SNAPSHOT</TrackMate.version>
 	</properties>
 
 	<dependencies>
