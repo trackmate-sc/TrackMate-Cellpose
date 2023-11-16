@@ -401,7 +401,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	{
 		private final Logger logger;
 
-		private final static Pattern PERCENTAGE_PATTERN = Pattern.compile( ".+\\s(\\d*\\.?\\d*)\\%.+" );
+		private final static Pattern PERCENTAGE_PATTERN = Pattern.compile( ".+\\D(\\d+(?:\\.\\d+)?)%.+" );
+
+		private final static Pattern INFO_PATTERN = Pattern.compile( ".+\\[INFO\\]\\s+(.+)" );
 
 		public LoggerTailerListener( final Logger logger )
 		{
@@ -411,13 +413,22 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		@Override
 		public void handle( final String line )
 		{
-			logger.log( line + '\n' );
 			// Do we have percentage?
 			final Matcher matcher = PERCENTAGE_PATTERN.matcher( line );
 			if ( matcher.matches() )
 			{
 				final String percent = matcher.group( 1 );
 				logger.setProgress( Double.valueOf( percent ) / 100. );
+			}
+			else
+			{
+				final Matcher matcher2 = INFO_PATTERN.matcher( line );
+				if ( matcher2.matches() )
+				{
+					final String str = matcher2.group( 1 ).trim();
+					if ( str.length() > 2 )
+						logger.setStatus( str );
+				}
 			}
 		}
 	}
