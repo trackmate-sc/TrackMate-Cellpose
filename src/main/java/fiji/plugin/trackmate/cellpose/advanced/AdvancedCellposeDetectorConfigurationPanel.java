@@ -4,18 +4,18 @@ import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFa
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
-import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
-import fiji.plugin.trackmate.gui.GuiUtils;
 import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
 import fiji.plugin.trackmate.gui.displaysettings.StyleElements;
 
@@ -63,15 +63,12 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 	public AdvancedCellposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
 		super( settings, model );
-		final GridBagLayout layout = ( GridBagLayout ) getLayout();
-		layout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
-		
 
 		/*
 		 * Add flow threshold.
 		 */
 
-		int gridy = 13;
+		int gridy = 12;
 
 		final JLabel lblFlowThreshold = new JLabel( "Flow threshold:" );
 		lblFlowThreshold.setFont( SMALL_FONT );
@@ -83,7 +80,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		add( lblFlowThreshold, gbcLblFlowThreshold );
 
 		final SliderPanelDouble sliderPanelFlowThreshold = StyleElements.linkedSliderPanel( flowThresholdEl, 3, 0.1 );
-		GuiUtils.setFont( sliderPanelFlowThreshold, SMALL_FONT );
+		setFont( sliderPanelFlowThreshold, SMALL_FONT );
 		final GridBagConstraints gbcFlowThresholdSlider = new GridBagConstraints();
 		gbcFlowThresholdSlider.anchor = GridBagConstraints.EAST;
 		gbcFlowThresholdSlider.insets = new Insets( 0, 5, 5, 5 );
@@ -109,7 +106,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		add( lblCellProb, gbcLblCellProb );
 
 		final SliderPanelDouble sliderPanelCellProbThreshold = StyleElements.linkedSliderPanel( cellProbThresholdEl, 3, 0.4 );
-		GuiUtils.setFont( sliderPanelCellProbThreshold, SMALL_FONT );
+		setFont( sliderPanelCellProbThreshold, SMALL_FONT );
 		final GridBagConstraints gbcCellProbThresholdSlider = new GridBagConstraints();
 		gbcCellProbThresholdSlider.anchor = GridBagConstraints.EAST;
 		gbcCellProbThresholdSlider.insets = new Insets( 0, 5, 5, 5 );
@@ -139,9 +136,9 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		return settings;
 	}
 
-	@Override
-	protected SpotDetectorFactoryBase< ? > getDetectorFactory()
+	public static final void setFont( final JComponent panel, final Font font )
 	{
-		return new AdvancedCellposeDetectorFactory<>();
+		for ( final Component c : panel.getComponents() )
+			c.setFont( font );
 	}
 }
