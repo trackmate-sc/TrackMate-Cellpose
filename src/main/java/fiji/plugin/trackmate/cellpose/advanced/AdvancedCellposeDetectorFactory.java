@@ -23,19 +23,19 @@ package fiji.plugin.trackmate.cellpose.advanced;
 
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
+import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOTHING_SCALE;
 import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readDoubleAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readIntegerAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readStringAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
 import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
+import static fiji.plugin.trackmate.util.TMUtils.checkOptionalParameter;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.ImageIcon;
 
 import org.jdom2.Element;
 import org.scijava.Priority;
@@ -110,7 +110,8 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on cellpose to detect objects."
-			+ "<p>" + "It is identical to the Cellpose detector, except that it allows to "
+			+ "<p>"
+			+ "It is identical to the Cellpose detector, except that it allows to "
 			+ "tweak the 'flow threshold' and 'cell probability threshold' parameters of the "
 			+ "cellpose algorithm."
 			+ "<p>"
@@ -199,6 +200,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_DIAMETER, errorHolder );
 		ok = ok && readBooleanAttribute( element, settings, KEY_USE_GPU, errorHolder );
 		ok = ok && readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, KEY_SMOOTHING_SCALE, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_FLOW_THRESHOLD, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_PROB_THRESHOLD, errorHolder );
 
@@ -244,6 +246,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
+		ok = ok & checkOptionalParameter( settings, KEY_SMOOTHING_SCALE, Double.class, errorHolder );
 
 		// If we have a logger, test it is of the right class.
 		final Object loggerObj = settings.get( KEY_LOGGER );
@@ -266,7 +269,8 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 				KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH,
 				KEY_LOGGER,
 				KEY_FLOW_THRESHOLD,
-				KEY_CELL_PROB_THRESHOLD );
+				KEY_CELL_PROB_THRESHOLD,
+				KEY_SMOOTHING_SCALE );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();
@@ -297,12 +301,6 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	}
 
 	@Override
-	public ImageIcon getIcon()
-	{
-		return null;
-	}
-
-	@Override
 	public String getKey()
 	{
 		return DETECTOR_KEY;
@@ -312,12 +310,6 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	public String getName()
 	{
 		return NAME;
-	}
-
-	@Override
-	public boolean has2Dsegmentation()
-	{
-		return true;
 	}
 
 	@Override

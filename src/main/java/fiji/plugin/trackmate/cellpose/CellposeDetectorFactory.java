@@ -24,6 +24,7 @@ package fiji.plugin.trackmate.cellpose;
 import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
+import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOTHING_SCALE;
 import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readDoubleAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.readIntegerAttribute;
@@ -31,6 +32,7 @@ import static fiji.plugin.trackmate.io.IOUtils.readStringAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.writeTargetChannel;
 import static fiji.plugin.trackmate.util.TMUtils.checkMapKeys;
+import static fiji.plugin.trackmate.util.TMUtils.checkOptionalParameter;
 import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
 
 import java.util.Arrays;
@@ -252,6 +254,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok && writeAttribute( settings, element, KEY_CELL_DIAMETER, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_USE_GPU, Boolean.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
+		ok = ok && writeAttribute( settings, element, KEY_SMOOTHING_SCALE, Double.class, errorHolder );
 
 		final PretrainedModelCellpose model = ( PretrainedModelCellpose ) settings.get( KEY_CELLPOSE_MODEL );
 		element.setAttribute( KEY_CELLPOSE_MODEL, model.name() );
@@ -275,6 +278,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_DIAMETER, errorHolder );
 		ok = ok && readBooleanAttribute( element, settings, KEY_USE_GPU, errorHolder );
 		ok = ok && readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, KEY_SMOOTHING_SCALE, errorHolder );
 
 		// Read model.
 		final String str = element.getAttributeValue( KEY_CELLPOSE_MODEL );
@@ -314,6 +318,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		settings.put( KEY_CELL_DIAMETER, DEFAULT_CELL_DIAMETER );
 		settings.put( KEY_USE_GPU, DEFAULT_USE_GPU );
 		settings.put( KEY_SIMPLIFY_CONTOURS, true );
+		settings.put( KEY_SMOOTHING_SCALE, -1. );
 		settings.put( KEY_LOGGER, Logger.DEFAULT_LOGGER );
 		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH );
 		return settings;
@@ -332,6 +337,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		ok = ok & checkParameter( settings, KEY_CELL_DIAMETER, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_USE_GPU, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
+		ok = ok & checkOptionalParameter( settings, KEY_SMOOTHING_SCALE, Double.class, errorHolder );
 
 		// If we have a logger, test it is of the right class.
 		final Object loggerObj = settings.get( KEY_LOGGER );
@@ -352,6 +358,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 				KEY_SIMPLIFY_CONTOURS );
 		final List< String > optionalKeys = Arrays.asList(
 				KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH,
+				KEY_SMOOTHING_SCALE,
 				KEY_LOGGER );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )

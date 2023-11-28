@@ -1,5 +1,6 @@
 package fiji.plugin.trackmate.cellpose.zmerge;
 
+import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOTHING_SCALE;
 import static fiji.plugin.trackmate.io.IOUtils.readDoubleAttribute;
 import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
 import static fiji.plugin.trackmate.tracking.overlap.OverlapTrackerFactory.DEFAULT_MIN_IOU;
@@ -185,9 +186,10 @@ public class Cellpose2DZDetectorFactory< T extends RealType< T > & NativeType< T
 
 		final int timeDim = img.dimensionIndex( Axes.TIME );
 		final ImgPlus< T > imgT = timeDim < 0 ? img : ImgPlusViews.hyperSlice( img, timeDim, frame );
+		final double smoothingScale = ( ( Number ) settings.get( KEY_SMOOTHING_SCALE ) ).doubleValue();
 
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
-		return new Process2DZ<>( imgT, interval, calibration, s, true );
+		return new Process2DZ<>( imgT, interval, calibration, s, true, smoothingScale );
 	}
 
 	@Override
@@ -198,12 +200,6 @@ public class Cellpose2DZDetectorFactory< T extends RealType< T > & NativeType< T
 
 	@Override
 	public boolean has2Dsegmentation()
-	{
-		return true;
-	}
-
-	@Override
-	public boolean forbidMultithreading()
 	{
 		return true;
 	}

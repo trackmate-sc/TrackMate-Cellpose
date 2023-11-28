@@ -30,6 +30,7 @@ import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_OPTIONA
 import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_USE_GPU;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
+import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOTHING_SCALE;
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
 import static fiji.plugin.trackmate.gui.Fonts.FONT;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
@@ -70,8 +71,10 @@ import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings.PretrainedModel;
 import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
+import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
+import fiji.plugin.trackmate.gui.components.PanelSmoothContour;
 import fiji.plugin.trackmate.util.DetectionPreview;
 import fiji.plugin.trackmate.util.FileChooser;
 import fiji.plugin.trackmate.util.FileChooser.DialogType;
@@ -112,6 +115,8 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private final JButton btnBrowseCustomModel;
 
+	protected final PanelSmoothContour panelSmoothContour;
+
 	private final String executableName;
 
 	public CellposeDetectorConfigurationPanel(
@@ -134,7 +139,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		this.logger = model.getLogger();
 
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
+		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
 		gridBagLayout.columnWidths = new int[] { 144, 0, 32 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
 		setLayout( gridBagLayout );
@@ -395,10 +400,31 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		add( chckbxSimplify, gbcChckbxSimplify );
 
 		/*
+		 * Smoothing scale. Will be visible only if the input image is 3D.
+		 */
+
+		boolean smoothingScaleVisible = false;
+		if ( null != settings.imp && !DetectionUtils.is2D( settings.imp ) )
+			smoothingScaleVisible = true;
+
+		gridy++;
+
+		final double scale = -1.;
+		panelSmoothContour = new PanelSmoothContour( scale, model.getSpaceUnits() );
+		final GridBagConstraints gbcPanelSmooth = new GridBagConstraints();
+		gbcPanelSmooth.gridwidth = 3;
+		gbcPanelSmooth.insets = new Insets( 5, 5, 5, 5 );
+		gbcPanelSmooth.fill = GridBagConstraints.HORIZONTAL;
+		gbcPanelSmooth.gridx = 0;
+		gbcPanelSmooth.gridy = gridy;
+		add( panelSmoothContour, gbcPanelSmooth );
+		panelSmoothContour.setVisible( smoothingScaleVisible );
+
+		/*
 		 * Preview.
 		 */
 
-		gridy = 16;
+		gridy = 17;
 
 		final GridBagConstraints gbcBtnPreview = new GridBagConstraints();
 		gbcBtnPreview.gridwidth = 3;
@@ -482,6 +508,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
 		chckbxUseGPU.setSelected( ( boolean ) settings.get( KEY_USE_GPU ) );
 		chckbxSimplify.setSelected( ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS ) );
+		final Object smoothObj = settings.get( KEY_SMOOTHING_SCALE );
+		if ( null != smoothObj )
+		{
+			final double scale = ( ( Number ) smoothObj ).doubleValue();
+			panelSmoothContour.setScale( scale );
+		}
 	}
 
 	@Override
@@ -500,6 +532,8 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		settings.put( KEY_CELL_DIAMETER, diameter );
 		settings.put( KEY_SIMPLIFY_CONTOURS, chckbxSimplify.isSelected() );
 		settings.put( KEY_USE_GPU, chckbxUseGPU.isSelected() );
+
+		settings.put( KEY_SMOOTHING_SCALE, panelSmoothContour.getScale() );
 
 		settings.put( KEY_LOGGER, logger );
 
