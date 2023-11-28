@@ -12,8 +12,8 @@ import javax.swing.JLabel;
 
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorConfigurationPanel;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
+import fiji.plugin.trackmate.gui.GuiUtils;
 import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
 import fiji.plugin.trackmate.gui.displaysettings.StyleElements;
 import fiji.plugin.trackmate.omnipose.OmniposeDetectorConfigurationPanel;
@@ -82,7 +82,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		add( lblFlowThreshold, gbcLblFlowThreshold );
 
 		final SliderPanelDouble sliderPanelFlowThreshold = StyleElements.linkedSliderPanel( flowThresholdEl, 3, 0.1 );
-		AdvancedCellposeDetectorConfigurationPanel.setFont( sliderPanelFlowThreshold, SMALL_FONT );
+		GuiUtils.setFont( sliderPanelFlowThreshold, SMALL_FONT );
 		final GridBagConstraints gbcFlowThresholdSlider = new GridBagConstraints();
 		gbcFlowThresholdSlider.anchor = GridBagConstraints.EAST;
 		gbcFlowThresholdSlider.insets = new Insets( 0, 5, 5, 5 );
@@ -108,7 +108,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		add( lblCellProb, gbcLblCellProb );
 
 		final SliderPanelDouble sliderPanelCellProbThreshold = StyleElements.linkedSliderPanel( cellProbThresholdEl, 3, 0.4 );
-		AdvancedCellposeDetectorConfigurationPanel.setFont( sliderPanelCellProbThreshold, SMALL_FONT );
+		GuiUtils.setFont( sliderPanelCellProbThreshold, SMALL_FONT );
 		final GridBagConstraints gbcCellProbThresholdSlider = new GridBagConstraints();
 		gbcCellProbThresholdSlider.anchor = GridBagConstraints.EAST;
 		gbcCellProbThresholdSlider.insets = new Insets( 0, 5, 5, 5 );
