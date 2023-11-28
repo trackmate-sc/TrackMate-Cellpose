@@ -282,7 +282,10 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		output.getCalibration().pixelWidth = calibration[ 0 ];
 		output.getCalibration().pixelHeight = calibration[ 1 ];
 		output.getCalibration().pixelDepth = calibration[ 2 ];
-		output.setDimensions( 1, imps.get( 0 ).getImageStackSize(), imps.size() );
+		if ( is3d )
+			output.setDimensions( 1, imps.get( 0 ).getImageStackSize(), imps.size() );
+		else
+			output.setDimensions( 1, 1, imps.size() );
 		output.setOpenAsHyperStack( true );
 
 		/*
