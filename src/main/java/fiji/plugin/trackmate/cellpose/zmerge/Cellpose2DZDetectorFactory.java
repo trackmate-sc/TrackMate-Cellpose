@@ -35,7 +35,7 @@ import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW - 2. )
+@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW - 3.2 )
 public class Cellpose2DZDetectorFactory< T extends RealType< T > & NativeType< T > > implements SpotDetectorFactory< T >
 {
 

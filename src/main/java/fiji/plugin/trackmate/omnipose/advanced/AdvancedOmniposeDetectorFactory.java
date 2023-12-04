@@ -59,7 +59,7 @@ import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW - 1. )
+@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW - 4.1 )
 public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeType< T > > extends OmniposeDetectorFactory< T >
 {
 
