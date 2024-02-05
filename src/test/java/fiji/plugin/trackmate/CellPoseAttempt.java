@@ -35,7 +35,9 @@ public class CellPoseAttempt
 		try
 		{
 			ImageJ.main( args );
+//			IJ.openImage( "samples/R2_multiC-crop.tif" ).show();
 			IJ.openImage( "samples/cellpose3D-crop.tif" ).show();
+//			IJ.openImage( "samples/DPW test2 210923 n4-cropped-2channels.tif" ).show();
 			new TrackMatePlugIn().run( null );
 //		new TrackMatePlugIn().run( "samples/R2_multiC.tif" );
 //		new TrackMatePlugIn().run( "D:/Projects/JYTinevez/TrackMate-StarDist/CTCMetrics/Brightfield/01.tif" );
