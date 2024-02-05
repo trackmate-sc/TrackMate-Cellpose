@@ -30,6 +30,7 @@ import fiji.plugin.trackmate.tracking.overlap.OverlapTrackerFactory;
 import fiji.plugin.trackmate.util.TMUtils;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
@@ -187,9 +188,34 @@ public class Cellpose2DZDetectorFactory< T extends RealType< T > & NativeType< T
 		final int timeDim = img.dimensionIndex( Axes.TIME );
 		final ImgPlus< T > imgT = timeDim < 0 ? img : ImgPlusViews.hyperSlice( img, timeDim, frame );
 		final double smoothingScale = ( ( Number ) settings.get( KEY_SMOOTHING_SCALE ) ).doubleValue();
-
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
-		return new Process2DZ<>( imgT, interval, calibration, s, true, smoothingScale );
+
+		/*
+		 * We need to modify the interval: Because cellpose detector uses a
+		 * KEY_CHANNEL in its settings, and because the 2D+Z version is a
+		 * SpotDetectorFactory, the channel dimension in the interval will
+		 * receive the value of the KEY_CHANNEL parameter, read from the
+		 * cellpose config, which might be invalid (there is a 'grayscale = -1'
+		 * value there).
+		 */
+
+		final int cDim = img.dimensionIndex( Axes.CHANNEL );
+		final Interval allCInterval;
+		if ( cDim >= 0 )
+		{
+			final long[] min = new long[ interval.numDimensions() ];
+			final long[] max = new long[ interval.numDimensions() ];
+			interval.min( min );
+			interval.max( max );
+			min[ cDim ] = img.min( cDim );
+			max[ cDim ] = img.max( cDim );
+			allCInterval = FinalInterval.wrap( min, max );
+		}
+		else
+		{
+			allCInterval = interval;
+		}
+		return new Process2DZ<>( imgT, allCInterval, calibration, s, true, smoothingScale );
 	}
 
 	@Override
