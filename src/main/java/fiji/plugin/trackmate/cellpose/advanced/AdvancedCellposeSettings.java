@@ -12,6 +12,8 @@ public class AdvancedCellposeSettings extends CellposeSettings
 
 	private final double cellProbThreshold;
 
+        private final boolean resample; // compute dynamics at original image size
+        
 	public AdvancedCellposeSettings(
 			final String cellposePythonPath,
 			final PretrainedModelCellpose model,
@@ -22,11 +24,13 @@ public class AdvancedCellposeSettings extends CellposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours,
 			final double flowThreshold,
-			final double cellProbThreshold )
+			final double cellProbThreshold,
+                        final boolean resample )
 	{
 		super( cellposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 		this.flowThreshold = flowThreshold;
 		this.cellProbThreshold = cellProbThreshold;
+                this.resample = resample;
 	}
 
 	@Override
@@ -37,6 +41,8 @@ public class AdvancedCellposeSettings extends CellposeSettings
 		cmd.add( String.valueOf( flowThreshold ) );
 		cmd.add( "--cellprob_threshold" );
 		cmd.add( String.valueOf( cellProbThreshold ) );
+                if ( !resample )
+                    cmd.add( "--no_resample");
 		return Collections.unmodifiableList( cmd );
 	}
 
@@ -51,7 +57,16 @@ public class AdvancedCellposeSettings extends CellposeSettings
 		private double flowThreshold = 0.4;
 
 		private double cellProbThreshold = 0.0;
+                
+                private boolean resample = true; // CellPose resample parameters: if dynamics are computed at original size (slower but more accurate)
 
+                public Builder resample( final boolean resample )
+		{
+			this.resample = resample;
+			return this;
+		}
+
+                
 		public Builder flowThreshold( final double flowThreshold )
 		{
 			this.flowThreshold = flowThreshold;
@@ -133,7 +148,8 @@ public class AdvancedCellposeSettings extends CellposeSettings
 					useGPU,
 					simplifyContours,
 					flowThreshold,
-					cellProbThreshold );
+					cellProbThreshold,
+                                       resample );
 		}
 	}
 }
