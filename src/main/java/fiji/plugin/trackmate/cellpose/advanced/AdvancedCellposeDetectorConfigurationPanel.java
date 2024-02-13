@@ -2,6 +2,7 @@ package fiji.plugin.trackmate.cellpose.advanced;
 
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_RESAMPLE;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 
 import java.awt.Component;
@@ -16,8 +17,11 @@ import javax.swing.JLabel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
+import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
 import fiji.plugin.trackmate.gui.displaysettings.StyleElements;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 
 public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetectorConfigurationPanel
 {
@@ -60,6 +64,10 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		}
 	};
 
+        
+	protected final JCheckBox chckbxResample;
+
+        
 	public AdvancedCellposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
 		super( settings, model );
@@ -115,6 +123,22 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcCellProbThresholdSlider.gridwidth = 2;
 		gbcCellProbThresholdSlider.gridy = gridy;
 		add( sliderPanelCellProbThreshold, gbcCellProbThresholdSlider );
+                
+                /*
+		 * Add resample option.
+		 */
+
+		gridy++;
+		chckbxResample = new JCheckBox( "Resample:" );
+		chckbxResample.setHorizontalTextPosition( SwingConstants.LEFT );
+		chckbxResample.setFont( SMALL_FONT );
+		final GridBagConstraints gbcChckbxResample = new GridBagConstraints();
+		gbcChckbxResample.anchor = GridBagConstraints.EAST;
+		gbcChckbxResample.insets = new Insets( 0, 0, 0, 5 );
+		gbcChckbxResample.gridx = 0;
+		gbcChckbxResample.gridy = gridy;
+		add( chckbxResample, gbcChckbxResample );
+
 	}
 
 	@Override
@@ -125,6 +149,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		flowThresholdEl.update();
 		cellProbThresholdEl.set( ( double ) settings.get( KEY_CELL_PROB_THRESHOLD ) );
 		cellProbThresholdEl.update();
+                chckbxResample.setSelected( ( boolean ) settings.get( KEY_RESAMPLE ) );
 	}
 
 	@Override
@@ -133,6 +158,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		final Map< String, Object > settings = super.getSettings();
 		settings.put( KEY_FLOW_THRESHOLD, flowThresholdEl.get() );
 		settings.put( KEY_CELL_PROB_THRESHOLD, cellProbThresholdEl.get() );
+                settings.put( KEY_RESAMPLE, chckbxResample.isSelected() );
 		return settings;
 	}
 
