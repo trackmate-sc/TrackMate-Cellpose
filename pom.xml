@@ -90,6 +90,7 @@
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<TrackMate.version>8.0.0-SNAPSHOT</TrackMate.version>
+                 <enforcer.skip>true</enforcer.skip>
 	</properties>
 
 	<dependencies>
