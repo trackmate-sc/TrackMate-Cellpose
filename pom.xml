@@ -89,7 +89,7 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-		<TrackMate.version>7.13.2</TrackMate.version>
+		<TrackMate.version>7.13.3-SNAPSHOT</TrackMate.version>
 	</properties>
 
 	<dependencies>

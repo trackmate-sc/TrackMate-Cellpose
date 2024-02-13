@@ -100,6 +100,23 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	public static final String KEY_CELL_PROB_THRESHOLD = "CELL_PROB_THRESHOLD";
 
 	public static final Double DEFAULT_CELL_PROB_THRESHOLD = Double.valueOf( 0. );
+      
+        /**
+	 * The key to the parameter that store the resampling option.
+	 * From cellpose docs:
+	 * <p>
+	 * The cellpose network is run on your rescaled image – where the rescaling factor is determined by the diameter you input (or determined automatically as above). 
+         * For instance, if you have an image with 60 pixel diameter cells, the rescaling factor is 30./60. = 0.5. 
+         * After determining the flows (dX, dY, cellprob), the model runs the dynamics. 
+         * The dynamics can be run at the rescaled size (resample=False), or the dynamics can be run on the resampled, interpolated flows at the true image size (resample=True). 
+         * resample=True will create smoother ROIs when the cells are large but will be slower in case; 
+         * resample=False will find more ROIs when the cells are small but will be slower in this case. 
+         * By default in versions >=1.0 resample=True.
+	 */
+        
+        public static final Boolean DEFAULT_RESAMPLE = true;
+        
+        public static final String KEY_RESAMPLE = "RESAMPLE";
 
 	/** A string key identifying this factory. */
 	public static final String DETECTOR_KEY = "CELLPOSE_ADVANCED_DETECTOR";
@@ -150,7 +167,8 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		// Advanced settings.
 
 		final double flowThreshold = ( Double ) settings.get( KEY_FLOW_THRESHOLD );
-		final double cellProbThreshold = ( Double ) settings.get( KEY_CELL_PROB_THRESHOLD );
+		final double cellProbThreshold = ( Double ) settings.get( KEY_CELL_PROB_THRESHOLD );        
+		final boolean resample = ( Boolean ) settings.get( KEY_RESAMPLE );
 
 		final AdvancedCellposeSettings cellposeSettings = AdvancedCellposeSettings
 				.create()
@@ -164,6 +182,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 				.simplifyContours( simplifyContours )
 				.flowThreshold( flowThreshold )
 				.cellProbThreshold( cellProbThreshold )
+                                .resample(resample)
 				.get();
 
 		// Logger.
@@ -181,6 +200,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = writeAttribute( settings, element, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
+                ok = ok && writeAttribute( settings, element, KEY_RESAMPLE, Boolean.class, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();
 		return ok;
@@ -201,6 +221,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok && readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_FLOW_THRESHOLD, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_PROB_THRESHOLD, errorHolder );
+                ok = ok && readBooleanAttribute( element, settings, KEY_RESAMPLE, errorHolder );
 
 		// Read model.
 		final String str = element.getAttributeValue( KEY_CELLPOSE_MODEL );
@@ -226,6 +247,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		final Map< String, Object > settings = super.getDefaultSettings();
 		settings.put( KEY_FLOW_THRESHOLD, DEFAULT_FLOW_THRESHOLD );
 		settings.put( KEY_CELL_PROB_THRESHOLD, DEFAULT_CELL_PROB_THRESHOLD );
+                settings.put( KEY_RESAMPLE, DEFAULT_RESAMPLE );
 		return settings;
 	}
 
@@ -244,6 +266,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
+		ok = ok & checkParameter( settings, KEY_RESAMPLE, Boolean.class, errorHolder );
 
 		// If we have a logger, test it is of the right class.
 		final Object loggerObj = settings.get( KEY_LOGGER );
@@ -266,7 +289,8 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 				KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH,
 				KEY_LOGGER,
 				KEY_FLOW_THRESHOLD,
-				KEY_CELL_PROB_THRESHOLD );
+				KEY_CELL_PROB_THRESHOLD,
+				KEY_RESAMPLE );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();
