@@ -131,7 +131,6 @@ public abstract class AbstractCellposeSettings
 		// 3D?
 		if ( is3D )
 		{
-			cmd.add( "--do_3D" );
 			cmd.add( "--anisotropy" );
 			cmd.add( Double.toString( anisotropy ) );
 		}

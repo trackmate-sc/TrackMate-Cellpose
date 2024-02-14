@@ -21,6 +21,10 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class CellposeSettings extends AbstractCellposeSettings
 {
 
@@ -60,7 +64,7 @@ public class CellposeSettings extends AbstractCellposeSettings
 		protected PretrainedModelCellpose model = PretrainedModelCellpose.CYTO;
 
 		protected double diameter = 30.;
-
+                  
 		protected boolean useGPU = true;
 
 		protected boolean simplifyContours = true;
@@ -102,6 +106,7 @@ public class CellposeSettings extends AbstractCellposeSettings
 			this.useGPU = useGPU;
 			return this;
 		}
+                
 
 		public Builder simplifyContours( final boolean simplifyContours )
 		{
@@ -172,4 +177,16 @@ public class CellposeSettings extends AbstractCellposeSettings
 	}
 
 	public static final CellposeSettings DEFAULT = new Builder().get();
+        
+        
+	@Override
+	public List< String > toCmdLine( final String imagesDir, final boolean is3D, final double anisotropy )
+	{
+		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir, is3D, anisotropy ) );
+                if ( is3D )
+                {
+                        cmd.add("--do_3D");
+                }
+		return Collections.unmodifiableList( cmd );
+	}
 }
