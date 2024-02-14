@@ -139,7 +139,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		this.logger = model.getLogger();
 
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
+		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
 		gridBagLayout.columnWidths = new int[] { 144, 0, 32 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
 		setLayout( gridBagLayout );

@@ -12,6 +12,10 @@ public class AdvancedCellposeSettings extends CellposeSettings
 
 	private final double cellProbThreshold;
 
+        private final boolean do2DZ; // use the 2D+stitch CellPose mode for 3D images
+        
+        private final double iouThreshold; // in mode 2D+Z, min IOU to link segmentations accross Z
+        
         private final boolean resample; // compute dynamics at original image size
         
 	public AdvancedCellposeSettings(
@@ -25,11 +29,15 @@ public class AdvancedCellposeSettings extends CellposeSettings
 			final boolean simplifyContours,
 			final double flowThreshold,
 			final double cellProbThreshold,
+                        final boolean do2DZ,
+                        final double iouThreshold,
                         final boolean resample )
 	{
 		super( cellposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 		this.flowThreshold = flowThreshold;
 		this.cellProbThreshold = cellProbThreshold;
+                this.do2DZ = do2DZ;
+                this.iouThreshold = iouThreshold;
                 this.resample = resample;
 	}
 
@@ -41,6 +49,19 @@ public class AdvancedCellposeSettings extends CellposeSettings
 		cmd.add( String.valueOf( flowThreshold ) );
 		cmd.add( "--cellprob_threshold" );
 		cmd.add( String.valueOf( cellProbThreshold ) );
+                if ( is3D )
+                {
+                    if ( do2DZ )
+                    {
+                        cmd.remove("--do_3D");
+                        cmd.add("--stitch_threshold");
+                        cmd.add( String.valueOf( iouThreshold ) );
+                    }
+                    else
+                    {
+                        cmd.add("--do_3D");
+                    }
+                }
                 if ( !resample )
                     cmd.add( "--no_resample");
 		return Collections.unmodifiableList( cmd );
@@ -57,6 +78,10 @@ public class AdvancedCellposeSettings extends CellposeSettings
 		private double flowThreshold = 0.4;
 
 		private double cellProbThreshold = 0.0;
+                
+                private boolean do2DZ = false; // cellPose 3D mode (xy, yz, zy or 2D+stitch)
+                
+                private double iouThreshold = 0.25;
                 
                 private boolean resample = true; // CellPose resample parameters: if dynamics are computed at original size (slower but more accurate)
 
@@ -77,6 +102,18 @@ public class AdvancedCellposeSettings extends CellposeSettings
 		{
 			this.cellProbThreshold = cellProbThreshold;
 			return this;
+		}
+                           
+		public Builder do2DZ( final boolean do2DZ )
+		{
+			this.do2DZ = do2DZ;
+                        return this;
+		}
+                
+                public Builder iouThreshold( final double iouThreshold )
+		{
+			this.iouThreshold = iouThreshold;
+                        return this;
 		}
 
 		@Override
@@ -149,6 +186,8 @@ public class AdvancedCellposeSettings extends CellposeSettings
 					simplifyContours,
 					flowThreshold,
 					cellProbThreshold,
+                                        do2DZ,
+                                        iouThreshold,
                                        resample );
 		}
 	}
