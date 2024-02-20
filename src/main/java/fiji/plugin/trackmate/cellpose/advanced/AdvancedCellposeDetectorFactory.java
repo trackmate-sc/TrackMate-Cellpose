@@ -100,6 +100,17 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	public static final String KEY_CELL_PROB_THRESHOLD = "CELL_PROB_THRESHOLD";
 
 	public static final Double DEFAULT_CELL_PROB_THRESHOLD = Double.valueOf( 0. );
+        
+        /**
+	 * The key to the parameter that store the minimum size to keep masks.
+	 * Used only if do_3D mode or 2D+Z and stitch_threshold > 0
+         * From cellpose docs:
+	 * <p>
+	 * Minimum number of pixels per mask, can turn off with -1. 
+	 */
+	public static final String KEY_CELL_MIN_SIZE = "CELL_MIN_SIZE";
+
+	public static final Double DEFAULT_CELL_MIN_SIZE = Double.valueOf( 15. );
       
         /**
 	 * The key to the parameter that store the resampling option.
@@ -169,7 +180,9 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		final double flowThreshold = ( Double ) settings.get( KEY_FLOW_THRESHOLD );
 		final double cellProbThreshold = ( Double ) settings.get( KEY_CELL_PROB_THRESHOLD );        
 		final boolean resample = ( Boolean ) settings.get( KEY_RESAMPLE );
-
+                // min size: get rid of masks with few pixels in CP (but done on original image size, so possible bias of anisotropy)       
+                final double cellMinSize = ( double ) settings.get( KEY_CELL_MIN_SIZE ); // in pixels
+                
 		final AdvancedCellposeSettings cellposeSettings = AdvancedCellposeSettings
 				.create()
 				.cellposePythonPath( cellposePythonPath )
@@ -182,6 +195,9 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 				.simplifyContours( simplifyContours )
 				.flowThreshold( flowThreshold )
 				.cellProbThreshold( cellProbThreshold )
+				.cellMinSize( cellMinSize )
+//                                .do2DZ( do2DZ )
+//                                .iouThreshold( iouThreshold )
                                 .resample(resample)
 				.get();
 
@@ -200,6 +216,9 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = writeAttribute( settings, element, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
+                ok = ok && writeAttribute( settings, element, KEY_CELL_MIN_SIZE, Double.class, errorHolder );
+//                ok = ok && writeAttribute( settings, element, KEY_DO2DZ, Boolean.class, errorHolder );
+//                ok = ok && writeAttribute( settings, element, KEY_IOU_THRESHOLD, Double.class, errorHolder );
                 ok = ok && writeAttribute( settings, element, KEY_RESAMPLE, Boolean.class, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();
@@ -221,6 +240,9 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok && readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_FLOW_THRESHOLD, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_PROB_THRESHOLD, errorHolder );
+		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_MIN_SIZE, errorHolder );
+//                ok = ok && readBooleanAttribute( element, settings, KEY_DO2DZ, errorHolder );
+//                ok = ok && readDoubleAttribute( element, settings, KEY_IOU_THRESHOLD, errorHolder );
                 ok = ok && readBooleanAttribute( element, settings, KEY_RESAMPLE, errorHolder );
 
 		// Read model.
@@ -247,6 +269,9 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		final Map< String, Object > settings = super.getDefaultSettings();
 		settings.put( KEY_FLOW_THRESHOLD, DEFAULT_FLOW_THRESHOLD );
 		settings.put( KEY_CELL_PROB_THRESHOLD, DEFAULT_CELL_PROB_THRESHOLD );
+                settings.put( KEY_CELL_MIN_SIZE, DEFAULT_CELL_MIN_SIZE );
+//                settings.put( KEY_DO2DZ, DEFAULT_DO2DZ );
+//                settings.put( KEY_IOU_THRESHOLD, DEFAULT_IOU_THRESHOLD );
                 settings.put( KEY_RESAMPLE, DEFAULT_RESAMPLE );
 		return settings;
 	}
@@ -266,7 +291,11 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
-		ok = ok & checkParameter( settings, KEY_RESAMPLE, Boolean.class, errorHolder );
+                ok = ok & checkParameter( settings, KEY_CELL_MIN_SIZE, Double.class, errorHolder );
+//                ok = ok & checkParameter( settings, KEY_DO2DZ, Boolean.class, errorHolder );
+//                ok = ok & checkParameter( settings, KEY_IOU_THRESHOLD, Double.class, errorHolder );
+                ok = ok & checkParameter( settings, KEY_RESAMPLE, Boolean.class, errorHolder );
+//		ok = ok & checkOptionalParameter( settings, KEY_SMOOTHING_SCALE, Double.class, errorHolder );
 
 		// If we have a logger, test it is of the right class.
 		final Object loggerObj = settings.get( KEY_LOGGER );
@@ -290,7 +319,11 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 				KEY_LOGGER,
 				KEY_FLOW_THRESHOLD,
 				KEY_CELL_PROB_THRESHOLD,
+                                KEY_CELL_MIN_SIZE,
+//                                KEY_DO2DZ,
+//                                KEY_IOU_THRESHOLD,
 				KEY_RESAMPLE );
+//				KEY_SMOOTHING_SCALE );
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();

@@ -33,6 +33,7 @@ import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPL
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
 import static fiji.plugin.trackmate.gui.Fonts.FONT;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
+import static java.lang.Integer.min;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -49,6 +50,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +99,8 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 	protected final JComboBox< PretrainedModel > cmbboxPretrainedModel;
 
 	protected final JComboBox< String > cmbboxCh1;
+        
+        protected int nbChannels;
 
 	protected final JComboBox< String > cmbboxCh2;
 
@@ -134,7 +138,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		this.logger = model.getLogger();
 
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
+		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
 		gridBagLayout.columnWidths = new int[] { 144, 0, 32 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
 		setLayout( gridBagLayout );
@@ -285,11 +289,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentInChannel.gridy = gridy;
 		add( lblSegmentInChannel, gbcLblSegmentInChannel );
 
-		final List< String > l1 = Arrays.asList(
-				"0: grayscale",
-				"1: red",
-				"2: green",
-				"3: blue" );
+                nbChannels = min(settings.imp.getNChannels(),3); // CellPose cannot segment in chanels > 3 (setup for R, G, B)
+                final List<String> l1 = new ArrayList<String>();
+                for (int c=1; c<=nbChannels; c++ )
+                {
+                    l1.add(""+c);
+                }
 		cmbboxCh1 = new JComboBox<>( new Vector<>( l1 ) );
 		cmbboxCh1.setFont( SMALL_FONT );
 		final GridBagConstraints gbcSpinner = new GridBagConstraints();
@@ -299,7 +304,8 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcSpinner.gridx = 1;
 		gbcSpinner.gridy = gridy;
 		add( cmbboxCh1, gbcSpinner );
-
+                
+                
 		/*
 		 * Channel 2.
 		 */
@@ -315,11 +321,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentInChannelOptional.gridy = gridy;
 		add( lblSegmentInChannelOptional, gbcLblSegmentInChannelOptional );
 
-		final List< String > l2 = Arrays.asList(
-				"0: none",
-				"1: red",
-				"2: green",
-				"3: blue" );
+                final List<String> l2 = new ArrayList<String>();
+                l2.add("0: None");
+                for (int c=1; c<=nbChannels; c++ )
+                {
+                    l2.add(""+c);
+                }
 		cmbboxCh2 = new JComboBox<>( new Vector<>( l2 ) );
 		cmbboxCh2.setFont( SMALL_FONT );
 		final GridBagConstraints gbcSpinnerCh2 = new GridBagConstraints();
@@ -398,7 +405,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		 * Preview.
 		 */
 
-		gridy = 16;
+		gridy = 18;
 
 		final GridBagConstraints gbcBtnPreview = new GridBagConstraints();
 		gbcBtnPreview.gridwidth = 3;
@@ -477,7 +484,17 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		tfCellposeExecutable.setText( ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ) );
 		tfCustomPath.setText( ( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH ) );
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_CELLPOSE_MODEL ) );
-		cmbboxCh1.setSelectedIndex( ( int ) settings.get( KEY_TARGET_CHANNEL ) );
+                int key_target = (int) settings.get(KEY_TARGET_CHANNEL)-1;
+                // to ensure that the default channel to segment parameter is compatible with number of channels in the image
+                if ( key_target >= nbChannels )
+                {
+                    key_target = nbChannels-1;
+                }
+                if ( key_target < 0 ) 
+                { 
+                    key_target = 0; 
+                }
+		cmbboxCh1.setSelectedIndex( key_target );
 		cmbboxCh2.setSelectedIndex( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ) );
 		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
 		chckbxUseGPU.setSelected( ( boolean ) settings.get( KEY_USE_GPU ) );
@@ -492,8 +509,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		settings.put( KEY_CELLPOSE_PYTHON_FILEPATH, tfCellposeExecutable.getText() );
 		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
 		settings.put( KEY_CELLPOSE_MODEL, cmbboxPretrainedModel.getSelectedItem() );
-
-		settings.put( KEY_TARGET_CHANNEL, cmbboxCh1.getSelectedIndex() );
+		settings.put( KEY_TARGET_CHANNEL, cmbboxCh1.getSelectedIndex()+1 );
 		settings.put( KEY_OPTIONAL_CHANNEL_2, cmbboxCh2.getSelectedIndex() );
 
 		final double diameter = ( ( Number ) ftfDiameter.getValue() ).doubleValue();
