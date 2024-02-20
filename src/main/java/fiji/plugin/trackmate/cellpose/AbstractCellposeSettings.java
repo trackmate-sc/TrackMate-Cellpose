@@ -111,7 +111,7 @@ public abstract class AbstractCellposeSettings
 
 		// First channel.
 		cmd.add( "--chan" );
-		cmd.add( "" + chan );
+		cmd.add( "" + (chan) );
 
 		// Second channel.
 		if ( chan2 >= 0 )
