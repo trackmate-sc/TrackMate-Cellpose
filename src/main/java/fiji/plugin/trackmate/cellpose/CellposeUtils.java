@@ -51,8 +51,8 @@ public class CellposeUtils
 			imgTCZ = ImgPlusViews.hyperSlice( imgTC, zDim, imgTC.min( zDim ) );
 		else
 			imgTCZ = imgTC;
-
-		return imgTCZ;
+                
+                return imgTCZ;
 	}
 
 	public static URL getResource( final String name )
