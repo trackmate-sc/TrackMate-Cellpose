@@ -6,6 +6,9 @@
 /.project
 /.settings/
 
+## IntelliJ ##
+/.idea
+
 ## vim ##
 *.swp
 
