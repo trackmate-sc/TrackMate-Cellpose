@@ -1,8 +1,11 @@
 package fiji.plugin.trackmate.cellpose;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import ij.IJ;
 
 public abstract class AbstractCellposeSettings
 {
@@ -88,6 +91,14 @@ public abstract class AbstractCellposeSettings
 		final String lastItem = split[ split.length - 1 ];
 		if ( lastItem.toLowerCase().startsWith( "python" ) )
 		{
+			// Activate conda env if it runs in Windows.
+			if ( IJ.isWindows() )
+			{
+				final String envname = split[ split.length - 2 ];
+				cmd.addAll( Arrays.asList( "cmd.exe", "/c", "conda", "activate", envname ) );
+				cmd.add( "&" );
+			}
+
 			// Calling Cellpose from python.
 			cmd.add( executablePath );
 			cmd.add( "-m" );
