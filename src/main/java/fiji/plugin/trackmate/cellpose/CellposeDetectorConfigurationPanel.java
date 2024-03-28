@@ -36,6 +36,7 @@ import static fiji.plugin.trackmate.gui.Fonts.FONT;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 import static java.lang.Integer.min;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
@@ -65,6 +66,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -123,6 +126,8 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private final String executableName;
 
+	protected final JPanel mainPanel;
+
 	public CellposeDetectorConfigurationPanel(
 			final Settings settings,
 			final Model model )
@@ -142,11 +147,20 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		this.executableName = executableName;
 		this.logger = model.getLogger();
 
+		final BorderLayout borderLayout = new BorderLayout();
+		setLayout( borderLayout );
+
+		this.mainPanel = new JPanel();
+		final JScrollPane scrollPane = new JScrollPane( mainPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+		scrollPane.setBorder( null );
+		scrollPane.getVerticalScrollBar().setUnitIncrement( 16 );
+		add( scrollPane, BorderLayout.CENTER );
+
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
 		gridBagLayout.columnWidths = new int[] { 144, 0, 32 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
-		setLayout( gridBagLayout );
+		mainPanel.setLayout( gridBagLayout );
 
 		int gridy = 0;
 
@@ -159,7 +173,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblDetector.fill = GridBagConstraints.HORIZONTAL;
 		gbcLblDetector.gridx = 0;
 		gbcLblDetector.gridy = gridy;
-		add( lblDetector, gbcLblDetector );
+		mainPanel.add( lblDetector, gbcLblDetector );
 
 		gridy++;
 
@@ -176,7 +190,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblUrl.insets = new Insets( 0, 10, 5, 15 );
 		gbcLblUrl.gridx = 0;
 		gbcLblUrl.gridy = gridy;
-		add( lblUrl, gbcLblUrl );
+		mainPanel.add( lblUrl, gbcLblUrl );
 
 		/*
 		 * Path to Python or Cellpose.
@@ -192,7 +206,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblCusstomModelFile.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblCusstomModelFile.gridx = 0;
 		gbcLblCusstomModelFile.gridy = gridy;
-		add( lblCusstomModelFile, gbcLblCusstomModelFile );
+		mainPanel.add( lblCusstomModelFile, gbcLblCusstomModelFile );
 
 		btnBrowseCellposePath = new JButton( "Browse" );
 		btnBrowseCellposePath.setFont( FONT );
@@ -201,7 +215,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcBtnBrowseCellposePath.anchor = GridBagConstraints.SOUTHEAST;
 		gbcBtnBrowseCellposePath.gridx = 2;
 		gbcBtnBrowseCellposePath.gridy = gridy;
-		add( btnBrowseCellposePath, gbcBtnBrowseCellposePath );
+		mainPanel.add( btnBrowseCellposePath, gbcBtnBrowseCellposePath );
 
 		gridy++;
 
@@ -213,7 +227,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcTfCellpose.fill = GridBagConstraints.BOTH;
 		gbcTfCellpose.gridx = 0;
 		gbcTfCellpose.gridy = gridy;
-		add( tfCellposeExecutable, gbcTfCellpose );
+		mainPanel.add( tfCellposeExecutable, gbcTfCellpose );
 		tfCellposeExecutable.setColumns( 15 );
 
 		/*
@@ -230,7 +244,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblPathToCustomModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblPathToCustomModel.gridx = 0;
 		gbcLblPathToCustomModel.gridy = gridy;
-		add( lblPathToCustomModel, gbcLblPathToCustomModel );
+		mainPanel.add( lblPathToCustomModel, gbcLblPathToCustomModel );
 
 		btnBrowseCustomModel = new JButton( "Browse" );
 		btnBrowseCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
@@ -239,7 +253,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcBtnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
 		gbcBtnBrowseCustomModel.gridx = 2;
 		gbcBtnBrowseCustomModel.gridy = gridy;
-		add( btnBrowseCustomModel, gbcBtnBrowseCustomModel );
+		mainPanel.add( btnBrowseCustomModel, gbcBtnBrowseCustomModel );
 
 		gridy++;
 
@@ -252,7 +266,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcTfCustomPath.fill = GridBagConstraints.BOTH;
 		gbcTfCustomPath.gridx = 0;
 		gbcTfCustomPath.gridy = gridy;
-		add( tfCustomPath, gbcTfCustomPath );
+		mainPanel.add( tfCustomPath, gbcTfCustomPath );
 
 		/*
 		 * Pretrained model.
@@ -267,7 +281,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblPretrainedModel.gridx = 0;
 		gbcLblPretrainedModel.gridy = gridy;
-		add( lblPretrainedModel, gbcLblPretrainedModel );
+		mainPanel.add( lblPretrainedModel, gbcLblPretrainedModel );
 
 		cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( pretrainedModels ) ) );
 		cmbboxPretrainedModel.setFont( SMALL_FONT );
@@ -277,7 +291,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
 		gbcCmbboxPretrainedModel.gridx = 1;
 		gbcCmbboxPretrainedModel.gridy = gridy;
-		add( cmbboxPretrainedModel, gbcCmbboxPretrainedModel );
+		mainPanel.add( cmbboxPretrainedModel, gbcCmbboxPretrainedModel );
 
 		/*
 		 * Channel 1
@@ -292,7 +306,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentInChannel.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSegmentInChannel.gridx = 0;
 		gbcLblSegmentInChannel.gridy = gridy;
-		add( lblSegmentInChannel, gbcLblSegmentInChannel );
+		mainPanel.add( lblSegmentInChannel, gbcLblSegmentInChannel );
 
 		// CellPose cannot segment in channels > 3 (setup for R, G, B)
 		nbChannels = min( settings.imp.getNChannels(), 3 );
@@ -309,7 +323,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcSpinner.insets = new Insets( 0, 5, 5, 5 );
 		gbcSpinner.gridx = 1;
 		gbcSpinner.gridy = gridy;
-		add( cmbboxCh1, gbcSpinner );
+		mainPanel.add( cmbboxCh1, gbcSpinner );
 
 		/*
 		 * Channel 2.
@@ -324,7 +338,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentInChannelOptional.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSegmentInChannelOptional.gridx = 0;
 		gbcLblSegmentInChannelOptional.gridy = gridy;
-		add( lblSegmentInChannelOptional, gbcLblSegmentInChannelOptional );
+		mainPanel.add( lblSegmentInChannelOptional, gbcLblSegmentInChannelOptional );
 
 		final List< String > l2 = new ArrayList< String >();
 		l2.add( "0: None" );
@@ -339,7 +353,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcSpinnerCh2.insets = new Insets( 0, 5, 5, 5 );
 		gbcSpinnerCh2.gridx = 1;
 		gbcSpinnerCh2.gridy = gridy;
-		add( cmbboxCh2, gbcSpinnerCh2 );
+		mainPanel.add( cmbboxCh2, gbcSpinnerCh2 );
 
 		/*
 		 * Diameter.
@@ -354,7 +368,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblDiameter.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblDiameter.gridx = 0;
 		gbcLblDiameter.gridy = gridy;
-		add( lblDiameter, gbcLblDiameter );
+		mainPanel.add( lblDiameter, gbcLblDiameter );
 
 		ftfDiameter = new JFormattedTextField( DIAMETER_FORMAT );
 		ftfDiameter.setHorizontalAlignment( SwingConstants.CENTER );
@@ -364,7 +378,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcFtfDiameter.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfDiameter.gridx = 1;
 		gbcFtfDiameter.gridy = gridy;
-		add( ftfDiameter, gbcFtfDiameter );
+		mainPanel.add( ftfDiameter, gbcFtfDiameter );
 
 		final JLabel lblSpaceUnits = new JLabel( model.getSpaceUnits() );
 		lblSpaceUnits.setFont( SMALL_FONT );
@@ -372,7 +386,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSpaceUnits.gridx = 2;
 		gbcLblSpaceUnits.gridy = gridy;
-		add( lblSpaceUnits, gbcLblSpaceUnits );
+		mainPanel.add( lblSpaceUnits, gbcLblSpaceUnits );
 
 		/*
 		 * Use GPU.
@@ -388,7 +402,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcChckbxUseGPU.insets = new Insets( 0, 0, 0, 5 );
 		gbcChckbxUseGPU.gridx = 0;
 		gbcChckbxUseGPU.gridy = gridy;
-		add( chckbxUseGPU, gbcChckbxUseGPU );
+		mainPanel.add( chckbxUseGPU, gbcChckbxUseGPU );
 
 		/*
 		 * Simplify contours.
@@ -403,7 +417,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcChckbxSimplify.insets = new Insets( 0, 5, 0, 5 );
 		gbcChckbxSimplify.gridx = 1;
 		gbcChckbxSimplify.gridy = gridy;
-		add( chckbxSimplify, gbcChckbxSimplify );
+		mainPanel.add( chckbxSimplify, gbcChckbxSimplify );
 
 		/*
 		 * Smoothing scale. Will be visible only if the input image is 3D.
@@ -423,7 +437,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcPanelSmooth.fill = GridBagConstraints.HORIZONTAL;
 		gbcPanelSmooth.gridx = 0;
 		gbcPanelSmooth.gridy = gridy;
-		add( panelSmoothContour, gbcPanelSmooth );
+		mainPanel.add( panelSmoothContour, gbcPanelSmooth );
 		panelSmoothContour.setVisible( smoothingScaleVisible );
 
 		/*
@@ -446,7 +460,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 				.detectionSettingsSupplier( () -> getSettings() )
 				.axisLabel( "Area histogram" )
 				.get();
-		add( detectionPreview.getPanel(), gbcBtnPreview );
+		mainPanel.add( detectionPreview.getPanel(), gbcBtnPreview );
 
 		/*
 		 * Listeners and specificities.
