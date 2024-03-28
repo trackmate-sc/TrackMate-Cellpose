@@ -7,7 +7,6 @@ import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFa
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -21,6 +20,7 @@ import javax.swing.SwingConstants;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
+import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
 import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.gui.GuiUtils;
@@ -31,6 +31,10 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final String TITLE = AdvancedCellposeDetectorFactory.NAME;
+
+	protected static final String DOC2_URL = "https://imagej.net/plugins/trackmate/trackmate-cellpose-advanced";
 
 	private final StyleElements.BoundedDoubleElement flowThresholdEl = new StyleElements.BoundedDoubleElement( "Flow threshold", 0.0, 3.0 )
 	{
@@ -76,9 +80,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 
 	public AdvancedCellposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		super( settings, model );
-		final GridBagLayout layout = ( GridBagLayout ) getLayout();
-		layout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
+		super( settings, model, TITLE, ICON, DOC2_URL, "cellpose", PretrainedModelCellpose.values() );
 
 		/** Show 3D parameter only if image has z slices */
 		boolean is3D = false;
@@ -191,6 +193,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		/*
 		 * Add resample option.
 		 */
+
 		gridy++;
 		chckbxResample = new JCheckBox( "Resample:" );
 		chckbxResample.setHorizontalTextPosition( SwingConstants.LEFT );
@@ -253,8 +256,8 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		cellProbThresholdEl.set( ( double ) settings.get( KEY_CELL_PROB_THRESHOLD ) );
 		cellProbThresholdEl.update();
 		ftfCellMinSize.setValue( ( double ) settings.get( KEY_CELL_MIN_SIZE ) );
-//                chckbxDo2DZ.setSelected( ( boolean ) settings.get( KEY_DO2DZ ) );
-//                iouThresholdEl.set( ( double ) settings.get( KEY_IOU_THRESHOLD ) );
+//		chckbxDo2DZ.setSelected( ( boolean ) settings.get( KEY_DO2DZ ) );
+//		iouThresholdEl.set( ( double ) settings.get( KEY_IOU_THRESHOLD ) );
 //		iouThresholdEl.update();
 		chckbxResample.setSelected( ( boolean ) settings.get( KEY_RESAMPLE ) );
 	}
@@ -267,8 +270,8 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		settings.put( KEY_CELL_PROB_THRESHOLD, cellProbThresholdEl.get() );
 		final double cellMinSize = ( ( Number ) ftfCellMinSize.getValue() ).doubleValue();
 		settings.put( KEY_CELL_MIN_SIZE, cellMinSize );
-//                settings.put( KEY_DO2DZ, chckbxDo2DZ.isSelected() );
-//                settings.put( KEY_IOU_THRESHOLD, iouThresholdEl.get() );
+//		settings.put( KEY_DO2DZ, chckbxDo2DZ.isSelected() );
+//		settings.put( KEY_IOU_THRESHOLD, iouThresholdEl.get() );
 		settings.put( KEY_RESAMPLE, chckbxResample.isSelected() );
 		return settings;
 	}
