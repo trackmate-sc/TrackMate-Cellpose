@@ -1,7 +1,10 @@
 package fiji.plugin.trackmate.cellpose.advanced;
 
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_MIN_SIZE;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_DO2DZ;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_IOU_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_RESAMPLE;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 
@@ -9,30 +12,24 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.util.Map;
-
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import fiji.plugin.trackmate.Model;
-import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
-import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
-import fiji.plugin.trackmate.cellpose.CellposeDetectorFactory;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_MIN_SIZE;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_DO2DZ;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_IOU_THRESHOLD;
-import fiji.plugin.trackmate.detection.DetectionUtils;
-import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
-import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
-import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
-import fiji.plugin.trackmate.gui.displaysettings.StyleElements;
 import java.awt.event.ItemListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Map;
+
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+
+import fiji.plugin.trackmate.Model;
+import fiji.plugin.trackmate.Settings;
+import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
+import fiji.plugin.trackmate.detection.DetectionUtils;
+import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
+import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
+import fiji.plugin.trackmate.gui.displaysettings.StyleElements;
 
 public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetectorConfigurationPanel
 {
@@ -260,7 +257,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
                 if (is3D )
                 {
                     final ItemListener lmode = e -> {
-			final boolean do2dz =  ( Boolean ) chckbxDo2DZ.isSelected() ;
+			final boolean do2dz =  chckbxDo2DZ.isSelected() ;
 			lblIouThreshold.setVisible( do2dz );
 			sliderPanelIouThreshold.setVisible( do2dz ); 
                         sliderPanelFlowThreshold.setEnabled( do2dz ); // flow threshold is not used in 3D mode

@@ -34,6 +34,7 @@ import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOT
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
 import static fiji.plugin.trackmate.gui.Fonts.FONT;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
+import static java.lang.Integer.min;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -50,6 +51,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -79,9 +81,6 @@ import fiji.plugin.trackmate.util.DetectionPreview;
 import fiji.plugin.trackmate.util.FileChooser;
 import fiji.plugin.trackmate.util.FileChooser.DialogType;
 import fiji.plugin.trackmate.util.FileChooser.SelectionMode;
-import static java.lang.Integer.min;
-import java.util.ArrayList;
-import net.imagej.axis.Axes;
 
 public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 {
@@ -296,7 +295,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		add( lblSegmentInChannel, gbcLblSegmentInChannel );
 
                 nbChannels = min(settings.imp.getNChannels(),3); // CellPose cannot segment in chanels > 3 (setup for R, G, B)
-                List<String> l1 = new ArrayList<String>();
+                final List<String> l1 = new ArrayList<String>();
                 for (int c=1; c<=nbChannels; c++ )
                 {
                     l1.add(""+c);
@@ -327,7 +326,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcLblSegmentInChannelOptional.gridy = gridy;
 		add( lblSegmentInChannelOptional, gbcLblSegmentInChannelOptional );
 
-                List<String> l2 = new ArrayList<String>();
+                final List<String> l2 = new ArrayList<String>();
                 l2.add("0: None");
                 for (int c=1; c<=nbChannels; c++ )
                 {
