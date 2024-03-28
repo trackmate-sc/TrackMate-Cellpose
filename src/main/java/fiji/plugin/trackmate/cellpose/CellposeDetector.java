@@ -101,7 +101,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		this.baseErrorMessage = "[" + cellposeSettings.getExecutableName() + "Detector] ";
 	}
 
-
 	@Override
 	public boolean process()
 	{
@@ -134,14 +133,14 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 //			anisotropy = 1.;
 //		}
 
-                // get images nb frames and nb channels before to do the cropping 
-                final int nslices= (int) img.dimension( img.dimensionIndex( Axes.Z ) );
+		// get images nb frames and nb channels before to do the cropping
+		final int nslices = ( int ) img.dimension( img.dimensionIndex( Axes.Z ) );
 //                final int nchannels = (int) img.dimension( img.dimensionIndex( Axes.CHANNEL ) );
-                
+
 		/*
 		 * Dispatch time-points to several tasks.
 		 */
-                
+
 		final List< ImagePlus > imps = crop( img, interval, nameGen );
 
 		final int nConcurrentTasks;
@@ -285,7 +284,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		output.getCalibration().pixelWidth = calibration[ 0 ];
 		output.getCalibration().pixelHeight = calibration[ 1 ];
 		output.getCalibration().pixelDepth = calibration[ 2 ];
-                output.setDimensions( 1, nslices, imps.size() );
+		output.setDimensions( 1, nslices, imps.size() );
 		output.setOpenAsHyperStack( true );
 
 		/*
@@ -654,15 +653,16 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			for ( long t = minT; t <= maxT; t++ )
 			{
 				final ImgPlus< T > tpTCZ = ImgPlusViews.hyperSlice( img, timeIndex, t );
-                                 
-                                // Put if necessary the channel axis as the last one (CellPose format)
-                                final int chanDim = tpTCZ.dimensionIndex(Axes.CHANNEL);
-                                ImgPlus<T> tp = tpTCZ;
-                                if ( chanDim > 1 )
-                                {
-                                   tp = ImgPlusViews.moveAxis(tpTCZ, chanDim, tpTCZ.numDimensions()-1);
-                                }
-                                // possibly 2D or 3D with or without channel.
+
+				// Put if necessary the channel axis as the last one (CellPose
+				// format)
+				final int chanDim = tpTCZ.dimensionIndex( Axes.CHANNEL );
+				ImgPlus< T > tp = tpTCZ;
+				if ( chanDim > 1 )
+				{
+					tp = ImgPlusViews.moveAxis( tpTCZ, chanDim, tpTCZ.numDimensions() - 1 );
+				}
+				// possibly 2D or 3D with or without channel.
 				final IntervalView< T > crop = Views.interval( tp, cropInterval );
 				final String name = nameGen.apply( t ) + ".tif";
 				imps.add( ImageJFunctions.wrap( crop, name ) );

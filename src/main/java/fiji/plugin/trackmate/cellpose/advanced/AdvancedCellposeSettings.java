@@ -13,9 +13,9 @@ public class AdvancedCellposeSettings extends CellposeSettings
 	private final double cellProbThreshold;
 
 	private final boolean resample; // compute dynamics at original image size
-        
-        private final double cellMinSize; // minimum size of masks to keep them in CP
-        
+
+	private final double cellMinSize; // minimum size of masks to keep them in CP
+
 	public AdvancedCellposeSettings(
 			final String cellposePythonPath,
 			final PretrainedModelCellpose model,
@@ -27,30 +27,30 @@ public class AdvancedCellposeSettings extends CellposeSettings
 			final boolean simplifyContours,
 			final double flowThreshold,
 			final double cellProbThreshold,
-                        final double cellMinSize,
+			final double cellMinSize,
 //                        final boolean do2DZ,
 //                        final double iouThreshold,
-                        final boolean resample )
+			final boolean resample )
 	{
 		super( cellposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 		this.flowThreshold = flowThreshold;
 		this.cellProbThreshold = cellProbThreshold;
-                this.cellMinSize = cellMinSize;
+		this.cellMinSize = cellMinSize;
 //                this.do2DZ = do2DZ;
 //                this.iouThreshold = iouThreshold;
-                this.resample = resample;
+		this.resample = resample;
 	}
 
 	@Override
 	public List< String > toCmdLine( final String imagesDir )
 	{
-		final List< String > cmd = new ArrayList<>(super.toCmdLine( imagesDir ));
+		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir ) );
 		cmd.add( "--flow_threshold" );
 		cmd.add( String.valueOf( flowThreshold ) );
 		cmd.add( "--cellprob_threshold" );
 		cmd.add( String.valueOf( cellProbThreshold ) );
-                cmd.add( "--min_size" );
-		cmd.add( String.valueOf( (int) cellMinSize ) );
+		cmd.add( "--min_size" );
+		cmd.add( String.valueOf( ( int ) cellMinSize ) );
 //                if ( is3D )
 //                {
 //                    if ( do2DZ )
@@ -64,8 +64,8 @@ public class AdvancedCellposeSettings extends CellposeSettings
 //                   // cmd.add("--do_3D");
 //                   // }
 //                }
-                if ( !resample )
-                    cmd.add( "--no_resample");
+		if ( !resample )
+			cmd.add( "--no_resample" );
 		return Collections.unmodifiableList( cmd );
 	}
 
@@ -80,22 +80,23 @@ public class AdvancedCellposeSettings extends CellposeSettings
 		private double flowThreshold = 0.4;
 
 		private double cellProbThreshold = 0.0;
-                
-                private double cellMinSize = 15;  // CellPose default min_size value
-                
+
+		private double cellMinSize = 15; // CellPose default min_size value
+
 //                private boolean do2DZ = false; // cellPose 3D mode (xy, yz, zy or 2D+stitch)
 //                
 //                private double iouThreshold = 0.25;
-                
-                private boolean resample = true; // CellPose resample parameters: if dynamics are computed at original size (slower but more accurate)
 
-                public Builder resample( final boolean resample )
+		private boolean resample = true; // CellPose resample parameters: if
+											// dynamics are computed at original
+											// size (slower but more accurate)
+
+		public Builder resample( final boolean resample )
 		{
 			this.resample = resample;
 			return this;
 		}
 
-                
 		public Builder flowThreshold( final double flowThreshold )
 		{
 			this.flowThreshold = flowThreshold;
@@ -107,13 +108,13 @@ public class AdvancedCellposeSettings extends CellposeSettings
 			this.cellProbThreshold = cellProbThreshold;
 			return this;
 		}
-                
-                public Builder cellMinSize( final double cMinSize )
+
+		public Builder cellMinSize( final double cMinSize )
 		{
 			this.cellMinSize = cMinSize;
 			return this;
 		}
-                           
+
 //		public Builder do2DZ( final boolean do2DZ )
 //		{
 //			this.do2DZ = do2DZ;
@@ -196,10 +197,10 @@ public class AdvancedCellposeSettings extends CellposeSettings
 					simplifyContours,
 					flowThreshold,
 					cellProbThreshold,
-                                        cellMinSize,
+					cellMinSize,
 //                                        do2DZ,
 //                                        iouThreshold,
-                                       resample );
+					resample );
 		}
 	}
 }
