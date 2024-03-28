@@ -99,7 +99,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblFlowThreshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblFlowThreshold.gridx = 0;
 		gbcLblFlowThreshold.gridy = gridy;
-		add( lblFlowThreshold, gbcLblFlowThreshold );
+		mainPanel.add( lblFlowThreshold, gbcLblFlowThreshold );
 
 		final SliderPanelDouble sliderPanelFlowThreshold = StyleElements.linkedSliderPanel( flowThresholdEl, 3, 0.1 );
 		GuiUtils.setFont( sliderPanelFlowThreshold, SMALL_FONT );
@@ -110,7 +110,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcFlowThresholdSlider.gridx = 1;
 		gbcFlowThresholdSlider.gridwidth = 2;
 		gbcFlowThresholdSlider.gridy = gridy;
-		add( sliderPanelFlowThreshold, gbcFlowThresholdSlider );
+		mainPanel.add( sliderPanelFlowThreshold, gbcFlowThresholdSlider );
 
 		/*
 		 * Add cell probability threshold.
@@ -125,7 +125,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblCellProb.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblCellProb.gridx = 0;
 		gbcLblCellProb.gridy = gridy;
-		add( lblCellProb, gbcLblCellProb );
+		mainPanel.add( lblCellProb, gbcLblCellProb );
 
 		final SliderPanelDouble sliderPanelCellProbThreshold = StyleElements.linkedSliderPanel( cellProbThresholdEl, 3, 0.4 );
 		GuiUtils.setFont( sliderPanelCellProbThreshold, SMALL_FONT );
@@ -136,7 +136,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcCellProbThresholdSlider.gridx = 1;
 		gbcCellProbThresholdSlider.gridwidth = 2;
 		gbcCellProbThresholdSlider.gridy = gridy;
-		add( sliderPanelCellProbThreshold, gbcCellProbThresholdSlider );
+		mainPanel.add( sliderPanelCellProbThreshold, gbcCellProbThresholdSlider );
 
 		/*
 		 * Cell minimum size
@@ -150,7 +150,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblCellMinSize.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblCellMinSize.gridx = 0;
 		gbcLblCellMinSize.gridy = gridy;
-		add( lblCellMinSize, gbcLblCellMinSize );
+		mainPanel.add( lblCellMinSize, gbcLblCellMinSize );
 		lblCellMinSize.setVisible( is3D );
 
 		ftfCellMinSize = new JFormattedTextField( CELLMINSIZE_FORMAT );
@@ -161,7 +161,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcFtfCellMinSize.fill = GridBagConstraints.HORIZONTAL;
 		gbcFtfCellMinSize.gridx = 1;
 		gbcFtfCellMinSize.gridy = gridy;
-		add( ftfCellMinSize, gbcFtfCellMinSize );
+		mainPanel.add( ftfCellMinSize, gbcFtfCellMinSize );
 		ftfCellMinSize.setVisible( is3D );
 
 		final JLabel lblSpaceUnits = new JLabel( "pixels" );
@@ -170,8 +170,8 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblSpaceUnits.gridx = 2;
 		gbcLblSpaceUnits.gridy = gridy;
-		add( lblSpaceUnits, gbcLblSpaceUnits );
 		lblSpaceUnits.setVisible( is3D );
+		mainPanel.add( lblSpaceUnits, gbcLblSpaceUnits );
 
 		/*
 		 * 3D mode option.
@@ -186,8 +186,8 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 //		gbcChckbxDo2DZ.insets = new Insets( 0, 0, 0, 5 );
 //		gbcChckbxDo2DZ.gridx = 0;
 //		gbcChckbxDo2DZ.gridy = gridy;
-//		add( chckbxDo2DZ, gbcChckbxDo2DZ );
-//                chckbxDo2DZ.setVisible(is3D);
+//		mainPanel.add( chckbxDo2DZ, gbcChckbxDo2DZ );
+//		chckbxDo2DZ.setVisible( is3D );
 
 		/*
 		 * Add resample option.
@@ -202,48 +202,52 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcChckbxResample.insets = new Insets( 0, 0, 0, 5 );
 		gbcChckbxResample.gridx = 2;
 		gbcChckbxResample.gridy = gridy;
-		add( chckbxResample, gbcChckbxResample );
+		mainPanel.add( chckbxResample, gbcChckbxResample );
 
 		/*
 		 * Add iou threshold.
 		 */
+		
 		gridy++;
-//		final JLabel lblIouThreshold = new JLabel( "IOU threshold:" );
+
+//		final JLabel lblIouThreshold = new JLabel( "IoU threshold:" );
 //		lblIouThreshold.setFont( SMALL_FONT );
 //		final GridBagConstraints gbcLblIouThreshold = new GridBagConstraints();
 //		gbcLblIouThreshold.anchor = GridBagConstraints.EAST;
-//		gbcLblIouThreshold.insets = new Insets( 0, 5, 5, 5 );
+//		gbcLblIouThreshold.insets = new Insets( 5, 5, 5, 5 );
 //		gbcLblIouThreshold.gridx = 0;
 //		gbcLblIouThreshold.gridy = gridy;
-//		add( lblIouThreshold, gbcLblIouThreshold );
-//                lblIouThreshold.setVisible(is3D);
-//
+//		mainPanel.add( lblIouThreshold, gbcLblIouThreshold );
+//		lblIouThreshold.setVisible( is3D );
+
 //		final SliderPanelDouble sliderPanelIouThreshold = StyleElements.linkedSliderPanel( iouThresholdEl, 3, 0.1 );
 //		setFont( sliderPanelIouThreshold, SMALL_FONT );
 //		final GridBagConstraints gbcIouThresholdSlider = new GridBagConstraints();
 //		gbcIouThresholdSlider.anchor = GridBagConstraints.EAST;
-//		gbcIouThresholdSlider.insets = new Insets( 0, 5, 5, 5 );
+//		gbcIouThresholdSlider.insets = new Insets( 5, 5, 5, 5 );
 //		gbcIouThresholdSlider.fill = GridBagConstraints.HORIZONTAL;
 //		gbcIouThresholdSlider.gridx = 1;
 //		gbcIouThresholdSlider.gridwidth = 2;
 //		gbcIouThresholdSlider.gridy = gridy;
-//		add( sliderPanelIouThreshold, gbcIouThresholdSlider );
-//                sliderPanelIouThreshold.setVisible(is3D);
+//		mainPanel.add( sliderPanelIouThreshold, gbcIouThresholdSlider );
+//		sliderPanelIouThreshold.setVisible( is3D );
 
 		/*
 		 * Listeners and specificities.
 		 */
-//                if (is3D )
-//                {
-//                    final ItemListener lmode = e -> {
-//			final boolean do2dz =  ( Boolean ) chckbxDo2DZ.isSelected() ;
-//			lblIouThreshold.setVisible( do2dz );
-//			sliderPanelIouThreshold.setVisible( do2dz ); 
-//                        sliderPanelFlowThreshold.setEnabled( do2dz ); // flow threshold is not used in 3D mode
-//                    };
-//                    chckbxDo2DZ.addItemListener( lmode );
-//                    lmode.itemStateChanged( null );
-//                }                
+
+//		if ( is3D )
+//		{
+//			final ItemListener lmode = e -> {
+//				final boolean do2dz = chckbxDo2DZ.isSelected();
+//				lblIouThreshold.setVisible( do2dz );
+//				sliderPanelIouThreshold.setVisible( do2dz );
+//				sliderPanelFlowThreshold.setEnabled( do2dz );
+//				// flow threshold is not used in 3D mode
+//			};
+//			chckbxDo2DZ.addItemListener( lmode );
+//			lmode.itemStateChanged( null );
+//		}
 	}
 
 	@Override

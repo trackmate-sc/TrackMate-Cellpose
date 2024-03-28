@@ -79,7 +79,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		gbcLblFlowThreshold.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblFlowThreshold.gridx = 0;
 		gbcLblFlowThreshold.gridy = gridy;
-		add( lblFlowThreshold, gbcLblFlowThreshold );
+		mainPanel.add( lblFlowThreshold, gbcLblFlowThreshold );
 
 		final SliderPanelDouble sliderPanelFlowThreshold = StyleElements.linkedSliderPanel( flowThresholdEl, 3, 0.1 );
 		GuiUtils.setFont( sliderPanelFlowThreshold, SMALL_FONT );
@@ -90,7 +90,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		gbcFlowThresholdSlider.gridx = 1;
 		gbcFlowThresholdSlider.gridwidth = 2;
 		gbcFlowThresholdSlider.gridy = gridy;
-		add( sliderPanelFlowThreshold, gbcFlowThresholdSlider );
+		mainPanel.add( sliderPanelFlowThreshold, gbcFlowThresholdSlider );
 
 		/*
 		 * Add cell probability threshold.
@@ -105,7 +105,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		gbcLblCellProb.insets = new Insets( 0, 5, 5, 5 );
 		gbcLblCellProb.gridx = 0;
 		gbcLblCellProb.gridy = gridy;
-		add( lblCellProb, gbcLblCellProb );
+		mainPanel.add( lblCellProb, gbcLblCellProb );
 
 		final SliderPanelDouble sliderPanelCellProbThreshold = StyleElements.linkedSliderPanel( cellProbThresholdEl, 3, 0.4 );
 		GuiUtils.setFont( sliderPanelCellProbThreshold, SMALL_FONT );
@@ -116,7 +116,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		gbcCellProbThresholdSlider.gridx = 1;
 		gbcCellProbThresholdSlider.gridwidth = 2;
 		gbcCellProbThresholdSlider.gridy = gridy;
-		add( sliderPanelCellProbThreshold, gbcCellProbThresholdSlider );
+		mainPanel.add( sliderPanelCellProbThreshold, gbcCellProbThresholdSlider );
 	}
 
 	@Override
