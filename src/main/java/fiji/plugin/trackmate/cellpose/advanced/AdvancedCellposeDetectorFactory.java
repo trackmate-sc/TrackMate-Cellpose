@@ -163,6 +163,8 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	/** The pretty name of the target detector. */
 	public static final String NAME = "Cellpose advanced detector";
 
+	public static final String DOC2_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose-advanced";
+
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on cellpose to detect objects."
@@ -177,7 +179,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "Nat Methods 18, 100–106 (2021)</a>"
 			+ "<p>"
 			+ "Documentation for this module "
-			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-advanced-cellpose\">on the ImageJ Wiki</a>."
+			+ "<a href=\"" + DOC2_URL + "\">on the ImageJ Wiki</a>."
 			+ "</html>";
 
 	/*

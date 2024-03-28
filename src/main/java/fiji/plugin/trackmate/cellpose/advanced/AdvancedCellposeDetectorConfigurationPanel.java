@@ -1,5 +1,6 @@
 package fiji.plugin.trackmate.cellpose.advanced;
 
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DOC2_URL;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_MIN_SIZE;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
@@ -33,8 +34,6 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 	private static final long serialVersionUID = 1L;
 
 	private static final String TITLE = AdvancedCellposeDetectorFactory.NAME;
-
-	protected static final String DOC2_URL = "https://imagej.net/plugins/trackmate/trackmate-cellpose-advanced";
 
 	private final StyleElements.BoundedDoubleElement flowThresholdEl = new StyleElements.BoundedDoubleElement( "Flow threshold", 0.0, 3.0 )
 	{
