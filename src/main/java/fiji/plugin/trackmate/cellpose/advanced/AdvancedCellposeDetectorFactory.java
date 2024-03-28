@@ -179,7 +179,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "Nat Methods 18, 100–106 (2021)</a>"
 			+ "<p>"
 			+ "Documentation for this module "
-			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-advanced-cellpose\">on the ImageJ Wiki</a>."
+			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-cellpose-advanced\">on the ImageJ Wiki</a>."
 			+ "</html>";
 
 	/*
