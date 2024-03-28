@@ -26,6 +26,7 @@ import javax.swing.SwingConstants;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
+import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
 import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
@@ -35,6 +36,10 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final String TITLE = AdvancedCellposeDetectorFactory.NAME;
+
+	protected static final String DOC2_URL = "https://imagej.net/plugins/trackmate/trackmate-cellpose-advanced";
 
 	private final StyleElements.BoundedDoubleElement flowThresholdEl = new StyleElements.BoundedDoubleElement( "Flow threshold", 0.0, 3.0 )
 	{
@@ -54,7 +59,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		}
 	};
 
-	private final StyleElements.BoundedDoubleElement cellProbThresholdEl = new StyleElements.BoundedDoubleElement("Cell prob", -6.0, 6.0)
+	private final StyleElements.BoundedDoubleElement cellProbThresholdEl = new StyleElements.BoundedDoubleElement( "Cell prob", -6.0, 6.0 )
 	{
 
 		private double cellProbThreshold = 0.;
@@ -71,12 +76,12 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 			cellProbThreshold = v;
 		}
 	};
-        
-        private static final NumberFormat CELLMINSIZE_FORMAT = new DecimalFormat( "#.#" );
-        
-        protected final JFormattedTextField ftfCellMinSize;
 
-        private final StyleElements.BoundedDoubleElement iouThresholdEl = new StyleElements.BoundedDoubleElement( "IOU threshold", 0.0, 1.0 )
+	private static final NumberFormat CELLMINSIZE_FORMAT = new DecimalFormat( "#.#" );
+
+	protected final JFormattedTextField ftfCellMinSize;
+
+	private final StyleElements.BoundedDoubleElement iouThresholdEl = new StyleElements.BoundedDoubleElement( "IOU threshold", 0.0, 1.0 )
 	{
 
 		private double iouThreshold = 0.25;
@@ -93,21 +98,20 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 			iouThreshold = v;
 		}
 	};
-        
-        protected final JCheckBox chckbxDo2DZ;
-        
+
+	protected final JCheckBox chckbxDo2DZ;
+
 	protected final JCheckBox chckbxResample;
 
-        
 	public AdvancedCellposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		super( settings, model );
+		super( settings, model, TITLE, ICON, DOC2_URL, "cellpose", PretrainedModelCellpose.values() );
 
-                /** Show 3D parameter only if image has z slices */
-                boolean is3D = false;
+		/** Show 3D parameter only if image has z slices */
+		boolean is3D = false;
 		if ( null != settings.imp && !DetectionUtils.is2D( settings.imp ) )
 			is3D = true;
-                
+
 		/*
 		 * Add flow threshold.
 		 */
@@ -159,14 +163,13 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcCellProbThresholdSlider.gridwidth = 2;
 		gbcCellProbThresholdSlider.gridy = gridy;
 		add( sliderPanelCellProbThreshold, gbcCellProbThresholdSlider );
-                
-                                
-               /*
-                * Cell minimum size
-                */ 
-                gridy++;
-                
-                final JLabel lblCellMinSize = new JLabel( "Remove cells below:" );
+
+		/*
+		 * Cell minimum size
+		 */
+		gridy++;
+
+		final JLabel lblCellMinSize = new JLabel( "Remove cells below:" );
 		lblCellMinSize.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblCellMinSize = new GridBagConstraints();
 		gbcLblCellMinSize.anchor = GridBagConstraints.EAST;
@@ -174,7 +177,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblCellMinSize.gridx = 0;
 		gbcLblCellMinSize.gridy = gridy;
 		add( lblCellMinSize, gbcLblCellMinSize );
-                lblCellMinSize.setVisible(is3D);
+		lblCellMinSize.setVisible( is3D );
 
 		ftfCellMinSize = new JFormattedTextField( CELLMINSIZE_FORMAT );
 		ftfCellMinSize.setHorizontalAlignment( SwingConstants.CENTER );
@@ -185,8 +188,8 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcFtfCellMinSize.gridx = 1;
 		gbcFtfCellMinSize.gridy = gridy;
 		add( ftfCellMinSize, gbcFtfCellMinSize );
-                ftfCellMinSize.setVisible(is3D);
-                
+		ftfCellMinSize.setVisible( is3D );
+
 		final JLabel lblSpaceUnits = new JLabel( "pixels" );
 		lblSpaceUnits.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblSpaceUnits = new GridBagConstraints();
@@ -194,8 +197,8 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblSpaceUnits.gridx = 2;
 		gbcLblSpaceUnits.gridy = gridy;
 		add( lblSpaceUnits, gbcLblSpaceUnits );
-                
-                 /*
+
+		/*
 		 * 3D mode option.
 		 */
 
@@ -209,12 +212,12 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcChckbxDo2DZ.gridx = 0;
 		gbcChckbxDo2DZ.gridy = gridy;
 		add( chckbxDo2DZ, gbcChckbxDo2DZ );
-                chckbxDo2DZ.setVisible(is3D);
-                       
-                /*
+		chckbxDo2DZ.setVisible( is3D );
+
+		/*
 		 * Add resample option.
 		 */
-		//gridy++;
+		// gridy++;
 		chckbxResample = new JCheckBox( "Resample:" );
 		chckbxResample.setHorizontalTextPosition( SwingConstants.LEFT );
 		chckbxResample.setFont( SMALL_FONT );
@@ -225,10 +228,10 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcChckbxResample.gridy = gridy;
 		add( chckbxResample, gbcChckbxResample );
 
-                /*
+		/*
 		 * Add iou threshold.
 		 */
-                gridy ++;
+		gridy++;
 		final JLabel lblIouThreshold = new JLabel( "IOU threshold:" );
 		lblIouThreshold.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblIouThreshold = new GridBagConstraints();
@@ -237,7 +240,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcLblIouThreshold.gridx = 0;
 		gbcLblIouThreshold.gridy = gridy;
 		add( lblIouThreshold, gbcLblIouThreshold );
-                lblIouThreshold.setVisible(is3D);
+		lblIouThreshold.setVisible( is3D );
 
 		final SliderPanelDouble sliderPanelIouThreshold = StyleElements.linkedSliderPanel( iouThresholdEl, 3, 0.1 );
 		setFont( sliderPanelIouThreshold, SMALL_FONT );
@@ -249,24 +252,25 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		gbcIouThresholdSlider.gridwidth = 2;
 		gbcIouThresholdSlider.gridy = gridy;
 		add( sliderPanelIouThreshold, gbcIouThresholdSlider );
-                sliderPanelIouThreshold.setVisible(is3D);
-                
-                /*
+		sliderPanelIouThreshold.setVisible( is3D );
+
+		/*
 		 * Listeners and specificities.
 		 */
-                if (is3D )
-                {
-                    final ItemListener lmode = e -> {
-			final boolean do2dz =  chckbxDo2DZ.isSelected() ;
-			lblIouThreshold.setVisible( do2dz );
-			sliderPanelIouThreshold.setVisible( do2dz ); 
-                        sliderPanelFlowThreshold.setEnabled( do2dz ); // flow threshold is not used in 3D mode
-                    };
-                    chckbxDo2DZ.addItemListener( lmode );
-                    lmode.itemStateChanged( null );
-                }
-                
-                
+		if ( is3D )
+		{
+			final ItemListener lmode = e -> {
+				final boolean do2dz = chckbxDo2DZ.isSelected();
+				lblIouThreshold.setVisible( do2dz );
+				sliderPanelIouThreshold.setVisible( do2dz );
+				sliderPanelFlowThreshold.setEnabled( do2dz ); // flow threshold
+																// is not used
+																// in 3D mode
+			};
+			chckbxDo2DZ.addItemListener( lmode );
+			lmode.itemStateChanged( null );
+		}
+
 	}
 
 	@Override
@@ -277,29 +281,29 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 		flowThresholdEl.update();
 		cellProbThresholdEl.set( ( double ) settings.get( KEY_CELL_PROB_THRESHOLD ) );
 		cellProbThresholdEl.update();
-                ftfCellMinSize.setValue( (double) settings.get( KEY_CELL_MIN_SIZE ) );
-                chckbxDo2DZ.setSelected( ( boolean ) settings.get( KEY_DO2DZ ) );
-                iouThresholdEl.set( ( double ) settings.get( KEY_IOU_THRESHOLD ) );
+		ftfCellMinSize.setValue( ( double ) settings.get( KEY_CELL_MIN_SIZE ) );
+		chckbxDo2DZ.setSelected( ( boolean ) settings.get( KEY_DO2DZ ) );
+		iouThresholdEl.set( ( double ) settings.get( KEY_IOU_THRESHOLD ) );
 		iouThresholdEl.update();
-                chckbxResample.setSelected( ( boolean ) settings.get( KEY_RESAMPLE ) );
+		chckbxResample.setSelected( ( boolean ) settings.get( KEY_RESAMPLE ) );
 	}
 
 	@Override
 	public Map< String, Object > getSettings()
 	{
-            	final Map< String, Object > settings = super.getSettings();
+		final Map< String, Object > settings = super.getSettings();
 		settings.put( KEY_FLOW_THRESHOLD, flowThresholdEl.get() );
 		settings.put( KEY_CELL_PROB_THRESHOLD, cellProbThresholdEl.get() );
-                final double cellMinSize = ( ( Number ) ftfCellMinSize.getValue() ).doubleValue();
+		final double cellMinSize = ( ( Number ) ftfCellMinSize.getValue() ).doubleValue();
 		settings.put( KEY_CELL_MIN_SIZE, cellMinSize );
-                settings.put( KEY_DO2DZ, chckbxDo2DZ.isSelected() );
-                settings.put( KEY_IOU_THRESHOLD, iouThresholdEl.get() );
-                settings.put( KEY_RESAMPLE, chckbxResample.isSelected() );
+		settings.put( KEY_DO2DZ, chckbxDo2DZ.isSelected() );
+		settings.put( KEY_IOU_THRESHOLD, iouThresholdEl.get() );
+		settings.put( KEY_RESAMPLE, chckbxResample.isSelected() );
 		return settings;
 	}
-        
-        @Override
-        protected SpotDetectorFactoryBase< ? > getDetectorFactory()
+
+	@Override
+	protected SpotDetectorFactoryBase< ? > getDetectorFactory()
 	{
 		return new AdvancedCellposeDetectorFactory<>();
 	}
