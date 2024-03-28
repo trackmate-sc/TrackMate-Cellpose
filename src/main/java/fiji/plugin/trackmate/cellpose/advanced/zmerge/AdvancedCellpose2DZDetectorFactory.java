@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jdom2.Element;
-import org.scijava.Priority;
-import org.scijava.plugin.Plugin;
 
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
@@ -25,7 +23,6 @@ import fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory;
 import fiji.plugin.trackmate.cellpose.zmerge.Cellpose2DZDetectorFactory;
 import fiji.plugin.trackmate.detection.Process2DZ;
 import fiji.plugin.trackmate.detection.SpotDetector;
-import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.tracking.overlap.OverlapTrackerFactory;
 import fiji.plugin.trackmate.util.TMUtils;
 import net.imagej.ImgPlus;
@@ -35,7 +32,6 @@ import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-@Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW - 3.3 )
 public class AdvancedCellpose2DZDetectorFactory< T extends RealType< T > & NativeType< T > > extends Cellpose2DZDetectorFactory< T >
 {
 
