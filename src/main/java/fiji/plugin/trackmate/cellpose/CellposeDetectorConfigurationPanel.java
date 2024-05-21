@@ -517,9 +517,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		tfCellposeExecutable.setText( ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ) );
 		tfCustomPath.setText( ( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH ) );
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_CELLPOSE_MODEL ) );
+
 		int key_target = ( int ) settings.get( KEY_TARGET_CHANNEL ) - 1;
-		// to ensure that the default channel to segment parameter is compatible
-		// with number of channels in the image
+		/*
+		 * To ensure that the default channel to segment parameter is compatible
+		 * with number of channels in the image.
+		 */
 		if ( key_target >= nbChannels )
 		{
 			key_target = nbChannels - 1;
@@ -528,8 +531,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		{
 			key_target = 0;
 		}
-		cmbboxCh1.setSelectedIndex( key_target );
-		cmbboxCh2.setSelectedIndex( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ) );
+		final int c1 = Math.min( key_target, cmbboxCh1.getModel().getSize() - 1 );
+		cmbboxCh1.setSelectedIndex( c1 );
+
+		final int c2 = Math.min( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ), cmbboxCh2.getModel().getSize() - 1 );
+		cmbboxCh2.setSelectedIndex( c2 );
+
 		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
 		chckbxUseGPU.setSelected( ( boolean ) settings.get( KEY_USE_GPU ) );
 		chckbxSimplify.setSelected( ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS ) );

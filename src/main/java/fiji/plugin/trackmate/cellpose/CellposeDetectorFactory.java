@@ -48,6 +48,7 @@ import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
+import fiji.plugin.trackmate.detection.DetectorKeys;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
@@ -97,7 +98,10 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/**
 	 * The key to the parameter that stores the second optional channel to
-	 * segment. Use -1 to ignore.
+	 * segment. Use -1 to ignore. 0-valued. Careful, the main channel is using
+	 * the KEY_TARGET_CHANNEL key, which value is 1-valued...
+	 * 
+	 * @see DetectorKeys#KEY_TARGET_CHANNEL
 	 */
 	public static final String KEY_OPTIONAL_CHANNEL_2 = "OPTIONAL_CHANNEL_2";
 

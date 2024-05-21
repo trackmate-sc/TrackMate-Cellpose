@@ -76,8 +76,22 @@ public class OmniposeDetectorConfigurationPanel extends CellposeDetectorConfigur
 		tfCellposeExecutable.setText( ( String ) settings.get( KEY_OMNIPOSE_PYTHON_FILEPATH ) );
 		tfCustomPath.setText( ( String ) settings.get( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH ) );
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_OMNIPOSE_MODEL ) );
-		cmbboxCh1.setSelectedIndex( ( int ) settings.get( KEY_TARGET_CHANNEL ) );
-		cmbboxCh2.setSelectedIndex( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ) );
+
+		int key_target = ( int ) settings.get( KEY_TARGET_CHANNEL ) - 1;
+		/*
+		 * To ensure that the default channel to segment parameter is compatible
+		 * with number of channels in the image.
+		 */
+		if ( key_target >= nbChannels )
+			key_target = nbChannels - 1;
+		if ( key_target < 0 )
+			key_target = 0;
+		final int c1 = Math.min( key_target, cmbboxCh1.getModel().getSize() - 1 );
+		cmbboxCh1.setSelectedIndex( c1 );
+
+		final int c2 = Math.min( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ), cmbboxCh2.getModel().getSize() - 1 );
+		cmbboxCh2.setSelectedIndex( c2 );
+
 		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
 		chckbxUseGPU.setSelected( ( boolean ) settings.get( KEY_USE_GPU ) );
 		chckbxSimplify.setSelected( ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS ) );
@@ -92,7 +106,7 @@ public class OmniposeDetectorConfigurationPanel extends CellposeDetectorConfigur
 		settings.put( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
 		settings.put( KEY_OMNIPOSE_MODEL, cmbboxPretrainedModel.getSelectedItem() );
 
-		settings.put( KEY_TARGET_CHANNEL, cmbboxCh1.getSelectedIndex() );
+		settings.put( KEY_TARGET_CHANNEL, cmbboxCh1.getSelectedIndex() + 1 );
 		settings.put( KEY_OPTIONAL_CHANNEL_2, cmbboxCh2.getSelectedIndex() );
 
 		final double diameter = ( ( Number ) ftfDiameter.getValue() ).doubleValue();
