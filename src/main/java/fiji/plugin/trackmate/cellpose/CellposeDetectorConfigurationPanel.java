@@ -152,7 +152,9 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		add( scrollPane, BorderLayout.CENTER );
 
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., .1 };
+		gridBagLayout.rowWeights = new double[] {
+				0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+				0., 0., 0., 0., 0., 0., 0., 0., .1 };
 		gridBagLayout.columnWidths = new int[] { 144, 0, 32 };
 		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
 		mainPanel.setLayout( gridBagLayout );
@@ -446,6 +448,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		gbcBtnPreview.insets = new Insets( 0, 5, 5, 5 );
 		gbcBtnPreview.gridx = 0;
 		gbcBtnPreview.gridy = gridy;
+		gbcBtnPreview.anchor = GridBagConstraints.NORTH;
 
 		final DetectionPreview detectionPreview = DetectionPreview.create()
 				.model( model )
