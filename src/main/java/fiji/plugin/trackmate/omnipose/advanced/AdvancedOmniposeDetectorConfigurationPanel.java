@@ -2,6 +2,7 @@ package fiji.plugin.trackmate.omnipose.advanced;
 
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
+import static fiji.plugin.trackmate.omnipose.advanced.AdvancedOmniposeDetectorFactory.KEY_NB_CLASSES;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 
 import java.awt.GridBagConstraints;
@@ -13,11 +14,16 @@ import javax.swing.JLabel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
+import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
 import fiji.plugin.trackmate.gui.GuiUtils;
 import fiji.plugin.trackmate.gui.displaysettings.SliderPanelDouble;
 import fiji.plugin.trackmate.gui.displaysettings.StyleElements;
 import fiji.plugin.trackmate.omnipose.OmniposeDetectorConfigurationPanel;
 import fiji.plugin.trackmate.omnipose.OmniposeSettings.PretrainedModelOmnipose;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.JComboBox;
 
 public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetectorConfigurationPanel
 {
@@ -25,6 +31,8 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 	private static final long serialVersionUID = 1L;
 
 	private static final String TITLE = AdvancedOmniposeDetectorFactory.NAME;;
+        
+        protected final JComboBox< String > cmbboxNbClasses;
 
 	private final StyleElements.BoundedDoubleElement flowThresholdEl = new StyleElements.BoundedDoubleElement( "Flow threshold", 0.0, 3.0 )
 	{
@@ -65,13 +73,46 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 	public AdvancedOmniposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
 		super( settings, model, TITLE, ICON, DOC1_URL, "omnipose", PretrainedModelOmnipose.values() );
+                
+                int gridy = 12;
+                
+                
+                /*
+		 * Add model number of output classes.
+		 */
 
+		final JLabel lblNbClasses = new JLabel( "Number of output classes of the model:" );
+		lblNbClasses.setFont( SMALL_FONT );
+		final GridBagConstraints gbcLblNbClasses = new GridBagConstraints();
+		gbcLblNbClasses.anchor = GridBagConstraints.EAST;
+		gbcLblNbClasses.insets = new Insets( 0, 5, 5, 5 );
+		gbcLblNbClasses.gridx = 0;
+		gbcLblNbClasses.gridy = gridy;
+		mainPanel.add( lblNbClasses, gbcLblNbClasses );
+                
+                int nbClassesMin = 2;
+                int nbClassesMax = 4;
+
+		final List< String > lNbClasses = new ArrayList< String >();
+                for ( int nc = nbClassesMin; nc <= nbClassesMax; nc++ )
+                    lNbClasses.add( "" + nc );
+
+		cmbboxNbClasses = new JComboBox<>( new Vector<>( lNbClasses ) );
+		cmbboxNbClasses.setFont( SMALL_FONT );
+		final GridBagConstraints gbcSpinner = new GridBagConstraints();
+		gbcSpinner.fill = GridBagConstraints.HORIZONTAL;
+		gbcSpinner.gridwidth = 2;
+		gbcSpinner.insets = new Insets( 0, 5, 5, 5 );
+		gbcSpinner.gridx = 1;
+		gbcSpinner.gridy = gridy;
+		mainPanel.add( cmbboxNbClasses, gbcSpinner );
+
+                
 		/*
 		 * Add flow threshold.
 		 */
-
-		int gridy = 12;
-
+                gridy++;
+                   
 		final JLabel lblFlowThreshold = new JLabel( "Flow threshold:" );
 		lblFlowThreshold.setFont( SMALL_FONT );
 		final GridBagConstraints gbcLblFlowThreshold = new GridBagConstraints();
@@ -133,6 +174,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		flowThresholdEl.update();
 		cellProbThresholdEl.set( ( double ) settings.get( KEY_CELL_PROB_THRESHOLD ) );
 		cellProbThresholdEl.update();
+                cmbboxNbClasses.setSelectedIndex( (int) settings.get( KEY_NB_CLASSES ) );
 	}
 
 	@Override
@@ -141,6 +183,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		final Map< String, Object > settings = super.getSettings();
 		settings.put( KEY_FLOW_THRESHOLD, flowThresholdEl.get() );
 		settings.put( KEY_CELL_PROB_THRESHOLD, cellProbThresholdEl.get() );
+                settings.put( KEY_NB_CLASSES, cmbboxNbClasses.getSelectedIndex() + 2);
 		return settings;
 	}
 }

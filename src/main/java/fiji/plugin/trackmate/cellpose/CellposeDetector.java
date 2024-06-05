@@ -37,11 +37,14 @@ import fiji.plugin.trackmate.SpotCollection;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
+import fiji.plugin.trackmate.omnipose.advanced.AdvancedOmniposeSettings;
 import fiji.plugin.trackmate.util.TMUtils;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.NewImage;
 import ij.plugin.Concatenator;
+import ij.plugin.Duplicator;
 import ij.process.ImageConverter;
 import ij.process.StackConverter;
 import net.imagej.ImgPlus;
@@ -553,7 +556,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			for ( final ImagePlus imp : imps )
 			{
 				final String name = imp.getShortTitle() + ".tif";
-				IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
+                                // If we are running an advanced omnipose detector, just save the segmentation channel as tmp image
+                                if (cellposeSettings instanceof AdvancedOmniposeSettings) {
+                                    ImagePlus chanImp = new Duplicator().run(imp, cellposeSettings.chan, cellposeSettings.chan, 0, 0, 0, 0);
+                                    IJ.saveAsTiff( chanImp, Paths.get( tmpDir.toString(), name ).toString() );
+                                } else {
+                                    IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
+                                }
 			}
 
 			/*

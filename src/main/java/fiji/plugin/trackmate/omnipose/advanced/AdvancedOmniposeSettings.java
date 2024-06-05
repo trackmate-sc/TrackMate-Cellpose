@@ -11,6 +11,8 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 	private final double flowThreshold;
 
 	private final double cellProbThreshold;
+        
+        private final int nbClasses;
 
 	public AdvancedOmniposeSettings(
 			final String omniposePythonPath,
@@ -22,11 +24,13 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours,
 			final double flowThreshold,
-			final double cellProbThreshold )
+			final double cellProbThreshold,
+                        final int nbClasses)
 	{
 		super( omniposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 		this.flowThreshold = flowThreshold;
 		this.cellProbThreshold = cellProbThreshold;
+                this.nbClasses = nbClasses;
 	}
 
 	@Override
@@ -41,7 +45,11 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 		 */
 		cmd.add( "--mask_threshold" );
 		cmd.add( String.valueOf( cellProbThreshold ) );
-		return Collections.unmodifiableList( cmd );
+                
+                cmd.add( "--nclasses" );
+		cmd.add( String.valueOf( nbClasses ) );
+                
+                return Collections.unmodifiableList( cmd );
 	}
 
 	public static Builder create()
@@ -51,10 +59,12 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 
 	public static final class Builder extends OmniposeSettings.Builder
 	{
-
+                
 		private double flowThreshold = 0.4;
 
 		private double cellProbThreshold = 0.0;
+                
+                private int nbClasses = 4;
 
 		public Builder flowThreshold( final double flowThreshold )
 		{
@@ -67,7 +77,13 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 			this.cellProbThreshold = cellProbThreshold;
 			return this;
 		}
-
+                
+                public Builder nbClasses( final int nbClasses )
+		{
+			this.nbClasses = nbClasses;
+			return this;
+		}
+                                
 		@Override
 		public Builder channel1( final int ch )
 		{
@@ -137,7 +153,8 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 					useGPU,
 					simplifyContours,
 					flowThreshold,
-					cellProbThreshold );
+					cellProbThreshold,
+                                        nbClasses);
 		}
 	}
 }
