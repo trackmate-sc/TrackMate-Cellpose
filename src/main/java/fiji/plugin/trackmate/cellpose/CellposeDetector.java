@@ -41,7 +41,6 @@ import fiji.plugin.trackmate.omnipose.advanced.AdvancedOmniposeSettings;
 import fiji.plugin.trackmate.util.TMUtils;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.gui.NewImage;
 import ij.plugin.Concatenator;
 import ij.plugin.Duplicator;
