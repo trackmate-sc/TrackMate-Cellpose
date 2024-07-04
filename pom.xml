@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>34.0.0</version>
+		<version>37.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>TrackMate-Cellpose</artifactId>
-	<version>0.1.3-SNAPSHOT</version>
+	<version>0.2.0-SNAPSHOT</version>
 
 	<name>TrackMate-Cellpose</name>
 	<description>TrackMate detector based on cellpose and omnipose.</description>
@@ -89,7 +89,7 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-		<TrackMate.version>7.11.1</TrackMate.version>
+		<TrackMate.version>7.13.2</TrackMate.version>
 	</properties>
 
 	<dependencies>
