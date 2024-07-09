@@ -3,8 +3,6 @@ package fiji.plugin.trackmate.omnipose.advanced;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
-import static fiji.plugin.trackmate.omnipose.advanced.AdvancedOmniposeDetectorFactory.KEY_NB_CLASSES;
-
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.ArrayList;
@@ -31,7 +29,6 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 
 	private static final String TITLE = AdvancedOmniposeDetectorFactory.NAME;;
 
-	protected final JComboBox< String > cmbboxNbClasses;
 
 	private final StyleElements.BoundedDoubleElement flowThresholdEl = new StyleElements.BoundedDoubleElement( "Flow threshold", 0.0, 3.0 )
 	{
@@ -74,36 +71,6 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		super( settings, model, TITLE, ICON, DOC1_URL, "omnipose", PretrainedModelOmnipose.values() );
 
 		int gridy = 12;
-
-		/*
-		 * Add model number of output classes.
-		 */
-
-		final JLabel lblNbClasses = new JLabel( "N. output classes:" );
-		lblNbClasses.setFont( SMALL_FONT );
-		final GridBagConstraints gbcLblNbClasses = new GridBagConstraints();
-		gbcLblNbClasses.anchor = GridBagConstraints.EAST;
-		gbcLblNbClasses.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblNbClasses.gridx = 0;
-		gbcLblNbClasses.gridy = gridy;
-		mainPanel.add( lblNbClasses, gbcLblNbClasses );
-
-		final int nbClassesMin = 2;
-		final int nbClassesMax = 4;
-
-		final List< String > lNbClasses = new ArrayList< String >();
-		for ( int nc = nbClassesMin; nc <= nbClassesMax; nc++ )
-			lNbClasses.add( "" + nc );
-
-		cmbboxNbClasses = new JComboBox<>( new Vector<>( lNbClasses ) );
-		cmbboxNbClasses.setFont( SMALL_FONT );
-		final GridBagConstraints gbcSpinner = new GridBagConstraints();
-		gbcSpinner.fill = GridBagConstraints.HORIZONTAL;
-		gbcSpinner.gridwidth = 2;
-		gbcSpinner.insets = new Insets( 0, 5, 5, 5 );
-		gbcSpinner.gridx = 1;
-		gbcSpinner.gridy = gridy;
-		mainPanel.add( cmbboxNbClasses, gbcSpinner );
 
 		/*
 		 * Add flow threshold.
@@ -171,7 +138,6 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		flowThresholdEl.update();
 		cellProbThresholdEl.set( ( double ) settings.get( KEY_CELL_PROB_THRESHOLD ) );
 		cellProbThresholdEl.update();
-		cmbboxNbClasses.setSelectedIndex( ( int ) settings.get( KEY_NB_CLASSES ) );
 	}
 
 	@Override
@@ -180,7 +146,6 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 		final Map< String, Object > settings = super.getSettings();
 		settings.put( KEY_FLOW_THRESHOLD, flowThresholdEl.get() );
 		settings.put( KEY_CELL_PROB_THRESHOLD, cellProbThresholdEl.get() );
-		settings.put( KEY_NB_CLASSES, cmbboxNbClasses.getSelectedIndex() + 2 );
 		return settings;
 	}
 }

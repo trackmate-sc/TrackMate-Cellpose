@@ -4,8 +4,10 @@ import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNE
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
@@ -37,7 +40,7 @@ import fiji.plugin.trackmate.SpotCollection;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
-import fiji.plugin.trackmate.omnipose.advanced.AdvancedOmniposeSettings;
+import fiji.plugin.trackmate.omnipose.OmniposeSettings;
 import fiji.plugin.trackmate.util.TMUtils;
 import ij.IJ;
 import ij.ImagePlus;
@@ -555,13 +558,17 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			for ( final ImagePlus imp : imps )
 			{
 				final String name = imp.getShortTitle() + ".tif";
-                                // If we are running an advanced omnipose detector, just save the segmentation channel as tmp image
-                                if (cellposeSettings instanceof AdvancedOmniposeSettings) {
-                                    ImagePlus chanImp = new Duplicator().run(imp, cellposeSettings.chan, cellposeSettings.chan, 0, 0, 0, 0);
-                                    IJ.saveAsTiff( chanImp, Paths.get( tmpDir.toString(), name ).toString() );
-                                } else {
-                                    IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
-                                }
+				// If we are running an omnipose detector, just save the
+				// segmentation channel as tmp image
+				if ( cellposeSettings instanceof OmniposeSettings )
+				{
+					final ImagePlus chanImp = new Duplicator().run( imp, cellposeSettings.chan, cellposeSettings.chan, 0, 0, 0, 0 );
+					IJ.saveAsTiff( chanImp, Paths.get( tmpDir.toString(), name ).toString() );
+				}
+				else
+				{
+					IJ.saveAsTiff( imp, Paths.get( tmpDir.toString(), name ).toString() );
+				}
 			}
 
 			/*
@@ -569,18 +576,72 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			 */
 
 			try
-			{
-				final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
-				logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
-				logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
-				logger.log( String.join( " ", cmd ) );
-				logger.log( "\n" );
-				final ProcessBuilder pb = new ProcessBuilder( cmd );
-				pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
-				pb.redirectError( ProcessBuilder.Redirect.INHERIT );
 
-				process = pb.start();
-				process.waitFor();
+			{
+				if ( cellposeSettings instanceof OmniposeSettings )
+				{
+					final List< String > cmdOmni = new ArrayList<>( cellposeSettings.toCmdLine( tmpDir.toString() ) );
+
+					int nClasses = 2; // 2 by default in custom models
+					cmdOmni.add( "--nclasses" );
+					cmdOmni.add( String.valueOf( nClasses ) );
+
+					logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
+					logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
+					logger.log( String.join( " ", cmdOmni ) );
+					logger.log( "\n" );
+
+					final ProcessBuilder pbOmni = new ProcessBuilder( cmdOmni );
+					pbOmni.redirectErrorStream( true );
+					process = pbOmni.start();
+
+					final BufferedReader reader = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
+					final String pythonErrorOutput = reader.lines().collect( Collectors.joining() );
+					if ( pythonErrorOutput.contains( "size mismatch for output.2.bias:" ) )
+					{
+						if ( pythonErrorOutput.contains( "copying a param with shape torch.Size([4]) from checkpoint" ) )
+						{
+							nClasses = 3;
+							logger.log( "Regarding the model loaded, --nclasses argument should be set to " + String.valueOf( nClasses ) + "\n" );
+						}
+						else
+						{
+							nClasses = 4;
+							logger.log( "Regarding the model loaded, --nclasses argument should be set to " + String.valueOf( nClasses ) + "\n" );
+						}
+
+						cmdOmni.remove( cmdOmni.size() - 1 );
+						cmdOmni.add( String.valueOf( nClasses ) );
+
+						logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
+						logger.log( String.join( " ", cmdOmni ) );
+						logger.log( "\n" );
+						final ProcessBuilder updatedPbOmni = new ProcessBuilder( cmdOmni );
+						updatedPbOmni.redirectOutput( ProcessBuilder.Redirect.INHERIT );
+						updatedPbOmni.redirectError( ProcessBuilder.Redirect.INHERIT );
+
+						process = updatedPbOmni.start();
+						process.waitFor();
+					}
+					else if ( pythonErrorOutput.contains( "pretrained model has incorrect path" ) )
+					{
+						logger.log( "Pretrained model has incorrect path \n" );
+					}
+				}
+				else
+				{
+					final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
+					logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
+					logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
+					logger.log( String.join( " ", cmd ) );
+					logger.log( "\n" );
+					final ProcessBuilder pb = new ProcessBuilder( cmd );
+					pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
+					pb.redirectError( ProcessBuilder.Redirect.INHERIT );
+
+					process = pb.start();
+					process.waitFor();
+				}
 			}
 			catch ( final IOException e )
 			{

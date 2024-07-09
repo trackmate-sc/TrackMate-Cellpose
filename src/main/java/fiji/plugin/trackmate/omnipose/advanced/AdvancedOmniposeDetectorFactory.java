@@ -83,16 +83,7 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "<p>"
 			+ "Documentation for this module "
 			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-advanced-omnipose\">on the ImageJ Wiki</a>."
-			+ "</html>";
-
-         /**
-	 * The key to the parameter that store the output number of classes. 
-	 */
-        public static final String KEY_NB_CLASSES = "NB_CLASSES";
-
-	public static final Integer DEFAULT_NB_CLASSES = Integer.valueOf( 0 );
-
-        
+			+ "</html>";        
 	/*
 	 * METHODS
 	 */
@@ -120,7 +111,6 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 
 		final double flowThreshold = ( Double ) settings.get( KEY_FLOW_THRESHOLD );
 		final double cellProbThreshold = ( Double ) settings.get( KEY_CELL_PROB_THRESHOLD );
-                final int nbClasses = (Integer) settings.get( KEY_NB_CLASSES );
 
 		final AdvancedOmniposeSettings cellposeSettings = AdvancedOmniposeSettings
 				.create()
@@ -134,7 +124,6 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 				.simplifyContours( simplifyContours )
 				.flowThreshold( flowThreshold )
 				.cellProbThreshold( cellProbThreshold )
-                                .nbClasses(nbClasses)
 				.get();
 
 		// Logger.
@@ -152,7 +141,6 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 		final StringBuilder errorHolder = new StringBuilder();
 		boolean ok = writeAttribute( settings, element, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok && writeAttribute( settings, element, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
-                ok = ok && writeAttribute( settings, element, KEY_NB_CLASSES, Integer.class, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();
 		return ok;
@@ -173,7 +161,6 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok && readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_FLOW_THRESHOLD, errorHolder );
 		ok = ok && readDoubleAttribute( element, settings, KEY_CELL_PROB_THRESHOLD, errorHolder );
-                ok = ok && readDoubleAttribute( element, settings, KEY_NB_CLASSES, errorHolder );
 
 		// Read model.
 		final String str = element.getAttributeValue( KEY_OMNIPOSE_MODEL );
@@ -199,7 +186,6 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 		final Map< String, Object > settings = super.getDefaultSettings();
 		settings.put( KEY_FLOW_THRESHOLD, DEFAULT_FLOW_THRESHOLD );
 		settings.put( KEY_CELL_PROB_THRESHOLD, DEFAULT_CELL_PROB_THRESHOLD );
-                settings.put( KEY_NB_CLASSES, DEFAULT_NB_CLASSES );
 		return settings;
 	}
 
@@ -218,7 +204,6 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_FLOW_THRESHOLD, Double.class, errorHolder );
 		ok = ok & checkParameter( settings, KEY_CELL_PROB_THRESHOLD, Double.class, errorHolder );
-                ok = ok & checkParameter( settings, KEY_NB_CLASSES, Integer.class, errorHolder );
 
 		// If we have a logger, test it is of the right class.
 		final Object loggerObj = settings.get( KEY_LOGGER );
@@ -241,8 +226,7 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 				KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH,
 				KEY_LOGGER,
 				KEY_FLOW_THRESHOLD,
-				KEY_CELL_PROB_THRESHOLD,
-                                KEY_NB_CLASSES);
+				KEY_CELL_PROB_THRESHOLD);
 		ok = ok & checkMapKeys( settings, mandatoryKeys, optionalKeys, errorHolder );
 		if ( !ok )
 			errorMessage = errorHolder.toString();

@@ -28,7 +28,7 @@ import java.util.List;
 import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings;
 
 public class OmniposeSettings extends AbstractCellposeSettings
-{
+{       
 
 	public OmniposeSettings(
 			final String omniposePythonPath,
@@ -48,7 +48,11 @@ public class OmniposeSettings extends AbstractCellposeSettings
 	{
 		final List< String > cmd = new ArrayList<>( super.toCmdLine( imagesDir ) );
 		// omnipose executable adds it anyway, but let's make sure.
-		cmd.add( "--omni" );
+                cmd.add( "--omni" );
+                
+                cmd.add( "--nchan" );
+		cmd.add( String.valueOf( 1 ) ); // Only segment with --nchan to 1, and save only the channel to segment in temp directory
+		
 		return Collections.unmodifiableList( cmd );
 	}
 
