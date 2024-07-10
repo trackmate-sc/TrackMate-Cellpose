@@ -98,6 +98,8 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	/** The pretty name of the target detector. */
 	public static final String NAME = "Omnipose detector";
 
+	public static final String DOC_OMNI_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-omnipose";
+
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on omnipose to detect objects."

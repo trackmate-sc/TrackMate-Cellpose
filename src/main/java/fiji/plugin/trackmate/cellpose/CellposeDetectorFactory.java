@@ -48,7 +48,6 @@ import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
-import fiji.plugin.trackmate.detection.DetectorKeys;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
@@ -141,6 +140,8 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	/** The pretty name of the target detector. */
 	public static final String NAME = "Cellpose detector";
 
+	public static final String DOC_CELLPOSE_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose";
+
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on cellpose to detect objects."
@@ -164,7 +165,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "Nat Methods 18, 100–106 (2021)</a>"
 			+ "<p>"
 			+ "Documentation for this module "
-			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-cellpose\">on the ImageJ Wiki</a>."
+			+ "<a href=\"" + DOC_CELLPOSE_URL + "\">on the ImageJ Wiki</a>."
 			+ "</html>";
 
 	/*

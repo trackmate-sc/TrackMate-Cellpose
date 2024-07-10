@@ -3,14 +3,11 @@ package fiji.plugin.trackmate.omnipose.advanced;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
 import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
+
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
 import fiji.plugin.trackmate.Model;
@@ -68,7 +65,7 @@ public class AdvancedOmniposeDetectorConfigurationPanel extends OmniposeDetector
 
 	public AdvancedOmniposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		super( settings, model, TITLE, ICON, DOC1_URL, "omnipose", PretrainedModelOmnipose.values() );
+		super( settings, model, TITLE, ICON, AdvancedOmniposeDetectorFactory.DOC_ADV_OMNI_URL, "omnipose", PretrainedModelOmnipose.values() );
 
 		int gridy = 12;
 

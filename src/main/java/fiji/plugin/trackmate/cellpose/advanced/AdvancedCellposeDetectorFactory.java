@@ -163,13 +163,14 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	/** The pretty name of the target detector. */
 	public static final String NAME = "Cellpose advanced detector";
 
-	public static final String DOC2_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose-advanced";
+	public static final String DOC_ADV_CELLPOSE_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose-advanced";
 
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on cellpose to detect objects."
-			+ "<p>" + "It is identical to the Cellpose detector, except that it allows to "
-			+ "tweak the 'flow threshold' and 'cell probability threshold' parameters of the "
+			+ "<p>"
+			+ "It is identical to the Cellpose detector, except that it allows "
+			+ "tweaking the 'flow threshold' and 'cell probability threshold' parameters of the "
 			+ "cellpose algorithm."
 			+ "<p>"
 			+ "If you use this detector for your work, please be so kind as to "
@@ -179,7 +180,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "Nat Methods 18, 100–106 (2021)</a>"
 			+ "<p>"
 			+ "Documentation for this module "
-			+ "<a href=\"" + DOC2_URL + "\">on the ImageJ Wiki</a>."
+			+ "<a href=\"" + DOC_ADV_CELLPOSE_URL + "\">on the ImageJ Wiki</a>."
 			+ "</html>";
 
 	/*

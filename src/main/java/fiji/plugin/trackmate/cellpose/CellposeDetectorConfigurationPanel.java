@@ -93,8 +93,6 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private static final NumberFormat DIAMETER_FORMAT = new DecimalFormat( "#.#" );
 
-	protected static final String DOC1_URL = "https://imagej.net/plugins/trackmate/trackmate-cellpose";
-
 	private final JButton btnBrowseCellposePath;
 
 	protected final JTextField tfCellposeExecutable;
@@ -127,7 +125,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 			final Settings settings,
 			final Model model )
 	{
-		this( settings, model, TITLE, ICON, DOC1_URL, "cellpose", PretrainedModelCellpose.values() );
+		this( settings, model, TITLE, ICON, CellposeDetectorFactory.DOC_CELLPOSE_URL, "cellpose", PretrainedModelCellpose.values() );
 	}
 
 	protected CellposeDetectorConfigurationPanel(

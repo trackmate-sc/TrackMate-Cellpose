@@ -1,6 +1,6 @@
 package fiji.plugin.trackmate.cellpose.advanced;
 
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DOC2_URL;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DOC_ADV_CELLPOSE_URL;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_MIN_SIZE;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
 import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
@@ -79,7 +79,7 @@ public class AdvancedCellposeDetectorConfigurationPanel extends CellposeDetector
 
 	public AdvancedCellposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		super( settings, model, TITLE, ICON, DOC2_URL, "cellpose", PretrainedModelCellpose.values() );
+		super( settings, model, TITLE, ICON, DOC_ADV_CELLPOSE_URL, "cellpose", PretrainedModelCellpose.values() );
 
 		/** Show 3D parameter only if image has z slices */
 		boolean is3D = false;

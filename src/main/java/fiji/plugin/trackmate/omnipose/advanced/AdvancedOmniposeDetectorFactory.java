@@ -69,6 +69,8 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 	/** The pretty name of the target detector. */
 	public static final String NAME = "Omnipose advanced detector";
 
+	public static final String DOC_ADV_OMNI_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-advanced-omnipose";
+
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on omnipose to detect objects."
@@ -82,7 +84,7 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "Nature Methods 19, no. 11 (November 2022): 1438–48.</a>"
 			+ "<p>"
 			+ "Documentation for this module "
-			+ "<a href=\"https://imagej.net/plugins/trackmate/trackmate-advanced-omnipose\">on the ImageJ Wiki</a>."
+			+ "<a href=\"" + DOC_ADV_OMNI_URL + "\">on the ImageJ Wiki</a>."
 			+ "</html>";        
 	/*
 	 * METHODS
