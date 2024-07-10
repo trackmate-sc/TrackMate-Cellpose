@@ -22,7 +22,7 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 			final boolean useGPU,
 			final boolean simplifyContours,
 			final double flowThreshold,
-			final double cellProbThreshold)
+			final double cellProbThreshold )
 	{
 		super( omniposePythonPath, model, customModelPath, chan, chan2, diameter, useGPU, simplifyContours );
 		this.flowThreshold = flowThreshold;
@@ -41,8 +41,8 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 		 */
 		cmd.add( "--mask_threshold" );
 		cmd.add( String.valueOf( cellProbThreshold ) );
-                               
-                return Collections.unmodifiableList( cmd );
+
+		return Collections.unmodifiableList( cmd );
 	}
 
 	public static Builder create()
@@ -52,7 +52,7 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 
 	public static final class Builder extends OmniposeSettings.Builder
 	{
-                
+
 		private double flowThreshold = 0.4;
 
 		private double cellProbThreshold = 0.0;
@@ -138,7 +138,7 @@ public class AdvancedOmniposeSettings extends OmniposeSettings
 					useGPU,
 					simplifyContours,
 					flowThreshold,
-					cellProbThreshold);
+					cellProbThreshold );
 		}
 	}
 }
