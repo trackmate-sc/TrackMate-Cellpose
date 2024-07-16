@@ -75,4 +75,3 @@ In the last versions of Omnipose, some changes were made, in particular in the w
 
 Choosing the Omnipose advanced detector gives the possibility to tune the values of the mask and the flow threshold.
 Details about the meaning of the mask and flow thresholds can be found [here](https://omnipose.readthedocs.io/settings.html).
-*bact_phase_omni* and *bact_fluor_omni* are stored in the cellpose pretrained models folder.
