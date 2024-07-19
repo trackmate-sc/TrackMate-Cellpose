@@ -69,7 +69,7 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 	/** The pretty name of the target detector. */
 	public static final String NAME = "Omnipose advanced detector";
 
-	public static final String DOC_ADV_OMNI_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-advanced-omnipose";
+	public static final String DOC_ADV_OMNI_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-omnipose-advanced";
 
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
