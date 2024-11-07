@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -154,13 +155,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * the CPU and if we are on Mac. I tested multiprocessing on CPU under
 		 * windows, and there is no benefit for Windows. But there is a strong
 		 * speedup on Mac.
-		 * 
+		 *
 		 * On a PC with Windows, forcing Cellpose to run with the CPU: There is
 		 * no benefit from splitting the load between 1,2, 10 or 20 processes.
 		 * It seems like 1 Cellpose process can already use ALL the cores by
 		 * itself and running several Cellpose processes concurrently does not
 		 * lead to shorter processing time.
-		 * 
+		 *
 		 * For a source image 1024x502 over 92 time-points, 3 channels: - 1
 		 * thread -> 24.4 min - 8 thread -> 4.1 min (there is not a x8 speedup
 		 * factor, which is to be expected)
@@ -195,7 +196,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 */
 
 		// Redirect log to logger.
-		final Tailer tailer = Tailer.create( cellposeLogFile, new LoggerTailerListener( logger ), 200, true );
+		final Tailer tailer = Tailer.builder()
+				.setFile( cellposeLogFile )
+				.setTailerListener( new LoggerTailerListener( logger ) )
+				.setDelayDuration( Duration.ofMillis( 200 ) )
+				.setTailFromEnd( true )
+				.get();
 
 		final ExecutorService executors = Executors.newFixedThreadPool( nConcurrentTasks );
 		final List< String > resultDirs = new ArrayList<>( nConcurrentTasks );
@@ -216,7 +222,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		}
 		finally
 		{
-			tailer.stop();
+			tailer.close();
 			logger.setStatus( "" );
 			logger.setProgress( 1. );
 		}
@@ -346,7 +352,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	/**
 	 * Add a hook to delete the content of given path when Fiji quits. Taken
 	 * from https://stackoverflow.com/a/20280989/201698
-	 * 
+	 *
 	 * @param path
 	 */
 	protected static void recursiveDeleteOnShutdownHook( final Path path )
