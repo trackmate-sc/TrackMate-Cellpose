@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,21 +27,31 @@ import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_OPTIONA
 import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_USE_GPU;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.DEFAULT_OMNIPOSE_CUSTOM_MODEL_FILEPATH;
+import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.DEFAULT_OMNIPOSE_PYTHON_FILEPATH;
 import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH;
 import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_MODEL;
 import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_PYTHON_FILEPATH;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+
+import org.scijava.prefs.PrefService;
 
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.CellposeDetectorConfigurationPanel;
 import fiji.plugin.trackmate.cellpose.CellposeUtils;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
+import fiji.plugin.trackmate.gui.GuiUtils;
 import fiji.plugin.trackmate.omnipose.OmniposeSettings.PretrainedModelOmnipose;
+import fiji.plugin.trackmate.util.FileChooser;
+import fiji.plugin.trackmate.util.FileChooser.DialogType;
+import fiji.plugin.trackmate.util.FileChooser.SelectionMode;
+import fiji.plugin.trackmate.util.TMUtils;
 
 public class OmniposeDetectorConfigurationPanel extends CellposeDetectorConfigurationPanel
 {
@@ -51,6 +61,10 @@ public class OmniposeDetectorConfigurationPanel extends CellposeDetectorConfigur
 	private static final String TITLE = OmniposeDetectorFactory.NAME;
 
 	protected static final ImageIcon ICON = CellposeUtils.omniposeLogo64();
+
+	private static final String PREF_KEY_OMNIPOSE_PYTHON_FILEPATH = "trackmate.omnipose.python.path";
+
+	private static final String PREF_KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH = "trackmate.omnipose.custommodel.path";
 
 	public OmniposeDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
@@ -69,10 +83,68 @@ public class OmniposeDetectorConfigurationPanel extends CellposeDetectorConfigur
 	}
 
 	@Override
+	protected void browseCustomModelPath()
+	{
+		btnBrowseCustomModel.setEnabled( false );
+		try
+		{
+			final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
+					"Browse to a " + executableName + " custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
+			if ( file != null )
+			{
+				final String path = file.getAbsolutePath();
+				tfCustomPath.setText( path );
+				final PrefService prefs = TMUtils.getContext().getService( PrefService.class );
+				prefs.put( OmniposeDetectorConfigurationPanel.class, PREF_KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH, path );
+			}
+		}
+		finally
+		{
+			btnBrowseCustomModel.setEnabled( true );
+		}
+	}
+
+	@Override
+	protected void browseCellposePath()
+	{
+		btnBrowseCellposePath.setEnabled( false );
+		try
+		{
+			final File file = FileChooser.chooseFile( this, tfCellposeExecutable.getText(), null,
+					"Browse to the " + executableName + " Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
+			if ( file != null )
+			{
+				final String path = file.getAbsolutePath();
+				tfCellposeExecutable.setText( path );
+				final PrefService prefs = TMUtils.getContext().getService( PrefService.class );
+				prefs.put( OmniposeDetectorConfigurationPanel.class, PREF_KEY_OMNIPOSE_PYTHON_FILEPATH, path );
+			}
+		}
+		finally
+		{
+			btnBrowseCellposePath.setEnabled( true );
+		}
+	}
+
+	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
-		tfCellposeExecutable.setText( ( String ) settings.get( KEY_OMNIPOSE_PYTHON_FILEPATH ) );
-		tfCustomPath.setText( ( String ) settings.get( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH ) );
+		// Python path.
+		GuiUtils.setTextFieldDefaultOrPrefs(
+				tfCellposeExecutable,
+				( String ) settings.get( KEY_OMNIPOSE_PYTHON_FILEPATH ),
+				DEFAULT_OMNIPOSE_PYTHON_FILEPATH,
+				PREF_KEY_OMNIPOSE_PYTHON_FILEPATH,
+				OmniposeDetectorConfigurationPanel.class );
+
+		// Custom model path.
+		GuiUtils.setTextFieldDefaultOrPrefs(
+				tfCustomPath,
+				( String ) settings.get( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH ),
+				DEFAULT_OMNIPOSE_CUSTOM_MODEL_FILEPATH,
+				PREF_KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH,
+				OmniposeDetectorConfigurationPanel.class );
+
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_OMNIPOSE_MODEL ) );
 
 		int key_target = ( int ) settings.get( KEY_TARGET_CHANNEL ) - 1;
