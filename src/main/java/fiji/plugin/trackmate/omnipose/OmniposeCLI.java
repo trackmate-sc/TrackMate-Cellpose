@@ -1,31 +1,27 @@
 package fiji.plugin.trackmate.omnipose;
 
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELL_DIAMETER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_OPTIONAL_CHANNEL_2;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_USE_GPU;
-import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
-import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
-import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
-import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH;
 import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_MODEL;
 
-import java.util.Collections;
-import java.util.List;
+import javax.swing.JFrame;
 
+import fiji.plugin.trackmate.cellpose.CellposeCLIBase;
+import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
+import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
-import fiji.plugin.trackmate.util.cli.CondaExecutableCLIConfigurator;
 
-public class OmniposeCLI extends CondaExecutableCLIConfigurator
+public class OmniposeCLI extends CellposeCLIBase
 {
 
-	private static final String KEY_PRETRAINED_SELECTED = "PRETRAINED_SELECTED";
+	private final ChoiceArgument modelPretrained;
 
-	private PathArgument saveDir;
+	private final SelectableArguments selectPretrainedOrCustom;
 
-	public OmniposeCLI( final int nChannels, final double pixelSize, final String units )
+	public OmniposeCLI( final int nChannels, final String units, final double pixelSize )
 	{
+		super( nChannels, units, pixelSize );
+
 		// Pretrained model.
-		final ChoiceArgument pretrainedModel = addChoiceArgument()
+		this.modelPretrained = addChoiceArgument()
 				.addChoice( "Bacteria phase contrast", "bact_phase_omni" )
 				.addChoice( "Bacteria fluorescence", "bact_fluor_omni" )
 				.defaultValue( 0 )
@@ -35,99 +31,11 @@ public class OmniposeCLI extends CondaExecutableCLIConfigurator
 				.help( "Use one of the pretrained omnipose models." )
 				.get();
 
-		// Path to a custom model.
-		final PathArgument customModel = addPathArgument()
-				.argument( "--pretrained_model" )
-				.key( KEY_OMNIPOSE_CUSTOM_MODEL_FILEPATH )
-				.name( "Custom model" )
-				.help( "Path to a custom omnipose model" )
-				.get();
-
-		// Select pretrained or custom.
-		addSelectableArguments()
-				.add( customModel )
-				.add( pretrainedModel )
-				.key( KEY_PRETRAINED_SELECTED )
-				.select( customModel );
-
-		// First channel.
-		addIntArgument()
-				.name( "Channel to segment" )
-				.key( KEY_TARGET_CHANNEL )
-				.argument( "--chan" )
-				.defaultValue( DEFAULT_TARGET_CHANNEL )
-				.min( 1 )
-				.max( nChannels )
-				.help( "The main channel to segment." )
-				.get();
-
-		// Second channel.
-		final ChoiceAdder secondChanArgAdder = addChoiceArgument()
-				.name( "Optional second channel" )
-				.key( KEY_OPTIONAL_CHANNEL_2 )
-				.argument( "--chan2" )
-				.help( "The main channel to segment." );
-		secondChanArgAdder.addChoice( "0: None", "0" );
-		for ( int i = 1; i <= nChannels; i++ )
-			secondChanArgAdder.addChoice( "" + i );
-		secondChanArgAdder.defaultValue( 0 );
-		final ChoiceArgument secondChan = secondChanArgAdder.get();
-		secondChan.set( 0 );
-		// TODO: edit javadoc if this stays: it will be 1-valued.
-
-		// Cell diameter.
-		final DoubleArgument cellDiameter = addDoubleArgument()
-				.name( "Cell diameter" )
-				.argument( "--diameter" )
-				.key( KEY_CELL_DIAMETER )
-				.defaultValue( 3. )
-				.units( units )
-				.get();
-
-		// Translate to pixel size.
-		translators.put( cellDiameter, d -> {
-			final double diam = ( double ) d;
-			final double diamPix = diam > 0 ? ( diam / pixelSize ) : 0.;
-			return Collections.singletonList( "" + diamPix );
-		} );
-
-		// Use GPU.
-		this.addFlag()
-				.name( "Use GPU" )
-				.key( KEY_USE_GPU )
-				.argument( "--use_gpu" )
-				.defaultValue( true )
-				.help( "If true the GPU will be used if it configured. "
-						+ "If false, the CPU will be used, and several time-points "
-						+ "may be processed in parallel." )
-				.get();
-
-		// Simplify contours.
-		this.addFlag()
-				.name( "Simplify contours" )
-				.key( KEY_SIMPLIFY_CONTOURS )
-				.defaultValue( true )
-				.inCLI( false )
-				.help( "If true the object contours will be simplified as smooth polygons." )
-				.get();
-
-		// Export results as PNG.
-		addFlag()
-				.name( "Export results as PNG" )
-				.argument( "--save_png" )
-				.key( null )
-				.visible( false )
-				.defaultValue( true )
-				.get();
-
-		// Do not save Numpy files.
-		addFlag()
-				.name( "Do not save Numpy files" )
-				.argument( "--no_npy" )
-				.key( null )
-				.visible( false )
-				.defaultValue( true )
-				.get();
+		// State that we can use pretrained or custom.
+		this.selectPretrainedOrCustom = addSelectableArguments()
+				.add( modelPretrained )
+				.add( customModelPath() )
+				.key( KEY_CELLPOSE_PRETRAINED_OR_CUSTOM );
 
 		// Omni flag.
 		addFlag()
@@ -136,20 +44,33 @@ public class OmniposeCLI extends CondaExecutableCLIConfigurator
 				.key( null )
 				.visible( false )
 				.defaultValue( true )
-				.get();
+				.get()
+				.set();
 
-		// Target save directory.
-		saveDir = addPathArgument()
-				.name( "Save directory" )
-				.argument( "--dir" )
-				.key( null )
+		// Nchan -> must be 1
+		addIntArgument()
+				.argument( "--nchan" )
+				.name( "N. channels" )
+				.help( "Number of channels on which model is trained" )
 				.visible( false )
-				.get();
+				.required( true )
+				.defaultValue( 1 )
+				.get()
+				.set( 1 );
+
+		// Re-add it the arguments at the desired position.
+		arguments.remove( modelPretrained );
+		arguments.add( 0, modelPretrained );
 	}
 
-	public PathArgument saveDir()
+	public ChoiceArgument modelPretrained()
 	{
-		return saveDir;
+		return modelPretrained;
+	}
+
+	public SelectableArguments selectPretrainedOrCustom()
+	{
+		return selectPretrainedOrCustom;
 	}
 
 	@Override
@@ -160,11 +81,28 @@ public class OmniposeCLI extends CondaExecutableCLIConfigurator
 
 	public static void main( final String[] args )
 	{
-		final OmniposeCLI cli = new OmniposeCLI( 2, 0.1, "µm" );
-		cli.saveDir.set( "/Users/tinevez/Desktop" );
+		final OmniposeCLI cli = new OmniposeCLI( 2, "µm", 0.1 );
+		System.out.println( cli );
 
-		final List< String > tokens = CommandBuilder.build( cli );
-		System.out.println( String.join( " ", tokens ) );
+		// Configure the CLI.
+		cli.chan1().set( 2 );
+		cli.imageFolder().set( "/Users/tinevez/Desktop" );
+		cli.modelPretrained().set( 0 );
+		cli.diameter().set( 2. );
+		cli.selectPretrainedOrCustom().select( cli.modelPretrained() );
+
+		// Output command line.
+		System.out.println( "Command line: " );
+		System.out.println( CommandBuilder.build( cli ) );
+
+		// Show config panel.
+		final CliConfigPanel panel = CliGuiBuilder.build( cli );
+		final JFrame frame = new JFrame( cli.getCommand() + " CLI" );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.getContentPane().add( panel );
+		frame.pack();
+		frame.setLocationRelativeTo( null );
+		frame.setVisible( true );
 	}
 
 }
