@@ -108,7 +108,7 @@ public class AdvancedOmniposeCLI extends OmniposeCLI
 		// Configure the CLI.
 		cli.imageFolder().set( "/Users/tinevez/Desktop" );
 		cli.modelPretrained().set( 0 );
-		cli.chan1().set( 2 );
+		cli.segmentationChannel().set( 2 );
 		cli.diameter().set( 2.0 );
 
 		// Output command line.

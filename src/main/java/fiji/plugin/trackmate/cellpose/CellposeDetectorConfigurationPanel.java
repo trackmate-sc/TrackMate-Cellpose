@@ -21,468 +21,105 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELLPOSE_PYTHON_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_MODEL;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_PYTHON_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELL_DIAMETER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_LOGGER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_OPTIONAL_CHANNEL_2;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_USE_GPU;
-import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
-import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
 import static fiji.plugin.trackmate.gui.Fonts.BIG_FONT;
-import static fiji.plugin.trackmate.gui.Fonts.FONT;
-import static fiji.plugin.trackmate.gui.Fonts.SMALL_FONT;
-import static java.lang.Integer.min;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.awt.Dimension;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.scijava.prefs.PrefService;
-
-import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings.PretrainedModel;
-import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.gui.GuiUtils;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.DetectionPreview;
-import fiji.plugin.trackmate.util.FileChooser;
-import fiji.plugin.trackmate.util.FileChooser.DialogType;
-import fiji.plugin.trackmate.util.FileChooser.SelectionMode;
-import fiji.plugin.trackmate.util.TMUtils;
+import fiji.plugin.trackmate.util.DetectionPreviewPanel;
+import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
+import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
+import fiji.plugin.trackmate.util.cli.TrackMateSettingsBuilder;
 
 public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String TITLE = CellposeDetectorFactory.NAME;
-
-	protected static final ImageIcon ICON = CellposeUtils.cellposeLogo64();
-
-	private static final NumberFormat DIAMETER_FORMAT = new DecimalFormat( "#.#" );
-
 	private static final String PREF_KEY_CELLPOSE_PYTHON_FILEPATH = "trackmate.cellpose.python.path";
 
 	private static final String PREF_KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH = "trackmate.cellpose.custommodel.path";
 
-	protected final JButton btnBrowseCellposePath;
+	protected final CliConfigPanel mainPanel;
 
-	protected final JTextField tfCellposeExecutable;
-
-	protected final JComboBox< PretrainedModel > cmbboxPretrainedModel;
-
-	protected final JComboBox< String > cmbboxCh1;
-
-	protected int nbChannels;
-
-	protected final JComboBox< String > cmbboxCh2;
-
-	protected final JFormattedTextField ftfDiameter;
-
-	protected final JCheckBox chckbxSimplify;
-
-	protected final Logger logger;
-
-	protected final JCheckBox chckbxUseGPU;
-
-	protected final JTextField tfCustomPath;
-
-	protected final JButton btnBrowseCustomModel;
-
-	protected final String executableName;
-
-	protected final JPanel mainPanel;
+	private final CellposeCLI cli;
 
 	public CellposeDetectorConfigurationPanel(
 			final Settings settings,
-			final Model model )
-	{
-		this( settings, model, TITLE, ICON, CellposeDetectorFactory.DOC_CELLPOSE_URL, "cellpose", PretrainedModelCellpose.values() );
-	}
-
-	protected CellposeDetectorConfigurationPanel(
-			final Settings settings,
 			final Model model,
+			final CellposeCLI cli,
 			final String title,
 			final Icon icon,
-			final String docURL,
-			final String executableName,
-			final PretrainedModel[] pretrainedModels )
+			final String docURL )
 	{
-		this.executableName = executableName;
-		this.logger = model.getLogger();
+		this.cli = cli;
 
 		final BorderLayout borderLayout = new BorderLayout();
 		setLayout( borderLayout );
 
-		this.mainPanel = new JPanel();
+		/*
+		 * HEADER
+		 */
+
+		final JPanel header = new JPanel();
+		header.setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+		header.setLayout( new BoxLayout( header, BoxLayout.Y_AXIS ) );
+
+		final JLabel lblDetector = new JLabel( title, icon, JLabel.RIGHT );
+		lblDetector.setFont( BIG_FONT );
+		lblDetector.setHorizontalAlignment( SwingConstants.CENTER );
+		lblDetector.setAlignmentX( JLabel.CENTER_ALIGNMENT );
+		header.add( lblDetector );
+		header.add( Box.createVerticalStrut( 5 ) );
+		final JEditorPane infoDisplay = GuiUtils.infoDisplay( "<html>" + "Documentation for this module "
+				+ "<a href=\"" + docURL + "\">on the ImageJ Wiki</a>."
+				+ "</html>", false );
+		infoDisplay.setMaximumSize( new Dimension( 100_000, 40 ) );
+		header.add( infoDisplay );
+		add( header, BorderLayout.NORTH );
+
+		/*
+		 * CONFIG
+		 */
+
+		this.mainPanel = CliGuiBuilder.build( cli );
 		final JScrollPane scrollPane = new JScrollPane( mainPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
 		scrollPane.setBorder( null );
 		scrollPane.getVerticalScrollBar().setUnitIncrement( 16 );
 		add( scrollPane, BorderLayout.CENTER );
 
-		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[] {
-				0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-				0., 0., 0., 0., 0., 0., 0., 0., .1 };
-		gridBagLayout.columnWidths = new int[] { 144, 0, 32 };
-		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 0.0 };
-		mainPanel.setLayout( gridBagLayout );
-
-		int gridy = 0;
-
-		final JLabel lblDetector = new JLabel( title, icon, JLabel.RIGHT );
-		lblDetector.setFont( BIG_FONT );
-		lblDetector.setHorizontalAlignment( SwingConstants.CENTER );
-		final GridBagConstraints gbcLblDetector = new GridBagConstraints();
-		gbcLblDetector.gridwidth = 3;
-		gbcLblDetector.insets = new Insets( 0, 5, 5, 0 );
-		gbcLblDetector.fill = GridBagConstraints.HORIZONTAL;
-		gbcLblDetector.gridx = 0;
-		gbcLblDetector.gridy = gridy;
-		mainPanel.add( lblDetector, gbcLblDetector );
-
-		gridy++;
-
-		final String text = "Click here for the documentation";
-		final JLabel lblUrl = new JLabel( text );
-		lblUrl.setHorizontalAlignment( SwingConstants.CENTER );
-		lblUrl.setForeground( Color.BLUE.darker() );
-		lblUrl.setFont( FONT.deriveFont( Font.ITALIC ) );
-		lblUrl.setCursor( new Cursor( Cursor.HAND_CURSOR ) );
-		lblUrl.addMouseListener( new MyMouseAdapter( lblUrl, docURL, text ) );
-		final GridBagConstraints gbcLblUrl = new GridBagConstraints();
-		gbcLblUrl.fill = GridBagConstraints.HORIZONTAL;
-		gbcLblUrl.gridwidth = 3;
-		gbcLblUrl.insets = new Insets( 0, 10, 5, 15 );
-		gbcLblUrl.gridx = 0;
-		gbcLblUrl.gridy = gridy;
-		mainPanel.add( lblUrl, gbcLblUrl );
-
 		/*
-		 * Path to Python or Cellpose.
+		 * PREVIEW
 		 */
-
-		gridy++;
-
-		final JLabel lblCusstomModelFile = new JLabel( "Path to " + executableName + " / python executable:" );
-		lblCusstomModelFile.setFont( FONT );
-		final GridBagConstraints gbcLblCusstomModelFile = new GridBagConstraints();
-		gbcLblCusstomModelFile.gridwidth = 2;
-		gbcLblCusstomModelFile.anchor = GridBagConstraints.SOUTHWEST;
-		gbcLblCusstomModelFile.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblCusstomModelFile.gridx = 0;
-		gbcLblCusstomModelFile.gridy = gridy;
-		mainPanel.add( lblCusstomModelFile, gbcLblCusstomModelFile );
-
-		btnBrowseCellposePath = new JButton( "Browse" );
-		btnBrowseCellposePath.setFont( FONT );
-		final GridBagConstraints gbcBtnBrowseCellposePath = new GridBagConstraints();
-		gbcBtnBrowseCellposePath.insets = new Insets( 0, 0, 5, 5 );
-		gbcBtnBrowseCellposePath.anchor = GridBagConstraints.SOUTHEAST;
-		gbcBtnBrowseCellposePath.gridx = 2;
-		gbcBtnBrowseCellposePath.gridy = gridy;
-		mainPanel.add( btnBrowseCellposePath, gbcBtnBrowseCellposePath );
-
-		gridy++;
-
-		tfCellposeExecutable = new JTextField( "" );
-		tfCellposeExecutable.setFont( SMALL_FONT );
-		final GridBagConstraints gbcTfCellpose = new GridBagConstraints();
-		gbcTfCellpose.gridwidth = 3;
-		gbcTfCellpose.insets = new Insets( 0, 5, 5, 5 );
-		gbcTfCellpose.fill = GridBagConstraints.BOTH;
-		gbcTfCellpose.gridx = 0;
-		gbcTfCellpose.gridy = gridy;
-		mainPanel.add( tfCellposeExecutable, gbcTfCellpose );
-		tfCellposeExecutable.setColumns( 15 );
-
-		/*
-		 * Custom model.
-		 */
-
-		gridy++;
-
-		final JLabel lblPathToCustomModel = new JLabel( "Path to custom model:" );
-		lblPathToCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		final GridBagConstraints gbcLblPathToCustomModel = new GridBagConstraints();
-		gbcLblPathToCustomModel.anchor = GridBagConstraints.SOUTHWEST;
-		gbcLblPathToCustomModel.gridwidth = 2;
-		gbcLblPathToCustomModel.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblPathToCustomModel.gridx = 0;
-		gbcLblPathToCustomModel.gridy = gridy;
-		mainPanel.add( lblPathToCustomModel, gbcLblPathToCustomModel );
-
-		btnBrowseCustomModel = new JButton( "Browse" );
-		btnBrowseCustomModel.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		final GridBagConstraints gbcBtnBrowseCustomModel = new GridBagConstraints();
-		gbcBtnBrowseCustomModel.insets = new Insets( 0, 0, 5, 5 );
-		gbcBtnBrowseCustomModel.anchor = GridBagConstraints.SOUTHEAST;
-		gbcBtnBrowseCustomModel.gridx = 2;
-		gbcBtnBrowseCustomModel.gridy = gridy;
-		mainPanel.add( btnBrowseCustomModel, gbcBtnBrowseCustomModel );
-
-		gridy++;
-
-		tfCustomPath = new JTextField( " " );
-		tfCustomPath.setFont( new Font( "Arial", Font.PLAIN, 10 ) );
-		tfCustomPath.setColumns( 15 );
-		final GridBagConstraints gbcTfCustomPath = new GridBagConstraints();
-		gbcTfCustomPath.gridwidth = 3;
-		gbcTfCustomPath.insets = new Insets( 0, 5, 5, 5 );
-		gbcTfCustomPath.fill = GridBagConstraints.BOTH;
-		gbcTfCustomPath.gridx = 0;
-		gbcTfCustomPath.gridy = gridy;
-		mainPanel.add( tfCustomPath, gbcTfCustomPath );
-
-		/*
-		 * Pretrained model.
-		 */
-
-		gridy++;
-
-		final JLabel lblPretrainedModel = new JLabel( "Pretrained model:" );
-		lblPretrainedModel.setFont( SMALL_FONT );
-		final GridBagConstraints gbcLblPretrainedModel = new GridBagConstraints();
-		gbcLblPretrainedModel.anchor = GridBagConstraints.EAST;
-		gbcLblPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblPretrainedModel.gridx = 0;
-		gbcLblPretrainedModel.gridy = gridy;
-		mainPanel.add( lblPretrainedModel, gbcLblPretrainedModel );
-
-		cmbboxPretrainedModel = new JComboBox<>( new Vector<>( Arrays.asList( pretrainedModels ) ) );
-		cmbboxPretrainedModel.setFont( SMALL_FONT );
-		final GridBagConstraints gbcCmbboxPretrainedModel = new GridBagConstraints();
-		gbcCmbboxPretrainedModel.gridwidth = 2;
-		gbcCmbboxPretrainedModel.insets = new Insets( 0, 5, 5, 5 );
-		gbcCmbboxPretrainedModel.fill = GridBagConstraints.HORIZONTAL;
-		gbcCmbboxPretrainedModel.gridx = 1;
-		gbcCmbboxPretrainedModel.gridy = gridy;
-		mainPanel.add( cmbboxPretrainedModel, gbcCmbboxPretrainedModel );
-
-		/*
-		 * Channel 1
-		 */
-
-		gridy++;
-
-		final JLabel lblSegmentInChannel = new JLabel( "Channel to segment:" );
-		lblSegmentInChannel.setFont( SMALL_FONT );
-		final GridBagConstraints gbcLblSegmentInChannel = new GridBagConstraints();
-		gbcLblSegmentInChannel.anchor = GridBagConstraints.EAST;
-		gbcLblSegmentInChannel.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblSegmentInChannel.gridx = 0;
-		gbcLblSegmentInChannel.gridy = gridy;
-		mainPanel.add( lblSegmentInChannel, gbcLblSegmentInChannel );
-
-		// CellPose cannot segment in chanels > 3 (setup for R, G, B)
-		nbChannels = min( settings.imp.getNChannels(), 3 );
-		final List< String > l1 = new ArrayList< String >();
-		for ( int c = 1; c <= nbChannels; c++ )
-			l1.add( "" + c );
-
-		cmbboxCh1 = new JComboBox<>( new Vector<>( l1 ) );
-		cmbboxCh1.setFont( SMALL_FONT );
-		final GridBagConstraints gbcSpinner = new GridBagConstraints();
-		gbcSpinner.fill = GridBagConstraints.HORIZONTAL;
-		gbcSpinner.gridwidth = 2;
-		gbcSpinner.insets = new Insets( 0, 5, 5, 5 );
-		gbcSpinner.gridx = 1;
-		gbcSpinner.gridy = gridy;
-		mainPanel.add( cmbboxCh1, gbcSpinner );
-
-		/*
-		 * Channel 2.
-		 */
-
-		gridy++;
-
-		final JLabel lblSegmentInChannelOptional = new JLabel( "Optional second channel:" );
-		lblSegmentInChannelOptional.setFont( SMALL_FONT );
-		final GridBagConstraints gbcLblSegmentInChannelOptional = new GridBagConstraints();
-		gbcLblSegmentInChannelOptional.anchor = GridBagConstraints.EAST;
-		gbcLblSegmentInChannelOptional.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblSegmentInChannelOptional.gridx = 0;
-		gbcLblSegmentInChannelOptional.gridy = gridy;
-		mainPanel.add( lblSegmentInChannelOptional, gbcLblSegmentInChannelOptional );
-
-		final List< String > l2 = new ArrayList< String >();
-		l2.add( "0: None" );
-		for ( int c = 1; c <= nbChannels; c++ )
-			l2.add( "" + c );
-
-		cmbboxCh2 = new JComboBox<>( new Vector<>( l2 ) );
-		cmbboxCh2.setFont( SMALL_FONT );
-		final GridBagConstraints gbcSpinnerCh2 = new GridBagConstraints();
-		gbcSpinnerCh2.fill = GridBagConstraints.HORIZONTAL;
-		gbcSpinnerCh2.gridwidth = 2;
-		gbcSpinnerCh2.insets = new Insets( 0, 5, 5, 5 );
-		gbcSpinnerCh2.gridx = 1;
-		gbcSpinnerCh2.gridy = gridy;
-		mainPanel.add( cmbboxCh2, gbcSpinnerCh2 );
-
-		/*
-		 * Diameter.
-		 */
-
-		gridy++;
-
-		final JLabel lblDiameter = new JLabel( "Cell diameter:" );
-		lblDiameter.setFont( SMALL_FONT );
-		final GridBagConstraints gbcLblDiameter = new GridBagConstraints();
-		gbcLblDiameter.anchor = GridBagConstraints.EAST;
-		gbcLblDiameter.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblDiameter.gridx = 0;
-		gbcLblDiameter.gridy = gridy;
-		mainPanel.add( lblDiameter, gbcLblDiameter );
-
-		ftfDiameter = new JFormattedTextField( DIAMETER_FORMAT );
-		ftfDiameter.setHorizontalAlignment( SwingConstants.CENTER );
-		ftfDiameter.setFont( SMALL_FONT );
-		final GridBagConstraints gbcFtfDiameter = new GridBagConstraints();
-		gbcFtfDiameter.insets = new Insets( 0, 5, 5, 5 );
-		gbcFtfDiameter.fill = GridBagConstraints.HORIZONTAL;
-		gbcFtfDiameter.gridx = 1;
-		gbcFtfDiameter.gridy = gridy;
-		mainPanel.add( ftfDiameter, gbcFtfDiameter );
-
-		final JLabel lblSpaceUnits = new JLabel( model.getSpaceUnits() );
-		lblSpaceUnits.setFont( SMALL_FONT );
-		final GridBagConstraints gbcLblSpaceUnits = new GridBagConstraints();
-		gbcLblSpaceUnits.insets = new Insets( 0, 5, 5, 5 );
-		gbcLblSpaceUnits.gridx = 2;
-		gbcLblSpaceUnits.gridy = gridy;
-		mainPanel.add( lblSpaceUnits, gbcLblSpaceUnits );
-
-		/*
-		 * Use GPU.
-		 */
-
-		gridy++;
-
-		chckbxUseGPU = new JCheckBox( "Use GPU:" );
-		chckbxUseGPU.setHorizontalTextPosition( SwingConstants.LEFT );
-		chckbxUseGPU.setFont( SMALL_FONT );
-		final GridBagConstraints gbcChckbxUseGPU = new GridBagConstraints();
-		gbcChckbxUseGPU.anchor = GridBagConstraints.EAST;
-		gbcChckbxUseGPU.insets = new Insets( 0, 0, 0, 5 );
-		gbcChckbxUseGPU.gridx = 0;
-		gbcChckbxUseGPU.gridy = gridy;
-		mainPanel.add( chckbxUseGPU, gbcChckbxUseGPU );
-
-		/*
-		 * Simplify contours.
-		 */
-
-		chckbxSimplify = new JCheckBox( "Simplify contours:" );
-		chckbxSimplify.setHorizontalTextPosition( SwingConstants.LEFT );
-		chckbxSimplify.setFont( SMALL_FONT );
-		final GridBagConstraints gbcChckbxSimplify = new GridBagConstraints();
-		gbcChckbxSimplify.anchor = GridBagConstraints.EAST;
-		gbcChckbxSimplify.gridwidth = 2;
-		gbcChckbxSimplify.insets = new Insets( 0, 5, 0, 5 );
-		gbcChckbxSimplify.gridx = 1;
-		gbcChckbxSimplify.gridy = gridy;
-		mainPanel.add( chckbxSimplify, gbcChckbxSimplify );
-
-		/*
-		 * Smoothing scale. Will be visible only if the input image is 3D.
-		 */
-
-//		boolean smoothingScaleVisible = false;
-//		if ( null != settings.imp && !DetectionUtils.is2D( settings.imp ) )
-//			smoothingScaleVisible = true;
-//
-//		gridy++;
-//
-//		final double scale = -1.;
-//		panelSmoothContour = new PanelSmoothContour( scale, model.getSpaceUnits() );
-//		final GridBagConstraints gbcPanelSmooth = new GridBagConstraints();
-//		gbcPanelSmooth.gridwidth = 3;
-//		gbcPanelSmooth.insets = new Insets( 5, 5, 5, 5 );
-//		gbcPanelSmooth.fill = GridBagConstraints.HORIZONTAL;
-//		gbcPanelSmooth.gridx = 0;
-//		gbcPanelSmooth.gridy = gridy;
-//		mainPanel.add( panelSmoothContour, gbcPanelSmooth );
-//		panelSmoothContour.setVisible( smoothingScaleVisible );
-
-		/*
-		 * Preview.
-		 */
-
-		gridy = 18;
-
-		final GridBagConstraints gbcBtnPreview = new GridBagConstraints();
-		gbcBtnPreview.gridwidth = 3;
-		gbcBtnPreview.fill = GridBagConstraints.BOTH;
-		gbcBtnPreview.insets = new Insets( 0, 5, 5, 5 );
-		gbcBtnPreview.gridx = 0;
-		gbcBtnPreview.gridy = gridy;
-		gbcBtnPreview.anchor = GridBagConstraints.NORTH;
 
 		final DetectionPreview detectionPreview = DetectionPreview.create()
 				.model( model )
 				.settings( settings )
 				.detectorFactory( getDetectorFactory() )
 				.detectionSettingsSupplier( () -> getSettings() )
-				.axisLabel( "Area histogram" )
 				.get();
-		mainPanel.add( detectionPreview.getPanel(), gbcBtnPreview );
+		final DetectionPreviewPanel p = detectionPreview.getPanel();
+		p.setPreferredSize( new Dimension( 200, 200 ) );
 
-
-		/*
-		 * Listeners and specificities.
-		 */
-
-		final ItemListener l3 = e -> {
-			final boolean isCustom = ( ( PretrainedModel ) cmbboxPretrainedModel.getSelectedItem() ).isCustom();
-			tfCustomPath.setVisible( isCustom );
-			lblPathToCustomModel.setVisible( isCustom );
-			btnBrowseCustomModel.setVisible( isCustom );
-		};
-		cmbboxPretrainedModel.addItemListener( l3 );
-		l3.itemStateChanged( null );
-
-		btnBrowseCellposePath.addActionListener( l -> browseCellposePath() );
-		btnBrowseCustomModel.addActionListener( l -> browseCustomModelPath() );
+		add( p, BorderLayout.SOUTH );
 	}
 
 	protected SpotDetectorFactoryBase< ? > getDetectorFactory()
@@ -490,157 +127,29 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		return new CellposeDetectorFactory<>();
 	}
 
-	protected void browseCustomModelPath()
-	{
-		btnBrowseCustomModel.setEnabled( false );
-		try
-		{
-			final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
-					"Browse to a " + executableName + " custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
-			if ( file != null )
-			{
-				final String path = file.getAbsolutePath();
-				tfCustomPath.setText( path );
-				final PrefService prefs = TMUtils.getContext().getService( PrefService.class );
-				prefs.put( CellposeDetectorConfigurationPanel.class, PREF_KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, path );
-			}
-		}
-		finally
-		{
-			btnBrowseCustomModel.setEnabled( true );
-		}
-	}
-
-	protected void browseCellposePath()
-	{
-		btnBrowseCellposePath.setEnabled( false );
-		try
-		{
-			final File file = FileChooser.chooseFile( this, tfCellposeExecutable.getText(), null,
-					"Browse to the " + executableName + " Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
-			if ( file != null )
-			{
-				final String path = file.getAbsolutePath();
-				tfCellposeExecutable.setText( path );
-				final PrefService prefs = TMUtils.getContext().getService( PrefService.class );
-				prefs.put( CellposeDetectorConfigurationPanel.class, PREF_KEY_CELLPOSE_PYTHON_FILEPATH, path );
-			}
-		}
-		finally
-		{
-			btnBrowseCellposePath.setEnabled( true );
-		}
-	}
-
 	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
-		// Python path.
-		GuiUtils.setTextFieldDefaultOrPrefs(
-				tfCellposeExecutable,
-				( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ),
-				DEFAULT_CELLPOSE_PYTHON_FILEPATH,
-				PREF_KEY_CELLPOSE_PYTHON_FILEPATH,
-				CellposeDetectorConfigurationPanel.class );
-
-		// Custom model path.
-		GuiUtils.setTextFieldDefaultOrPrefs(
-				tfCustomPath,
-				( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH ),
-				DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH,
-				PREF_KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH,
-				CellposeDetectorConfigurationPanel.class );
-
-		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_CELLPOSE_MODEL ) );
-
-		int key_target = ( int ) settings.get( KEY_TARGET_CHANNEL ) - 1;
-		/*
-		 * To ensure that the default channel to segment parameter is compatible
-		 * with number of channels in the image.
-		 */
-		if ( key_target >= nbChannels )
+		try
 		{
-			key_target = nbChannels - 1;
+			TrackMateSettingsBuilder.fromTrackMateSettings( settings, cli );
+			mainPanel.refresh();
 		}
-		if ( key_target < 0 )
+		catch ( final Exception e )
 		{
-			key_target = 0;
+			e.printStackTrace();
 		}
-		final int c1 = Math.min( key_target, cmbboxCh1.getModel().getSize() - 1 );
-		cmbboxCh1.setSelectedIndex( c1 );
-
-		final int c2 = Math.min( ( int ) settings.get( KEY_OPTIONAL_CHANNEL_2 ), cmbboxCh2.getModel().getSize() - 1 );
-		cmbboxCh2.setSelectedIndex( c2 );
-
-		ftfDiameter.setValue( settings.get( KEY_CELL_DIAMETER ) );
-		chckbxUseGPU.setSelected( ( boolean ) settings.get( KEY_USE_GPU ) );
-		chckbxSimplify.setSelected( ( boolean ) settings.get( KEY_SIMPLIFY_CONTOURS ) );
 	}
 
 	@Override
 	public Map< String, Object > getSettings()
 	{
-		final HashMap< String, Object > settings = new HashMap<>( 9 );
-
-		settings.put( KEY_CELLPOSE_PYTHON_FILEPATH, tfCellposeExecutable.getText() );
-		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, tfCustomPath.getText() );
-		settings.put( KEY_CELLPOSE_MODEL, cmbboxPretrainedModel.getSelectedItem() );
-		settings.put( KEY_TARGET_CHANNEL, cmbboxCh1.getSelectedIndex() + 1 );
-		settings.put( KEY_OPTIONAL_CHANNEL_2, cmbboxCh2.getSelectedIndex() );
-
-		final double diameter = ( ( Number ) ftfDiameter.getValue() ).doubleValue();
-		settings.put( KEY_CELL_DIAMETER, diameter );
-		settings.put( KEY_SIMPLIFY_CONTOURS, chckbxSimplify.isSelected() );
-		settings.put( KEY_USE_GPU, chckbxUseGPU.isSelected() );
-
-		settings.put( KEY_LOGGER, logger );
-
-		return settings;
+		final Map< String, Object > map = new HashMap<>();
+		TrackMateSettingsBuilder.toTrackMateSettings( map, cli );
+		return map;
 	}
 
 	@Override
 	public void clean()
 	{}
-
-	private class MyMouseAdapter extends MouseAdapter
-	{
-
-		private final JLabel lblUrl;
-
-		private final String docURL;
-
-		private final String text;
-
-		public MyMouseAdapter( final JLabel lblUrl, final String docURL, final String text )
-		{
-			this.lblUrl = lblUrl;
-			this.docURL = docURL;
-			this.text = text;
-		}
-
-		@Override
-		public void mouseClicked( final java.awt.event.MouseEvent e )
-		{
-			try
-			{
-				Desktop.getDesktop().browse( new URI( docURL ) );
-			}
-			catch ( URISyntaxException | IOException ex )
-			{
-				ex.printStackTrace();
-			}
-		}
-
-		@Override
-		public void mouseExited( final java.awt.event.MouseEvent e )
-		{
-			lblUrl.setText( text );
-		}
-
-		@Override
-		public void mouseEntered( final java.awt.event.MouseEvent e )
-		{
-			lblUrl.setText( "<html><a href=''>" + docURL + "</a></html>" );
-		}
-	}
 }
