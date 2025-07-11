@@ -41,8 +41,9 @@ import fiji.plugin.trackmate.SpotCollection;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
-import fiji.plugin.trackmate.omnipose.OmniposeSettings;
+import fiji.plugin.trackmate.omnipose.OmniposeCLI;
 import fiji.plugin.trackmate.util.TMUtils;
+import fiji.plugin.trackmate.util.cli.CommandBuilder;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.NewImage;
@@ -71,7 +72,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private final Interval interval;
 
-	private final Logger logger;
+	private  Logger logger = Logger.VOID_LOGGER;
 
 	private final String baseErrorMessage;
 
@@ -89,27 +90,27 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private int numThreads;
 
-	private final AbstractCellposeSettings cellposeSettings;
-
 	private final File cellposeLogFile;
+
+	private final CellposeCLIBase cli;
 
 	public CellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final AbstractCellposeSettings cellposeSettings,
-			final Logger logger )
+			final CellposeCLIBase cli )
 	{
 		this.img = img;
 		this.interval = interval;
-		this.cellposeSettings = cellposeSettings;
-		this.logger = ( logger == null ) ? Logger.VOID_LOGGER : logger;
-		this.cellposeLogFile = new File( new File( System.getProperty( "user.home" ), "." + cellposeSettings.getExecutableName() ), "run.log" );
-		this.baseErrorMessage = "[" + cellposeSettings.getExecutableName() + "Detector] ";
+		this.cli = cli;
+		final String command = cli.getCommand();
+		this.cellposeLogFile = new File( new File( System.getProperty( "user.home" ), "." + command ), "run.log" );
+		this.baseErrorMessage = "[" + command + "Detector] ";
 	}
 
 	@Override
 	public boolean process()
 	{
+		final String command = cli.getCommand();
 		final long start = System.currentTimeMillis();
 		isCanceled = false;
 		cancelReason = null;
@@ -156,17 +157,17 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * windows, and there is no benefit for Windows. But there is a strong
 		 * speedup on Mac.
 		 *
-		 * On a PC with Windows, forcing Cellpose to run with the CPU: There is
+		 * On a PC with Windows, forcing cellpose to run with the CPU: There is
 		 * no benefit from splitting the load between 1,2, 10 or 20 processes.
-		 * It seems like 1 Cellpose process can already use ALL the cores by
-		 * itself and running several Cellpose processes concurrently does not
+		 * It seems like 1 cellpose process can already use ALL the cores by
+		 * itself and running several cellpose processes concurrently does not
 		 * lead to shorter processing time.
 		 *
 		 * For a source image 1024x502 over 92 time-points, 3 channels: - 1
 		 * thread -> 24.4 min - 8 thread -> 4.1 min (there is not a x8 speedup
 		 * factor, which is to be expected)
 		 */
-		if ( !cellposeSettings.useGPU && IJ.isMacintosh() )
+		if ( !cli.useGPU().getValue() && IJ.isMacintosh() )
 			nConcurrentTasks = numThreads;
 		else
 			nConcurrentTasks = 1;
@@ -215,7 +216,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		catch ( final InterruptedException | ExecutionException e )
 		{
 			errorMessage = baseErrorMessage + "Problem running "
-					+ cellposeSettings.getExecutableName()
+					+ command
 					+ ":\n" + e.getMessage() + '\n';
 			e.printStackTrace();
 			return false;
@@ -241,7 +242,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Get the result masks back.
 		 */
 
-		logger.log( "Reading " + cellposeSettings.getExecutableName() + " masks.\n" );
+		logger.log( "Reading " + command + " masks.\n" );
 		final List< ImagePlus > masks = new ArrayList<>( imps.size() );
 		for ( int t = 0; t < imps.size(); t++ )
 		{
@@ -288,7 +289,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final Concatenator concatenator = new Concatenator();
 		final ImagePlus output = concatenator.concatenateHyperstacks(
 				masks.toArray( new ImagePlus[] {} ),
-				img.getName() + "_" + cellposeSettings.getExecutableName() + "Output", false );
+				img.getName() + "_" + command + "Output", false );
 
 		// Copy calibration.
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
@@ -307,7 +308,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final LabelImageDetectorFactory< ? > labeImageDetectorFactory = new LabelImageDetectorFactory<>();
 		final Map< String, Object > detectorSettings = labeImageDetectorFactory.getDefaultSettings();
 		detectorSettings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
-		detectorSettings.put( KEY_SIMPLIFY_CONTOURS, cellposeSettings.simplifyContours );
+		detectorSettings.put( KEY_SIMPLIFY_CONTOURS, cli.simplifyContours().getValue() );
 		labelImgSettings.detectorFactory = labeImageDetectorFactory;
 		labelImgSettings.detectorSettings = detectorSettings;
 
@@ -537,6 +538,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		@Override
 		public String call() throws Exception
 		{
+			final String command = cli.getCommand();
 
 			/*
 			 * Prepare tmp dir.
@@ -544,7 +546,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			Path tmpDir = null;
 			try
 			{
-				tmpDir = Files.createTempDirectory( "TrackMate-" + cellposeSettings.getExecutableName() + "_" );
+				tmpDir = Files.createTempDirectory( "TrackMate-" + command + "_" );
 				recursiveDeleteOnShutdownHook( tmpDir );
 			}
 			catch ( final IOException e1 )
@@ -553,6 +555,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				ok.set( false );
 				return null;
 			}
+			cli.imageFolder().set( tmpDir.toString() );
 
 			/*
 			 * Save time-points as individual frames.
@@ -566,9 +569,11 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				final String name = imp.getShortTitle() + ".tif";
 				// If we are running an omnipose detector, just save the
 				// segmentation channel as tmp image
-				if ( cellposeSettings instanceof OmniposeSettings )
+				if ( cli instanceof OmniposeCLI )
 				{
-					final ImagePlus chanImp = new Duplicator().run( imp, cellposeSettings.chan, cellposeSettings.chan, 0, 0, 0, 0 );
+					final OmniposeCLI ocli = ( OmniposeCLI ) cli;
+					final int chan = ocli.segmentationChannel().getValue() - 1; // 1-based
+					final ImagePlus chanImp = new Duplicator().run( imp, chan, chan, 0, 0, 0, 0 );
 					IJ.saveAsTiff( chanImp, Paths.get( tmpDir.toString(), name ).toString() );
 				}
 				else
@@ -584,20 +589,15 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			try
 
 			{
-				if ( cellposeSettings instanceof OmniposeSettings )
+				final List< String > cmd = CommandBuilder.build( cli );
+				logger.setStatus( "Running " + command );
+				logger.log( "Running " + command + " with args:\n" );
+				logger.log( String.join( " ", cmd ) );
+				logger.log( "\n" );
+
+				if ( cli instanceof OmniposeCLI )
 				{
-					final List< String > cmdOmni = new ArrayList<>( cellposeSettings.toCmdLine( tmpDir.toString() ) );
-
-					int nClasses = 2; // 2 by default in custom models
-					cmdOmni.add( "--nclasses" );
-					cmdOmni.add( String.valueOf( nClasses ) );
-
-					logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
-					logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
-					logger.log( String.join( " ", cmdOmni ) );
-					logger.log( "\n" );
-
-					final ProcessBuilder pbOmni = new ProcessBuilder( cmdOmni );
+					final ProcessBuilder pbOmni = new ProcessBuilder( cmd );
 					pbOmni.redirectErrorStream( true );
 					process = pbOmni.start();
 
@@ -605,6 +605,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 					final String pythonErrorOutput = reader.lines().collect( Collectors.joining() );
 					if ( pythonErrorOutput.contains( "size mismatch for output.2.bias:" ) )
 					{
+						int nClasses;
 						if ( pythonErrorOutput.contains( "copying a param with shape torch.Size([4]) from checkpoint" ) )
 						{
 							nClasses = 3;
@@ -615,14 +616,17 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 							nClasses = 4;
 							logger.log( "Regarding the model loaded, --nclasses argument should be set to " + String.valueOf( nClasses ) + "\n" );
 						}
+						// Update the command line to set the nClasses
+						final OmniposeCLI ocli = ( OmniposeCLI ) cli;
+						ocli.nClasses().set( nClasses );
 
-						cmdOmni.remove( cmdOmni.size() - 1 );
-						cmdOmni.add( String.valueOf( nClasses ) );
+						// Regen command line with the updated nClasses
+						final List< String > cmd2 = CommandBuilder.build( ocli );
 
-						logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
-						logger.log( String.join( " ", cmdOmni ) );
+						logger.log( "Re-running " + command + " with args:\n" );
+						logger.log( String.join( " ", cmd2 ) );
 						logger.log( "\n" );
-						final ProcessBuilder updatedPbOmni = new ProcessBuilder( cmdOmni );
+						final ProcessBuilder updatedPbOmni = new ProcessBuilder( cmd2 );
 						updatedPbOmni.redirectOutput( ProcessBuilder.Redirect.INHERIT );
 						updatedPbOmni.redirectError( ProcessBuilder.Redirect.INHERIT );
 
@@ -636,11 +640,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				}
 				else
 				{
-					final List< String > cmd = cellposeSettings.toCmdLine( tmpDir.toString() );
-					logger.setStatus( "Running " + cellposeSettings.getExecutableName() );
-					logger.log( "Running " + cellposeSettings.getExecutableName() + " with args:\n" );
-					logger.log( String.join( " ", cmd ) );
-					logger.log( "\n" );
 					final ProcessBuilder pb = new ProcessBuilder( cmd );
 					pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
 					pb.redirectError( ProcessBuilder.Redirect.INHERIT );
@@ -654,13 +653,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				final String msg = e.getMessage();
 				if ( msg.matches( ".+error=13.+" ) )
 				{
-					errorMessage = baseErrorMessage + "Problem running " + cellposeSettings.getExecutableName() + ":\n"
+					errorMessage = baseErrorMessage + "Problem running " + command + ":\n"
 							+ "The executable does not have the file permission to run.\n"
 							+ "Please see https://github.com/MouseLand/cellpose#run-cellpose-without-local-python-installation for more information.\n";
 				}
 				else
 				{
-					errorMessage = baseErrorMessage + "Problem running " + cellposeSettings.getExecutableName() + ":\n" + e.getMessage();
+					errorMessage = baseErrorMessage + "Problem running " + command + ":\n" + e.getMessage();
 				}
 				e.printStackTrace();
 				ok.set( false );
@@ -668,7 +667,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 			catch ( final Exception e )
 			{
-				errorMessage = baseErrorMessage + "Problem running " + cellposeSettings.getExecutableName() + ":\n" + e.getMessage();
+				errorMessage = baseErrorMessage + "Problem running " + command + ":\n" + e.getMessage();
 				e.printStackTrace();
 				ok.set( false );
 				return null;
@@ -744,5 +743,11 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 		}
 		return imps;
+	}
+
+	@Override
+	public void setLogger( final Logger logger )
+	{
+		this.logger = logger;
 	}
 }
