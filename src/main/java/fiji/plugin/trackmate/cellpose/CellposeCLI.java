@@ -1,8 +1,15 @@
 package fiji.plugin.trackmate.cellpose;
 
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELLPOSE_MODEL;
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_OPTIONAL_CHANNEL_2;
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_TARGET_CHANNEL;
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_MODEL;
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_PRETRAINED_OR_CUSTOM;
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_OPTIONAL_CHANNEL_2;
+import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
+
 import javax.swing.JFrame;
 
-import fiji.plugin.trackmate.detection.DetectorKeys;
 import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
 import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
@@ -14,20 +21,26 @@ public class CellposeCLI extends CellposeCLIBase
 
 	private final SelectableArguments selectPretrainedOrCustom;
 
-	/**
-	 * The key to the parameter that stores the second optional channel to
-	 * segment. Use -1 to ignore. 0-valued. Careful, the main channel is using
-	 * the KEY_TARGET_CHANNEL key, which value is 1-valued...
-	 *
-	 * @see DetectorKeys#KEY_TARGET_CHANNEL
-	 */
-	public static final String KEY_OPTIONAL_CHANNEL_2 = "OPTIONAL_CHANNEL_2";
+	private final ChoiceArgument chan1;
 
 	private final ChoiceArgument chan2;
 
 	public CellposeCLI( final int nChannels, final String units, final double pixelSize )
 	{
 		super( nChannels, units, pixelSize );
+
+		// Main segmentation channel
+		final ChoiceAdder chan1Adder = addChoiceArgument()
+				.key( KEY_TARGET_CHANNEL )
+				.argument( "--chan" )
+				.name( "Target channel" )
+				.help( "Index of the channel to segment." )
+				.required( true )
+				.addChoice( DEFAULT_TARGET_CHANNEL, "0 - gray" );
+		for ( int c = 1; c <= nChannels; c++ )
+			chan1Adder.addChoice( "" + c );
+		chan1Adder.defaultValue( DEFAULT_TARGET_CHANNEL );
+		this.chan1 = chan1Adder.get();
 
 		// Second optional channel.
 		final ChoiceAdder chan2Adder = addChoiceArgument()
@@ -36,10 +49,10 @@ public class CellposeCLI extends CellposeCLIBase
 				.name( "Second optional channel" )
 				.help( "Second optional channel to segment for cyto* models." )
 				.required( false )
-				.addChoice( "0 - none", "0" );
+				.addChoice( DEFAULT_OPTIONAL_CHANNEL_2, "0 - don't use" );
 		for ( int c = 1; c <= nChannels; c++ )
 			chan2Adder.addChoice( "" + c );
-		chan2Adder.defaultValue( 0 );
+		chan2Adder.defaultValue( DEFAULT_OPTIONAL_CHANNEL_2 );
 		this.chan2 = chan2Adder.get();
 
 		// The pretrained model list.
@@ -59,7 +72,7 @@ public class CellposeCLI extends CellposeCLIBase
 				.addChoice( "deepbacs_cp3" )
 				.addChoice( "cyto2", "cyto2torch_0" )
 				.addChoice( "cyto", "cytotorch_0" )
-				.defaultValue( 0 )
+				.defaultValue( DEFAULT_CELLPOSE_MODEL )
 				.key( KEY_CELLPOSE_MODEL )
 				.get();
 
@@ -72,8 +85,15 @@ public class CellposeCLI extends CellposeCLIBase
 		// Re-add it the arguments at the desired position.
 		arguments.remove( modelPretrained );
 		arguments.add( 0, modelPretrained );
+		arguments.remove( chan1 );
+		arguments.add( 2, chan1 );
 		arguments.remove( chan2 );
 		arguments.add( 3, chan2 );
+	}
+
+	public ChoiceArgument chan1()
+	{
+		return chan1;
 	}
 
 	public ChoiceArgument chan2()
@@ -92,7 +112,7 @@ public class CellposeCLI extends CellposeCLIBase
 	}
 
 	@Override
-	protected String getCommand()
+	public String getCommand()
 	{
 		return "cellpose";
 	}
