@@ -21,6 +21,8 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH;
+import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELLPOSE_PYTHON_FILEPATH;
 import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH;
 import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_MODEL;
 import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_PYTHON_FILEPATH;
@@ -70,17 +72,21 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.scijava.prefs.PrefService;
+
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.cellpose.AbstractCellposeSettings.PretrainedModel;
 import fiji.plugin.trackmate.cellpose.CellposeSettings.PretrainedModelCellpose;
 import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
+import fiji.plugin.trackmate.gui.GuiUtils;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.DetectionPreview;
 import fiji.plugin.trackmate.util.FileChooser;
 import fiji.plugin.trackmate.util.FileChooser.DialogType;
 import fiji.plugin.trackmate.util.FileChooser.SelectionMode;
+import fiji.plugin.trackmate.util.TMUtils;
 
 public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 {
@@ -93,7 +99,11 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	private static final NumberFormat DIAMETER_FORMAT = new DecimalFormat( "#.#" );
 
-	private final JButton btnBrowseCellposePath;
+	private static final String PREF_KEY_CELLPOSE_PYTHON_FILEPATH = "trackmate.cellpose.python.path";
+
+	private static final String PREF_KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH = "trackmate.cellpose.custommodel.path";
+
+	protected final JButton btnBrowseCellposePath;
 
 	protected final JTextField tfCellposeExecutable;
 
@@ -115,9 +125,9 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 
 	protected final JTextField tfCustomPath;
 
-	private final JButton btnBrowseCustomModel;
+	protected final JButton btnBrowseCustomModel;
 
-	private final String executableName;
+	protected final String executableName;
 
 	protected final JPanel mainPanel;
 
@@ -480,7 +490,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		return new CellposeDetectorFactory<>();
 	}
 
-	private void browseCustomModelPath()
+	protected void browseCustomModelPath()
 	{
 		btnBrowseCustomModel.setEnabled( false );
 		try
@@ -488,7 +498,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 			final File file = FileChooser.chooseFile( this, tfCustomPath.getText(), null,
 					"Browse to a " + executableName + " custom model", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
-				tfCustomPath.setText( file.getAbsolutePath() );
+			{
+				final String path = file.getAbsolutePath();
+				tfCustomPath.setText( path );
+				final PrefService prefs = TMUtils.getContext().getService( PrefService.class );
+				prefs.put( CellposeDetectorConfigurationPanel.class, PREF_KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, path );
+			}
 		}
 		finally
 		{
@@ -496,7 +511,7 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 		}
 	}
 
-	private void browseCellposePath()
+	protected void browseCellposePath()
 	{
 		btnBrowseCellposePath.setEnabled( false );
 		try
@@ -504,7 +519,12 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 			final File file = FileChooser.chooseFile( this, tfCellposeExecutable.getText(), null,
 					"Browse to the " + executableName + " Python executable", DialogType.LOAD, SelectionMode.FILES_ONLY );
 			if ( file != null )
-				tfCellposeExecutable.setText( file.getAbsolutePath() );
+			{
+				final String path = file.getAbsolutePath();
+				tfCellposeExecutable.setText( path );
+				final PrefService prefs = TMUtils.getContext().getService( PrefService.class );
+				prefs.put( CellposeDetectorConfigurationPanel.class, PREF_KEY_CELLPOSE_PYTHON_FILEPATH, path );
+			}
 		}
 		finally
 		{
@@ -515,8 +535,22 @@ public class CellposeDetectorConfigurationPanel extends ConfigurationPanel
 	@Override
 	public void setSettings( final Map< String, Object > settings )
 	{
-		tfCellposeExecutable.setText( ( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ) );
-		tfCustomPath.setText( ( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH ) );
+		// Python path.
+		GuiUtils.setTextFieldDefaultOrPrefs(
+				tfCellposeExecutable,
+				( String ) settings.get( KEY_CELLPOSE_PYTHON_FILEPATH ),
+				DEFAULT_CELLPOSE_PYTHON_FILEPATH,
+				PREF_KEY_CELLPOSE_PYTHON_FILEPATH,
+				CellposeDetectorConfigurationPanel.class );
+
+		// Custom model path.
+		GuiUtils.setTextFieldDefaultOrPrefs(
+				tfCustomPath,
+				( String ) settings.get( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH ),
+				DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH,
+				PREF_KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH,
+				CellposeDetectorConfigurationPanel.class );
+
 		cmbboxPretrainedModel.setSelectedItem( settings.get( KEY_CELLPOSE_MODEL ) );
 
 		int key_target = ( int ) settings.get( KEY_TARGET_CHANNEL ) - 1;
