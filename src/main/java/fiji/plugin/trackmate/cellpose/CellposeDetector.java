@@ -555,7 +555,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				ok.set( false );
 				return null;
 			}
-			cli.imageFolder().set( tmpDir.toString() );
 
 			/*
 			 * Save time-points as individual frames.
@@ -589,7 +588,17 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			try
 
 			{
-				final List< String > cmd = CommandBuilder.build( cli );
+				final List< String > cmd;
+				synchronized ( cli )
+				{
+					/*
+					 * In synchronized block so that we can safely generate the
+					 * command line even if one instance of the cli is used in
+					 * several threads.
+					 */
+					cli.imageFolder().set( tmpDir.toString() );
+					cmd = CommandBuilder.build( cli );
+				}
 				logger.setStatus( "Running " + command );
 				logger.log( "Running " + command + " with args:\n" );
 				logger.log( String.join( " ", cmd ) );
@@ -616,12 +625,17 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 							nClasses = 4;
 							logger.log( "Regarding the model loaded, --nclasses argument should be set to " + String.valueOf( nClasses ) + "\n" );
 						}
-						// Update the command line to set the nClasses
-						final OmniposeCLI ocli = ( OmniposeCLI ) cli;
-						ocli.nClasses().set( nClasses );
 
-						// Regen command line with the updated nClasses
-						final List< String > cmd2 = CommandBuilder.build( ocli );
+						final List< String > cmd2;
+						synchronized ( cli )
+						{
+							// Update the command line to set the nClasses
+							final OmniposeCLI ocli = ( OmniposeCLI ) cli;
+							ocli.nClasses().set( nClasses );
+
+							// Regen command line with the updated nClasses
+							cmd2 = CommandBuilder.build( ocli );
+						}
 
 						logger.log( "Re-running " + command + " with args:\n" );
 						logger.log( String.join( " ", cmd2 ) );
