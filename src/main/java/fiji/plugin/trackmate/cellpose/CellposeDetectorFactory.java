@@ -21,33 +21,16 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
-import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
-import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
-import static fiji.plugin.trackmate.io.IOUtils.readBooleanAttribute;
-import static fiji.plugin.trackmate.io.IOUtils.readDoubleAttribute;
-import static fiji.plugin.trackmate.io.IOUtils.readStringAttribute;
-import static fiji.plugin.trackmate.io.IOUtils.writeAttribute;
-import static fiji.plugin.trackmate.util.TMUtils.checkParameter;
-import static fiji.plugin.trackmate.util.cli.CondaCLIConfigurator.KEY_CONDA_ENV;
-
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
-
-import org.jdom2.Element;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 
-import fiji.plugin.trackmate.Model;
-import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
-import fiji.plugin.trackmate.detection.SpotDetectorFactoryBase;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
-import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
+import fiji.plugin.trackmate.util.cli.AbstractCLIDetectorFactory;
 import fiji.plugin.trackmate.util.cli.TrackMateSettingsBuilder;
-import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
@@ -55,12 +38,17 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 @Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
-public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetectorFactory< T >
+public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > >
+		extends AbstractCLIDetectorFactory< T, CellposeCLI >
+		implements SpotGlobalDetectorFactory< T >
 {
 
-	/*
-	 * CONSTANTS
-	 */
+	public CellposeDetectorFactory()
+	{
+		super( new CellposeCLI( 0, "no units yet", 1. ),
+				DETECTOR_KEY, NAME, INFO_TEXT, DOC_CELLPOSE_URL,
+				CellposeUtils.cellposeLogo64() );
+	}
 
 	public static final String KEY_CELLPOSE_MODEL = "CELLPOSE_MODEL";
 
@@ -139,33 +127,24 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "</html>";
 
 	/*
-	 * FIELDS
-	 */
-
-	/** The image to operate on. Multiple frames, single channel. */
-	protected ImgPlus< T > img;
-
-	protected Map< String, Object > settings;
-
-	protected String errorMessage;
-
-	/*
 	 * METHODS
 	 */
 
 	@Override
-	public SpotGlobalDetector< T > getDetector( final Interval interval )
+	protected CellposeCLI createCLIConfigurator()
 	{
 		final int cDim = img.dimensionIndex( Axes.CHANNEL );
 		final int nChannels = cDim < 1 ? 1 : ( int ) img.dimension( cDim );
 		final int xDim = img.dimensionIndex( Axes.X );
 		final String units = img.axis( xDim ).unit();
 		final double pixelSize = img.axis( xDim ).averageScale( 0., 1. );
+		return new CellposeCLI( nChannels, units, pixelSize );
+	}
 
-		final CellposeCLI cli = new CellposeCLI( nChannels, units, pixelSize );
+	@Override
+	public SpotGlobalDetector< T > getDetector( final Interval interval )
+	{
 		TrackMateSettingsBuilder.fromTrackMateSettings( settings, cli );
-
-		// Logger.
 		final CellposeDetector< T > detector = new CellposeDetector<>(
 				img,
 				interval,
@@ -190,153 +169,10 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		this.settings = settings;
 		return checkSettings( settings );
 	}
-
-	@Override
-	public String getErrorMessage()
-	{
-		return errorMessage;
-	}
-
-	@Override
-	public boolean marshall( final Map< String, Object > settings, final Element element )
-	{
-		boolean ok = true;
-		final StringBuilder errorHolder = new StringBuilder();
-		ok = ok & writeAttribute( settings, element, KEY_CONDA_ENV, String.class, errorHolder );
-		ok = ok & writeAttribute( settings, element, KEY_CELLPOSE_MODEL, String.class, errorHolder );
-		ok = ok & writeAttribute( settings, element, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, String.class, errorHolder );
-		ok = ok & writeAttribute( settings, element, KEY_CELLPOSE_PRETRAINED_OR_CUSTOM, String.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_TARGET_CHANNEL, String.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_OPTIONAL_CHANNEL_2, String.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_CELL_DIAMETER, Double.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_USE_GPU, Boolean.class, errorHolder );
-		ok = ok && writeAttribute( settings, element, KEY_SIMPLIFY_CONTOURS, Boolean.class, errorHolder );
-		if ( !ok )
-			errorMessage = errorHolder.toString();
-		return ok;
-	}
-
-	@Override
-	public boolean unmarshall( final Element element, final Map< String, Object > settings )
-	{
-		settings.clear();
-		final StringBuilder errorHolder = new StringBuilder();
-		boolean ok = true;
-		ok = ok & readStringAttribute( element, settings, KEY_CONDA_ENV, errorHolder );
-		ok = ok & readStringAttribute( element, settings, KEY_CELLPOSE_MODEL, errorHolder );
-		ok = ok & readStringAttribute( element, settings, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, errorHolder );
-		ok = ok & readStringAttribute( element, settings, KEY_CELLPOSE_PRETRAINED_OR_CUSTOM, errorHolder );
-		ok = ok & readStringAttribute( element, settings, KEY_TARGET_CHANNEL, errorHolder );
-		ok = ok & readStringAttribute( element, settings, KEY_OPTIONAL_CHANNEL_2, errorHolder );
-		ok = ok & readDoubleAttribute( element, settings, KEY_CELL_DIAMETER, errorHolder );
-		ok = ok & readBooleanAttribute( element, settings, KEY_USE_GPU, errorHolder );
-		ok = ok & readBooleanAttribute( element, settings, KEY_SIMPLIFY_CONTOURS, errorHolder );
-		if ( !ok )
-			errorMessage = errorHolder.toString();
-		return ok;
-	}
-
-	@Override
-	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
-	{
-		try
-		{
-			final ImagePlus imp = settings.imp;
-			final int nChannels = imp.getNChannels();
-			final String units = imp.getCalibration().getUnit();
-			final double pixelSize = imp.getCalibration().pixelWidth;
-			final String title = CellposeDetectorFactory.NAME;
-			final ImageIcon icon = CellposeUtils.cellposeLogo64();
-			final String docUrl = CellposeDetectorFactory.DOC_CELLPOSE_URL;
-
-			final CellposeCLI cli = new CellposeCLI( nChannels, units, pixelSize );
-			TrackMateSettingsBuilder.fromTrackMateSettings( getDefaultSettings(), cli );
-			return new CellposeDetectorConfigurationPanel( settings, model, cli, title, icon, docUrl );
-		}
-		catch ( final Exception e )
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@Override
-	public Map< String, Object > getDefaultSettings()
-	{
-		final Map< String, Object > settings = new HashMap<>();
-		settings.put( KEY_CONDA_ENV, "" );
-		settings.put( KEY_CELLPOSE_MODEL, DEFAULT_CELLPOSE_MODEL );
-		settings.put( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH );
-		settings.put( KEY_CELLPOSE_PRETRAINED_OR_CUSTOM, DEFAULT_CELLPOSE_PRETRAINED_OR_CUSTOM );
-		settings.put( KEY_TARGET_CHANNEL, DEFAULT_TARGET_CHANNEL );
-		settings.put( KEY_OPTIONAL_CHANNEL_2, DEFAULT_OPTIONAL_CHANNEL_2 );
-		settings.put( KEY_CELL_DIAMETER, DEFAULT_CELL_DIAMETER );
-		settings.put( KEY_USE_GPU, DEFAULT_USE_GPU );
-		settings.put( KEY_SIMPLIFY_CONTOURS, true );
-		return settings;
-	}
-
-	@Override
-	public boolean checkSettings( final Map< String, Object > settings )
-	{
-		if ( null == settings )
-		{
-			errorMessage = "Settings map is null.\n";
-			return false;
-		}
-
-		boolean ok = true;
-		final StringBuilder str = new StringBuilder();
-		ok = ok & checkParameter( settings, KEY_CONDA_ENV, String.class, str );
-		ok = ok & checkParameter( settings, KEY_CELLPOSE_MODEL, String.class, str );
-		ok = ok & checkParameter( settings, KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH, String.class, str );
-		ok = ok & checkParameter( settings, KEY_CELLPOSE_PRETRAINED_OR_CUSTOM, String.class, str );
-		ok = ok & checkParameter( settings, KEY_TARGET_CHANNEL, String.class, str );
-		ok = ok & checkParameter( settings, KEY_OPTIONAL_CHANNEL_2, String.class, str );
-		ok = ok & checkParameter( settings, KEY_CELL_DIAMETER, Double.class, str );
-		ok = ok & checkParameter( settings, KEY_USE_GPU, Boolean.class, str );
-		ok = ok & checkParameter( settings, KEY_SIMPLIFY_CONTOURS, Boolean.class, str );
-		if ( !ok )
-		{
-			errorMessage = str.toString();
-			return false;
-		}
-		return true;
-	}
-
-	@Override
-	public String getInfoText()
-	{
-		return INFO_TEXT;
-	}
-
-	@Override
-	public ImageIcon getIcon()
-	{
-		return null;
-	}
-
-	@Override
-	public String getKey()
-	{
-		return DETECTOR_KEY;
-	}
-
-	@Override
-	public String getName()
-	{
-		return NAME;
-	}
-
-	@Override
-	public boolean has2Dsegmentation()
-	{
-		return true;
-	}
-
-	@Override
-	public SpotDetectorFactoryBase< T > copy()
-	{
-		return new CellposeDetectorFactory<>();
-	}
+//
+//	@Override
+//	public SpotDetectorFactoryBase< T > copy()
+//	{
+//		return new CellposeDetectorFactory< T >();
+//	}
 }
