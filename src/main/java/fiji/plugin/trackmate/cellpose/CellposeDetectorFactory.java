@@ -23,32 +23,27 @@ package fiji.plugin.trackmate.cellpose;
 
 import java.util.Map;
 
+import javax.swing.ImageIcon;
+
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
+import fiji.plugin.trackmate.detection.SpotDetectorFactoryGenericConfig;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
-import fiji.plugin.trackmate.util.cli.AbstractCLIDetectorFactory;
 import fiji.plugin.trackmate.util.cli.TrackMateSettingsBuilder;
+import ij.ImagePlus;
 import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.Interval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 @Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
 public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > >
-		extends AbstractCLIDetectorFactory< T, CellposeCLI >
-		implements SpotGlobalDetectorFactory< T >
+		implements SpotGlobalDetectorFactory< T >, SpotDetectorFactoryGenericConfig< T, CellposeCLI >
 {
-
-	public CellposeDetectorFactory()
-	{
-		super( new CellposeCLI( 0, "no units yet", 1. ),
-				DETECTOR_KEY, NAME, INFO_TEXT, DOC_CELLPOSE_URL,
-				CellposeUtils.cellposeLogo64() );
-	}
 
 	public static final String KEY_CELLPOSE_MODEL = "CELLPOSE_MODEL";
 
@@ -131,25 +126,47 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	 */
 
 	@Override
-	protected CellposeCLI createCLIConfigurator()
+	public CellposeCLI getConfigurator( final ImagePlus imp )
 	{
-		final int cDim = img.dimensionIndex( Axes.CHANNEL );
-		final int nChannels = cDim < 1 ? 1 : ( int ) img.dimension( cDim );
-		final int xDim = img.dimensionIndex( Axes.X );
-		final String units = img.axis( xDim ).unit();
-		final double pixelSize = img.axis( xDim ).averageScale( 0., 1. );
+		final int nChannels = ( imp == null ) ? 1 : imp.getNChannels();
+		final String units = ( imp == null ) ? "no input image" : imp.getCalibration().getUnit();
+		final double pixelSize = ( imp == null ) ? 1. : imp.getCalibration().pixelWidth;
 		return new CellposeCLI( nChannels, units, pixelSize );
 	}
 
 	@Override
-	public SpotGlobalDetector< T > getDetector( final Interval interval )
+	public SpotGlobalDetector< T > getDetector( final ImgPlus< T > img, final Map< String, Object > settings, final Interval interval )
 	{
+		// Create the CLI and loads settings into it.
+		final ImagePlus imp = ImageJFunctions.wrap( img, "wrapped" );
+		final CellposeCLI cli = getConfigurator( imp );
 		TrackMateSettingsBuilder.fromTrackMateSettings( settings, cli );
-		final CellposeDetector< T > detector = new CellposeDetector<>(
-				img,
-				interval,
-				cli );
-		return detector;
+		// Create the detector.
+		return new CellposeDetector<>( img, interval, cli );
+	}
+
+	@Override
+	public String getInfoText()
+	{
+		return INFO_TEXT;
+	}
+
+	@Override
+	public String getKey()
+	{
+		return DETECTOR_KEY;
+	}
+
+	@Override
+	public String getName()
+	{
+		return NAME;
+	}
+
+	@Override
+	public ImageIcon getIcon()
+	{
+		return CellposeUtils.cellposeLogo64();
 	}
 
 	@Override
@@ -162,17 +179,4 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		return true;
 	}
 
-	@Override
-	public boolean setTarget( final ImgPlus< T > img, final Map< String, Object > settings )
-	{
-		this.img = img;
-		this.settings = settings;
-		return checkSettings( settings );
-	}
-//
-//	@Override
-//	public SpotDetectorFactoryBase< T > copy()
-//	{
-//		return new CellposeDetectorFactory< T >();
-//	}
 }
