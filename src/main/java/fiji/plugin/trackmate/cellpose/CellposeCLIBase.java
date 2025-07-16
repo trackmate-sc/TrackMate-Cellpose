@@ -58,7 +58,7 @@ public abstract class CellposeCLIBase extends CondaCLIConfigurator
 				.get();
 
 		// Translate to pixel size.
-		translators.put( diameter, d -> {
+		setCommandTranslator( diameter, d -> {
 			final double diam = ( double ) d;
 			final double diamPix = diam > 0 ? ( diam / pixelSize ) : 0.;
 			return Collections.singletonList( "" + diamPix );
@@ -74,7 +74,7 @@ public abstract class CellposeCLIBase extends CondaCLIConfigurator
 				.get();
 
 		// Simplify contours
-		this.simplifyContours = addExtraArgument( CommonTrackMateArguments.simplyContour() );
+		this.simplifyContours = CommonTrackMateArguments.addSimplifyContour( this );
 
 		// Folder to store input images.
 		this.imageFolder = addPathArgument()
