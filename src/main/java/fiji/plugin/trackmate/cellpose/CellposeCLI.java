@@ -4,13 +4,12 @@ import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 
 import javax.swing.JFrame;
 
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder.ConfigPanel;
 
 public class CellposeCLI extends CellposeCLIBase
 {
-
 
 	/*
 	 * CONSTANTS
@@ -210,7 +209,7 @@ public class CellposeCLI extends CellposeCLIBase
 		System.out.println( CommandBuilder.build( cli ) );
 
 		// Show config panel.
-		final CliConfigPanel panel = CliGuiBuilder.build( cli );
+		final ConfigPanel panel = ConfigGuiBuilder.build( cli );
 		final JFrame frame = new JFrame( "cellpose CLI" );
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 		frame.getContentPane().add( panel );
