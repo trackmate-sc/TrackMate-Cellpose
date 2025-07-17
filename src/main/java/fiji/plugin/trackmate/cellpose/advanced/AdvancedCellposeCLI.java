@@ -1,23 +1,108 @@
 package fiji.plugin.trackmate.cellpose.advanced;
 
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DEFAULT_CELL_PROB_THRESHOLD;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DEFAULT_FLOW_THRESHOLD;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
-
 import javax.swing.JFrame;
 
 import fiji.plugin.trackmate.cellpose.CellposeCLI;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder.ConfigPanel;
 
 public class AdvancedCellposeCLI extends CellposeCLI
 {
 
+
+	/**
+	 * The key to the parameter that store the flow threshold value. From
+	 * cellpose docs:
+	 * <p>
+	 * Note there is nothing keeping the neural network from predicting
+	 * horizontal and vertical flows that do not correspond to any real shapes
+	 * at all. In practice, most predicted flows are consistent with real
+	 * shapes, because the network was only trained on image flows that are
+	 * consistent with real shapes, but sometimes when the network is uncertain
+	 * it may output inconsistent flows. To check that the recovered shapes
+	 * after the flow dynamics step are consistent with real ROIs, we recompute
+	 * the flow gradients for these putative predicted ROIs, and compute the
+	 * mean squared error between them and the flows predicted by the network.
+	 * <p>
+	 * The flow_threshold parameter is the maximum allowed error of the flows
+	 * for each mask. The default is flow_threshold=0.4. Increase this threshold
+	 * if cellpose is not returning as many ROIs as you’d expect. Similarly,
+	 * decrease this threshold if cellpose is returning too many ill-shaped
+	 * ROIs.
+	 */
+	public static final String KEY_FLOW_THRESHOLD = "FLOW_THRESHOLD";
+
+	public static final Double DEFAULT_FLOW_THRESHOLD = Double.valueOf( 0.4 );
+
+	/**
+	 * The key to the parameter that store the cell probability threshold value.
+	 * From cellpose docs:
+	 * <p>
+	 * The network predicts 3 outputs: flows in X, flows in Y, and cell
+	 * “probability”. The predictions the network makes of the probability are
+	 * the inputs to a sigmoid centered at zero (1 / (1 + e^-x)), so they vary
+	 * from around -6 to +6. The pixels greater than the cellprob_threshold are
+	 * used to run dynamics and determine ROIs. The default is
+	 * cellprob_threshold=0.0. Decrease this threshold if cellpose is not
+	 * returning as many ROIs as you’d expect. Similarly, increase this
+	 * threshold if cellpose is returning too ROIs particularly from dim areas.
+	 */
+	public static final String KEY_CELL_PROB_THRESHOLD = "CELL_PROB_THRESHOLD";
+
+	public static final Double DEFAULT_CELL_PROB_THRESHOLD = Double.valueOf( 0. );
+
+	/**
+	 * The key to the parameter that store the resampling option. From cellpose
+	 * docs:
+	 * <p>
+	 * The cellpose network is run on your rescaled image – where the rescaling
+	 * factor is determined by the diameter you input (or determined
+	 * automatically as above). For instance, if you have an image with 60 pixel
+	 * diameter cells, the rescaling factor is 30./60. = 0.5. After determining
+	 * the flows (dX, dY, cellprob), the model runs the dynamics. The dynamics
+	 * can be run at the rescaled size (resample=False), or the dynamics can be
+	 * run on the resampled, interpolated flows at the true image size
+	 * (resample=True). resample=True will create smoother ROIs when the cells
+	 * are large but will be slower in case; resample=False will find more ROIs
+	 * when the cells are small but will be slower in this case. By default in
+	 * versions >=1.0 resample=True.
+	 */
 	public static final String KEY_NO_RESAMPLE = "NO_RESAMPLE";
 
 	public static final Boolean DEFAULT_NO_RESAMPLE = false;
+
+	/**
+	 * The key to the parameter that store the minimum size to keep masks. Used
+	 * only if do_3D mode or 2D+Z and stitch_threshold > 0 From cellpose docs:
+	 * <p>
+	 * Minimum number of pixels per mask, can turn off with -1.
+	 */
+	public static final String KEY_CELL_MIN_SIZE = "CELL_MIN_SIZE";
+
+	public static final Double DEFAULT_CELL_MIN_SIZE = Double.valueOf( 15. );
+
+	/**
+	 * Parameters for CellPose 3D mode: either do_3D (do xy, yz, zx) or
+	 * 2D+stitch_threshold to reconstruct in 3D from cellpose docs:
+	 * <p>
+	 * There may be additional differences in YZ and XZ slices that make them
+	 * unable to be used for 3D segmentation. I’d recommend viewing the volume
+	 * in those dimensions if the segmentation is failing. In those instances,
+	 * you may want to turn off 3D segmentation (do_3D=False) and run instead
+	 * with stitch_threshold>0. Cellpose will create ROIs in 2D on each XY slice
+	 * and then stitch them across slices if the IoU between the mask on the
+	 * current slice and the next slice is greater than or equal to the
+	 * stitch_threshold.
+	 */
+	public static final Boolean DEFAULT_DO2DZ = false;
+
+	public static final String KEY_DO2DZ = "DO2DZ";
+
+	/** Default value of iou threshold for 2D+z stitching */
+	public static final Double DEFAULT_IOU_THRESHOLD = Double.valueOf( 0.25 );
+
+	public static final String KEY_IOU_THRESHOLD = "IOUTHRESHOLD";
 
 	private final DoubleArgument flowThreshold;
 
@@ -112,7 +197,7 @@ public class AdvancedCellposeCLI extends CellposeCLI
 		System.out.println( CommandBuilder.build( cli ) );
 
 		// Show config panel.
-		final CliConfigPanel panel = CliGuiBuilder.build( cli );
+		final ConfigPanel panel = ConfigGuiBuilder.build( cli );
 		final JFrame frame = new JFrame( "Advanced cellpose CLI" );
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 		frame.getContentPane().add( panel );
@@ -120,5 +205,4 @@ public class AdvancedCellposeCLI extends CellposeCLI
 		frame.setLocationRelativeTo( null );
 		frame.setVisible( true );
 	}
-
 }
