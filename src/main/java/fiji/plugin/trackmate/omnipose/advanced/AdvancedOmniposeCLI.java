@@ -1,23 +1,21 @@
 package fiji.plugin.trackmate.omnipose.advanced;
 
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DEFAULT_CELL_PROB_THRESHOLD;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.DEFAULT_FLOW_THRESHOLD;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_CELL_PROB_THRESHOLD;
-import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeDetectorFactory.KEY_FLOW_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeCLI.DEFAULT_CELL_PROB_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeCLI.DEFAULT_FLOW_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeCLI.DEFAULT_NO_RESAMPLE;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeCLI.KEY_CELL_PROB_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeCLI.KEY_FLOW_THRESHOLD;
+import static fiji.plugin.trackmate.cellpose.advanced.AdvancedCellposeCLI.KEY_NO_RESAMPLE;
 
 import javax.swing.JFrame;
 
 import fiji.plugin.trackmate.omnipose.OmniposeCLI;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder.ConfigPanel;
 
 public class AdvancedOmniposeCLI extends OmniposeCLI
 {
-
-	public static final String KEY_NO_RESAMPLE = "NO_RESAMPLE";
-
-	public static final Boolean DEFAULT_NO_RESAMPLE = false;
 
 	private final DoubleArgument flowThreshold;
 
@@ -82,7 +80,7 @@ public class AdvancedOmniposeCLI extends OmniposeCLI
 		arguments.remove( noResample );
 		arguments.add( 4, flowThreshold );
 		arguments.add( 5, cellProbThreshold );
-		arguments.add( 8, noResample );
+		arguments.add( 7, noResample );
 	}
 
 	public DoubleArgument flowThreshold()
@@ -116,7 +114,7 @@ public class AdvancedOmniposeCLI extends OmniposeCLI
 		System.out.println( CommandBuilder.build( cli ) );
 
 		// Show config panel.
-		final CliConfigPanel panel = CliGuiBuilder.build( cli );
+		final ConfigPanel panel = ConfigGuiBuilder.build( cli );
 		final JFrame frame = new JFrame( "Advanced " + cli.getCommand() + " CLI" );
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 		frame.getContentPane().add( panel );
