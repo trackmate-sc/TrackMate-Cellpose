@@ -48,10 +48,6 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 
 {
 
-	/*
-	 * CONSTANTS
-	 */
-
 	/** A string key identifying this factory. */
 	public static final String DETECTOR_KEY = "CELLPOSE_ADVANCED_DETECTOR";
 
@@ -73,14 +69,7 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "<a href=\"https://doi.org/10.1038/s41592-020-01018-x\">Stringer, C., Wang, T., Michaelos, M. et al. "
 			+ "Cellpose: a generalist algorithm for cellular segmentation. "
 			+ "Nat Methods 18, 100–106 (2021)</a>"
-			+ "<p>"
-			+ "Documentation for this module "
-			+ "<a href=\"" + DOC_ADV_CELLPOSE_URL + "\">on the ImageJ Wiki</a>."
 			+ "</html>";
-
-	/*
-	 * METHODS
-	 */
 
 	@Override
 	public AdvancedCellposeCLI getConfigurator( final ImagePlus imp )
