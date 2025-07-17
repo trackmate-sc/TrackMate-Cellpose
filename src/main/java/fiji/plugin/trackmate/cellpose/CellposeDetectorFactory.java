@@ -36,7 +36,6 @@ import fiji.plugin.trackmate.util.cli.TrackMateSettingsBuilder;
 import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imglib2.Interval;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
@@ -44,48 +43,6 @@ import net.imglib2.type.numeric.RealType;
 public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > >
 		implements SpotGlobalDetectorFactory< T >, SpotDetectorFactoryGenericConfig< T, CellposeCLI >
 {
-
-	public static final String KEY_CELLPOSE_MODEL = "CELLPOSE_MODEL";
-
-	public static final String DEFAULT_CELLPOSE_MODEL = "cyto3";
-
-	/**
-	 * The key to the parameter that stores the path to the custom model file to
-	 * use with Cellpose. It must be an absolute file path.
-	 */
-	public static final String KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH = "CELLPOSE_MODEL_FILEPATH";
-
-	public static final String DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH = "";
-
-	public static final String KEY_CELLPOSE_PRETRAINED_OR_CUSTOM = "PRETRAINED_OR_CUSTOM";
-
-	public static final String DEFAULT_CELLPOSE_PRETRAINED_OR_CUSTOM = KEY_CELLPOSE_MODEL;
-
-	public static final String DEFAULT_TARGET_CHANNEL = "0";
-
-	public static final String KEY_OPTIONAL_CHANNEL_2 = "OPTIONAL_CHANNEL_2";
-
-	public static final String DEFAULT_OPTIONAL_CHANNEL_2 = "0";
-
-	/**
-	 * The key to the parameter that store the estimated cell diameter. Contrary
-	 * to Cellpose, this must be specified in physical units (e.g. µm) and
-	 * TrackMate wil do the conversion. Use 0 or a negative value to have
-	 * Cellpose determine this automatically (but it will take a bit longer).
-	 */
-	public static final String KEY_CELL_DIAMETER = "CELL_DIAMETER";
-
-	public static final Double DEFAULT_CELL_DIAMETER = Double.valueOf( 30. );
-
-	/**
-	 * They key to the parameter that configures whether Cellpose will try to
-	 * use GPU acceleration. For this to work, a working Cellpose with working
-	 * GPU support must be present on the system. If not, Cellpose will default
-	 * to using the CPU.
-	 */
-	public static final String KEY_USE_GPU = "USE_GPU";
-
-	public static final Boolean DEFAULT_USE_GPU = Boolean.valueOf( true );
 
 	/** A string key identifying this factory. */
 	public static final String DETECTOR_KEY = "CELLPOSE_DETECTOR";
@@ -138,8 +95,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public SpotGlobalDetector< T > getDetector( final ImgPlus< T > img, final Map< String, Object > settings, final Interval interval )
 	{
 		// Create the CLI and loads settings into it.
-		final ImagePlus imp = ImageJFunctions.wrap( img, "wrapped" );
-		final CellposeCLI cli = getConfigurator( imp );
+		final CellposeCLI cli = getConfigurator( img );
 		TrackMateSettingsBuilder.fromTrackMateSettings( settings, cli );
 		// Create the detector.
 		return new CellposeDetector<>( img, interval, cli );
