@@ -2,6 +2,8 @@ package fiji.plugin.trackmate.cellpose;
 
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 
+import java.util.Collections;
+
 import javax.swing.JFrame;
 
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
@@ -29,6 +31,16 @@ public class CellposeCLI extends CellposeCLIBase
 
 	public static final String DEFAULT_OPTIONAL_CHANNEL_2 = "0";
 
+	/**
+	 * The key to the parameter that store the estimated cell diameter. Contrary
+	 * to Cellpose, this must be specified in physical units (e.g. µm) and
+	 * TrackMate wil do the conversion. Use 0 or a negative value to have
+	 * Cellpose determine this automatically (but it will take a bit longer).
+	 */
+	public static final String KEY_CELL_DIAMETER = "CELL_DIAMETER";
+
+	public static final Double DEFAULT_CELL_DIAMETER = Double.valueOf( 30. );
+
 	private final ChoiceArgument modelPretrained;
 
 	private final SelectableArguments selectPretrainedOrCustom;
@@ -36,6 +48,8 @@ public class CellposeCLI extends CellposeCLIBase
 	private final ChoiceArgument chan1;
 
 	private final ChoiceArgument chan2;
+
+	private final DoubleArgument diameter;
 
 	public CellposeCLI( final int nChannels, final String units, final double pixelSize )
 	{
@@ -66,6 +80,23 @@ public class CellposeCLI extends CellposeCLIBase
 			chan2Adder.addChoice( "" + c );
 		chan2Adder.defaultValue( DEFAULT_OPTIONAL_CHANNEL_2 );
 		this.chan2 = chan2Adder.get();
+
+		// Object diameter
+		this.diameter = addDoubleArgument()
+				.name( "Cell diameter" )
+				.help( "Cell diameter. If 0 will use the diameter of the training labels used in the model, or with built-in model will estimate diameter for each image." )
+				.argument( "--diameter" )
+				.key( KEY_CELL_DIAMETER )
+				.defaultValue( DEFAULT_CELL_DIAMETER )
+				.min( 0. )
+				.units( units )
+				.get();
+		// Translate to pixel size.
+		setCommandTranslator( diameter, d -> {
+			final double diam = ( double ) d;
+			final double diamPix = diam > 0 ? ( diam / pixelSize ) : 0.;
+			return Collections.singletonList( "" + diamPix );
+		} );
 
 		// The pretrained model list.
 		this.modelPretrained = addChoiceArgument()
@@ -101,6 +132,8 @@ public class CellposeCLI extends CellposeCLIBase
 		arguments.add( 2, chan1 );
 		arguments.remove( chan2 );
 		arguments.add( 3, chan2 );
+		arguments.remove( diameter );
+		arguments.add( 4, diameter );
 	}
 
 	public ChoiceArgument chan1()
@@ -111,6 +144,11 @@ public class CellposeCLI extends CellposeCLIBase
 	public ChoiceArgument chan2()
 	{
 		return chan2;
+	}
+
+	public DoubleArgument diameter()
+	{
+		return diameter;
 	}
 
 	public ChoiceArgument modelPretrained()
