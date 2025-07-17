@@ -26,12 +26,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.input.Tailer;
-import org.apache.commons.io.input.TailerListenerAdapter;
 import org.scijava.Cancelable;
 
 import fiji.plugin.trackmate.Logger;
@@ -43,6 +40,7 @@ import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.omnipose.OmniposeCLI;
 import fiji.plugin.trackmate.util.TMUtils;
+import fiji.plugin.trackmate.util.cli.CLIUtils.LoggerTailerListener;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
 import ij.IJ;
 import ij.ImagePlus;
@@ -426,42 +424,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	public long getProcessingTime()
 	{
 		return processingTime;
-	}
-
-	private static class LoggerTailerListener extends TailerListenerAdapter
-	{
-		private final Logger logger;
-
-		private final static Pattern PERCENTAGE_PATTERN = Pattern.compile( ".+\\D(\\d+(?:\\.\\d+)?)%.+" );
-
-		private final static Pattern INFO_PATTERN = Pattern.compile( ".+\\[INFO\\]\\s+(.+)" );
-
-		public LoggerTailerListener( final Logger logger )
-		{
-			this.logger = logger;
-		}
-
-		@Override
-		public void handle( final String line )
-		{
-			// Do we have percentage?
-			final Matcher matcher = PERCENTAGE_PATTERN.matcher( line );
-			if ( matcher.matches() )
-			{
-				final String percent = matcher.group( 1 );
-				logger.setProgress( Double.valueOf( percent ) / 100. );
-			}
-			else
-			{
-				final Matcher matcher2 = INFO_PATTERN.matcher( line );
-				if ( matcher2.matches() )
-				{
-					final String str = matcher2.group( 1 ).trim();
-					if ( str.length() > 2 )
-						logger.setStatus( str );
-				}
-			}
-		}
 	}
 
 	// --- org.scijava.Cancelable methods ---
