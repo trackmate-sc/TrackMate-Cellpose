@@ -1,26 +1,37 @@
 package fiji.plugin.trackmate.omnipose;
 
 import static fiji.plugin.trackmate.cellpose.CellposeCLI.KEY_CELLPOSE_PRETRAINED_OR_CUSTOM;
+import static fiji.plugin.trackmate.cellpose.CellposeCLI.KEY_CELL_DIAMETER;
+import static fiji.plugin.trackmate.detection.DetectorKeys.DEFAULT_TARGET_CHANNEL;
 import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
-import static fiji.plugin.trackmate.omnipose.OmniposeDetectorFactory.KEY_OMNIPOSE_MODEL;
+
+import java.util.Collections;
 
 import javax.swing.JFrame;
 
 import fiji.plugin.trackmate.cellpose.CellposeCLIBase;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder;
-import fiji.plugin.trackmate.util.cli.CliGuiBuilder.CliConfigPanel;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder;
+import fiji.plugin.trackmate.util.cli.ConfigGuiBuilder.ConfigPanel;
 
 public class OmniposeCLI extends CellposeCLIBase
 {
+
+	/**
+	 * The key to the parameter that stores the name ofthe omnipose model to
+	 * use.
+	 */
+	public static final String KEY_OMNIPOSE_MODEL = "OMNIPOSE_MODEL";
 
 	private final ChoiceArgument modelPretrained;
 
 	private final SelectableArguments selectPretrainedOrCustom;
 
-	private final IntArgument chan1;
+	private final ChoiceArgument chan1;
 
 	private final IntArgument nClasses;
+
+	private DoubleArgument diameter;
 
 	public OmniposeCLI( final int nChannels, final String units, final double pixelSize )
 	{
@@ -28,8 +39,8 @@ public class OmniposeCLI extends CellposeCLIBase
 
 		// Pretrained model.
 		this.modelPretrained = addChoiceArgument()
-				.addChoice( "Bacteria phase contrast", "bact_phase_omni" )
-				.addChoice( "Bacteria fluorescence", "bact_fluor_omni" )
+				.addChoice( "bact_phase_omni", "Bacteria phase contrast" )
+				.addChoice( "bact_fluor_omni", "Bacteria fluorescence" )
 				.defaultValue( 0 )
 				.argument( "--pretrained_model" )
 				.key( KEY_OMNIPOSE_MODEL )
@@ -38,15 +49,33 @@ public class OmniposeCLI extends CellposeCLIBase
 				.get();
 
 		// Main segmentation channel
-		this.chan1 = addIntArgument()
+		final ChoiceAdder chan1Adder = addChoiceArgument()
 				.key( KEY_TARGET_CHANNEL )
 				.argument( "--chan" )
 				.name( "Target channel" )
 				.help( "Index of the channel to segment." )
-				.required( true )
-				.min( 1 )
-				.max( nChannels )
+				.required( true );
+		for ( int c = 1; c <= nChannels; c++ )
+			chan1Adder.addChoice( "" + c );
+		chan1Adder.defaultValue( "" + DEFAULT_TARGET_CHANNEL );
+		this.chan1 = chan1Adder.get();
+
+		// Object diameter
+		this.diameter = addDoubleArgument()
+				.name( "Cell diameter" )
+				.help( "Cell diameter. If 0 will use the diameter of the training labels used in the model, or with built-in model will estimate diameter for each image." )
+				.argument( "--diameter" )
+				.key( KEY_CELL_DIAMETER )
+				.defaultValue( 2. )
+				.min( 0. )
+				.units( units )
 				.get();
+		// Translate to pixel size.
+		setCommandTranslator( diameter, d -> {
+			final double diam = ( double ) d;
+			final double diamPix = diam > 0 ? ( diam / pixelSize ) : 0.;
+			return Collections.singletonList( "" + diamPix );
+		} );
 
 		// State that we can use pretrained or custom.
 		this.selectPretrainedOrCustom = addSelectableArguments()
@@ -92,6 +121,8 @@ public class OmniposeCLI extends CellposeCLIBase
 		arguments.add( 0, modelPretrained );
 		arguments.remove( chan1 );
 		arguments.add( 2, chan1 );
+		arguments.remove( diameter );
+		arguments.add( 3, diameter );
 	}
 
 	public IntArgument nClasses()
@@ -99,9 +130,14 @@ public class OmniposeCLI extends CellposeCLIBase
 		return nClasses;
 	}
 
-	public IntArgument segmentationChannel()
+	public ChoiceArgument segmentationChannel()
 	{
 		return chan1;
+	}
+
+	public DoubleArgument diameter()
+	{
+		return diameter;
 	}
 
 	public ChoiceArgument modelPretrained()
@@ -137,7 +173,7 @@ public class OmniposeCLI extends CellposeCLIBase
 		System.out.println( CommandBuilder.build( cli ) );
 
 		// Show config panel.
-		final CliConfigPanel panel = CliGuiBuilder.build( cli );
+		final ConfigPanel panel = ConfigGuiBuilder.build( cli );
 		final JFrame frame = new JFrame( cli.getCommand() + " CLI" );
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
 		frame.getContentPane().add( panel );
