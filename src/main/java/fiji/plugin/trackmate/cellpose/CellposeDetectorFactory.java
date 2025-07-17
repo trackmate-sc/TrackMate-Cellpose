@@ -120,6 +120,12 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	}
 
 	@Override
+	public String getUrl()
+	{
+		return DOC_CELLPOSE_URL;
+	}
+
+	@Override
 	public ImageIcon getIcon()
 	{
 		return CellposeUtils.cellposeLogo64();
