@@ -161,8 +161,8 @@ public class AdvancedCellposeCLI extends CellposeCLI
 		arguments.remove( flowThreshold );
 		arguments.remove( cellProbThreshold );
 		arguments.remove( noResample );
-		arguments.add( 4, flowThreshold );
-		arguments.add( 5, cellProbThreshold );
+		arguments.add( 5, flowThreshold );
+		arguments.add( 6, cellProbThreshold );
 		arguments.add( 8, noResample );
 	}
 
