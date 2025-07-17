@@ -1,12 +1,5 @@
 package fiji.plugin.trackmate.cellpose;
 
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_CELL_DIAMETER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.DEFAULT_USE_GPU;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_CELL_DIAMETER;
-import static fiji.plugin.trackmate.cellpose.CellposeDetectorFactory.KEY_USE_GPU;
-
 import java.util.Collections;
 
 import fiji.plugin.trackmate.util.cli.CommonTrackMateArguments;
@@ -14,6 +7,34 @@ import fiji.plugin.trackmate.util.cli.CondaCLIConfigurator;
 
 public abstract class CellposeCLIBase extends CondaCLIConfigurator
 {
+
+	/**
+	 * The key to the parameter that stores the path to the custom model file to
+	 * use with Cellpose. It must be an absolute file path.
+	 */
+	public static final String KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH = "CELLPOSE_MODEL_FILEPATH";
+
+	public static final String DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH = "";
+
+	/**
+	 * The key to the parameter that store the estimated cell diameter. Contrary
+	 * to Cellpose, this must be specified in physical units (e.g. µm) and
+	 * TrackMate wil do the conversion. Use 0 or a negative value to have
+	 * Cellpose determine this automatically (but it will take a bit longer).
+	 */
+	public static final String KEY_CELL_DIAMETER = "CELL_DIAMETER";
+
+	public static final Double DEFAULT_CELL_DIAMETER = Double.valueOf( 30. );
+
+	/**
+	 * They key to the parameter that configures whether cellpose will try to
+	 * use GPU acceleration. For this to work, a working cellpose with working
+	 * GPU support must be present on the system. If not, cellpose will default
+	 * to using the CPU.
+	 */
+	public static final String KEY_USE_GPU = "USE_GPU";
+
+	public static final Boolean DEFAULT_USE_GPU = Boolean.valueOf( true );
 
 	private final PathArgument customModelPath;
 
