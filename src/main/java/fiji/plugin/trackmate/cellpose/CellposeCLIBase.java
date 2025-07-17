@@ -1,7 +1,5 @@
 package fiji.plugin.trackmate.cellpose;
 
-import java.util.Collections;
-
 import fiji.plugin.trackmate.util.cli.CommonTrackMateArguments;
 import fiji.plugin.trackmate.util.cli.CondaCLIConfigurator;
 
@@ -15,16 +13,6 @@ public abstract class CellposeCLIBase extends CondaCLIConfigurator
 	public static final String KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH = "CELLPOSE_MODEL_FILEPATH";
 
 	public static final String DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH = "";
-
-	/**
-	 * The key to the parameter that store the estimated cell diameter. Contrary
-	 * to Cellpose, this must be specified in physical units (e.g. µm) and
-	 * TrackMate wil do the conversion. Use 0 or a negative value to have
-	 * Cellpose determine this automatically (but it will take a bit longer).
-	 */
-	public static final String KEY_CELL_DIAMETER = "CELL_DIAMETER";
-
-	public static final Double DEFAULT_CELL_DIAMETER = Double.valueOf( 30. );
 
 	/**
 	 * They key to the parameter that configures whether cellpose will try to
@@ -41,8 +29,6 @@ public abstract class CellposeCLIBase extends CondaCLIConfigurator
 	private final Flag useGPU;
 
 	private final PathArgument imageFolder;
-
-	private final DoubleArgument diameter;
 
 	private final Flag simplifyContours;
 
@@ -66,24 +52,6 @@ public abstract class CellposeCLIBase extends CondaCLIConfigurator
 				.defaultValue( DEFAULT_CELLPOSE_CUSTOM_MODEL_FILEPATH )
 				.key( KEY_CELLPOSE_CUSTOM_MODEL_FILEPATH )
 				.get();
-
-		// Object diameter
-		this.diameter = addDoubleArgument()
-				.name( "Cell diameter" )
-				.help( "Cell diameter. If 0 will use the diameter of the training labels used in the model, or with built-in model will estimate diameter for each image." )
-				.argument( "--diameter" )
-				.key( KEY_CELL_DIAMETER )
-				.defaultValue( DEFAULT_CELL_DIAMETER )
-				.min( 0. )
-				.units( units )
-				.get();
-
-		// Translate to pixel size.
-		setCommandTranslator( diameter, d -> {
-			final double diam = ( double ) d;
-			final double diamPix = diam > 0 ? ( diam / pixelSize ) : 0.;
-			return Collections.singletonList( "" + diamPix );
-		} );
 
 		// Use GPU?
 		this.useGPU = addFlag()
@@ -149,11 +117,6 @@ public abstract class CellposeCLIBase extends CondaCLIConfigurator
 	public Flag useGPU()
 	{
 		return useGPU;
-	}
-
-	public DoubleArgument diameter()
-	{
-		return diameter;
 	}
 
 	public Flag simplifyContours()
