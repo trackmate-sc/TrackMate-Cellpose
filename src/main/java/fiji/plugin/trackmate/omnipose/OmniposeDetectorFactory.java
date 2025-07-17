@@ -46,10 +46,6 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		implements SpotGlobalDetectorFactory< T >, SpotDetectorFactoryGenericConfig< T, OmniposeCLI >
 {
 
-	/*
-	 * CONSTANTS
-	 */
-
 	/** A string key identifying this factory. */
 	public static final String DETECTOR_KEY = "OMNIPOSE_DETECTOR";
 
@@ -64,16 +60,11 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "<p>"
 			+ "The detector simply calls an external omnipose installation. So for this "
 			+ "to work, you must have a omnipose installation running on your computer. "
-			+ "Please follow the instructions from the omnipose website: "
-			+ "<u><a href=\"https://github.com/kevinjohncutler/omnipose\">https://github.com/kevinjohncutler/omnipose</a></u>"
+			+ "Please follow the instructions on the TrackMate wiki, linked below, to install "
+			+ "omnipose on your computer."
 			+ "<p>"
-			+ "You will also need to specify the path to the <b>Python executable</b> that can run omnipose "
-			+ "or the <b>omnipose executable</b> directly. "
-			+ "For instance if you used anaconda to install omnipose, and that you have a "
-			+ "Conda environment called 'omnipose', this path will be something along the line of "
-			+ "'/opt/anaconda3/envs/omnipose/bin/python'  or 'C:\\\\Users\\\\tinevez\\\\anaconda3\\\\envs\\\\omnipose_biop_gpu\\\\python.exe' "
-			+ "If you installed the standalone version, the path to it would something like "
-			+ "this on Windows: 'C:\\Users\\tinevez\\Applications\\omnipose.exe'. "
+			+ "You must also configure properly the conda (or mamba) executable in Fiji. "
+			+ "Run <u>Edit >  Options > Configure TrackMate Conda path...</u> to do so."
 			+ "<p>"
 			+ "If you use this detector for your work, please be so kind as to "
 			+ "also cite the omnipose paper: <a href=\"https://doi.org/10.1038/s41592-022-01639-4\">Cutler, Kevin J., et al., "
