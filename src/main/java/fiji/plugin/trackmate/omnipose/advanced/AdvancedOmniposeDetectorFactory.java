@@ -57,7 +57,8 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
 			+ "This detector relies on omnipose to detect objects."
-			+ "<p>" + "It is identical to the Omnipose detector, except that it allows to "
+			+ "<p>"
+			+ "It is identical to the Omnipose detector, except that it allows to "
 			+ "tweak the 'flow threshold' and 'cell probability threshold' parameters of the "
 			+ "algorithm."
 			+ "<p>"
@@ -65,14 +66,7 @@ public class AdvancedOmniposeDetectorFactory< T extends RealType< T > & NativeTy
 			+ "also cite the omnipose paper: <a href=\"https://doi.org/10.1038/s41592-022-01639-4\">Cutler, Kevin J., et al., "
 			+ "'Omnipose: A High-Precision Morphology-Independent Solution for Bacterial Cell Segmentation.' "
 			+ "Nature Methods 19, no. 11 (November 2022): 1438–48.</a>"
-			+ "<p>"
-			+ "Documentation for this module "
-			+ "<a href=\"" + DOC_ADV_OMNI_URL + "\">on the ImageJ Wiki</a>."
 			+ "</html>";
-
-	/*
-	 * METHODS
-	 */
 
 	@Override
 	public AdvancedOmniposeCLI getConfigurator( final ImagePlus imp )
