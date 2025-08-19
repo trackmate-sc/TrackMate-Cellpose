@@ -67,4 +67,13 @@ public class CellposeSAMCLI extends CellposeCLIBase
 		return channels;
 	}
 
+	public ChoiceArgument modelPretrained()
+	{
+		return modelPretrained;
+	}
+
+	public SelectableArguments selectPretrainedOrCustom()
+	{
+		return selectPretrainedOrCustom;
+	}
 }
