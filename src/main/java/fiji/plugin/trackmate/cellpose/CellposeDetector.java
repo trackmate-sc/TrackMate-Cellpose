@@ -8,12 +8,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,6 +37,7 @@ import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.omnipose.OmniposeCLI;
 import fiji.plugin.trackmate.util.TMUtils;
+import fiji.plugin.trackmate.util.cli.CLIUtils;
 import fiji.plugin.trackmate.util.cli.CLIUtils.LoggerTailerListener;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
 import ij.IJ;
@@ -53,13 +51,8 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
 import net.imglib2.algorithm.MultiThreaded;
-import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.img.display.imagej.ImgPlusViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
@@ -146,7 +139,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * Dispatch time-points to several tasks.
 		 */
 
-		final List< ImagePlus > imps = crop( img, interval, nameGen );
+		final List< ImagePlus > imps = CellposeUtils.crop( img, interval, nameGen );
 
 		final int nConcurrentTasks;
 		/*
@@ -348,50 +341,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		return true;
 	}
 
-	/**
-	 * Add a hook to delete the content of given path when Fiji quits. Taken
-	 * from https://stackoverflow.com/a/20280989/201698
-	 *
-	 * @param path
-	 */
-	protected static void recursiveDeleteOnShutdownHook( final Path path )
-	{
-		Runtime.getRuntime().addShutdownHook( new Thread( new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				try
-				{
-					Files.walkFileTree( path, new SimpleFileVisitor< Path >()
-					{
-						@Override
-						public FileVisitResult visitFile( final Path file, final BasicFileAttributes attrs ) throws IOException
-						{
-							Files.delete( file );
-							return FileVisitResult.CONTINUE;
-						}
-
-						@Override
-						public FileVisitResult postVisitDirectory( final Path dir, final IOException e ) throws IOException
-						{
-							if ( e == null )
-							{
-								Files.delete( dir );
-								return FileVisitResult.CONTINUE;
-							}
-							throw e;
-						}
-					} );
-				}
-				catch ( final IOException e )
-				{
-					throw new RuntimeException( "Failed to delete " + path, e );
-				}
-			}
-		} ) );
-	}
-
 	@Override
 	public SpotCollection getResult()
 	{
@@ -509,7 +458,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			try
 			{
 				tmpDir = Files.createTempDirectory( "TrackMate-" + command + "_" );
-				recursiveDeleteOnShutdownHook( tmpDir );
+				CLIUtils.recursiveDeleteOnShutdownHook( tmpDir );
 			}
 			catch ( final IOException e1 )
 			{
@@ -550,7 +499,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			 */
 
 			try
-
 			{
 				final List< String > cmd;
 				synchronized ( cli )
@@ -626,23 +574,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 					process.waitFor();
 				}
 			}
-			catch ( final IOException e )
-			{
-				final String msg = e.getMessage();
-				if ( msg.matches( ".+error=13.+" ) )
-				{
-					errorMessage = baseErrorMessage + "Problem running " + command + ":\n"
-							+ "The executable does not have the file permission to run.\n"
-							+ "Please see https://github.com/MouseLand/cellpose#run-cellpose-without-local-python-installation for more information.\n";
-				}
-				else
-				{
-					errorMessage = baseErrorMessage + "Problem running " + command + ":\n" + e.getMessage();
-				}
-				e.printStackTrace();
-				ok.set( false );
-				return null;
-			}
 			catch ( final Exception e )
 			{
 				errorMessage = baseErrorMessage + "Problem running " + command + ":\n" + e.getMessage();
@@ -656,71 +587,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			}
 			return tmpDir.toString();
 		}
-	}
-
-	private static final < T extends RealType< T > & NativeType< T > > List< ImagePlus > crop( final ImgPlus< T > img, final Interval interval, final Function< Long, String > nameGen )
-	{
-		final int zIndex = img.dimensionIndex( Axes.Z );
-		final int cIndex = img.dimensionIndex( Axes.CHANNEL );
-		final Interval cropInterval;
-		if ( zIndex < 0 )
-		{
-			// 2D
-			if ( cIndex < 0 )
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ),
-						interval.max( 0 ), interval.max( 1 ) );
-			else
-				// Include all channels
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ), img.min( cIndex ),
-						interval.max( 0 ), interval.max( 1 ), img.max( cIndex ) );
-		}
-		else
-		{
-			if ( cIndex < 0 )
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ),
-						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ) );
-			else
-				cropInterval = Intervals.createMinMax(
-						interval.min( 0 ), interval.min( 1 ), interval.min( 2 ), img.min( cIndex ),
-						interval.max( 0 ), interval.max( 1 ), interval.max( 2 ), img.max( cIndex ) );
-		}
-
-		final List< ImagePlus > imps = new ArrayList<>();
-		final int timeIndex = img.dimensionIndex( Axes.TIME );
-		if ( timeIndex < 0 )
-		{
-			// No time.
-			final IntervalView< T > crop = Views.interval( img, cropInterval );
-			final String name = nameGen.apply( 0l ) + ".tif";
-			imps.add( ImageJFunctions.wrap( crop, name ) );
-		}
-		else
-		{
-			// In the interval, time is always the last.
-			final long minT = interval.min( interval.numDimensions() - 1 );
-			final long maxT = interval.max( interval.numDimensions() - 1 );
-			for ( long t = minT; t <= maxT; t++ )
-			{
-				final ImgPlus< T > tpTCZ = ImgPlusViews.hyperSlice( img, timeIndex, t );
-
-				// Put if necessary the channel axis as the last one (CellPose
-				// format)
-				final int chanDim = tpTCZ.dimensionIndex( Axes.CHANNEL );
-				ImgPlus< T > tp = tpTCZ;
-				if ( chanDim > 1 )
-				{
-					tp = ImgPlusViews.moveAxis( tpTCZ, chanDim, tpTCZ.numDimensions() - 1 );
-				}
-				// possibly 2D or 3D with or without channel.
-				final IntervalView< T > crop = Views.interval( tp, cropInterval );
-				final String name = nameGen.apply( t ) + ".tif";
-				imps.add( ImageJFunctions.wrap( crop, name ) );
-			}
-		}
-		return imps;
 	}
 
 	@Override
