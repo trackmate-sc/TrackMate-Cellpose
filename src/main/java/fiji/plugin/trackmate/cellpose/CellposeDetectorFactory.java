@@ -90,6 +90,12 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	}
 
 	@Override
+	public boolean has2Dsegmentation()
+	{
+		return true;
+	}
+
+	@Override
 	public String getInfoText()
 	{
 		return INFO_TEXT;
