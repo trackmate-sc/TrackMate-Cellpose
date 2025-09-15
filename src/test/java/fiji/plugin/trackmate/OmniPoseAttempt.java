@@ -23,9 +23,6 @@ package fiji.plugin.trackmate;
 
 import ij.ImageJ;
 
-/**
- * Inspired by the BIOP approach.
- */
 public class OmniPoseAttempt
 {
 
