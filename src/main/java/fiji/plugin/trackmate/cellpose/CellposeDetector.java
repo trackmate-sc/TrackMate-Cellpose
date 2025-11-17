@@ -484,8 +484,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 					final OmniposeCLI ocli = ( OmniposeCLI ) cli;
 					final String cStr = ocli.segmentationChannel().getValue();
 					final int c = Integer.parseInt( cStr );
-					final int chan = c - 1; // 1-based
-					final ImagePlus chanImp = new Duplicator().run( imp, chan, chan, 0, 0, 0, 0 );
+					final ImagePlus chanImp = new Duplicator().run( imp, c, c, 0, 0, 0, 0 );
 					IJ.saveAsTiff( chanImp, Paths.get( tmpDir.toString(), name ).toString() );
 				}
 				else
