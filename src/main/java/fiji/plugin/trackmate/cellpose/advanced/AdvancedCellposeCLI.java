@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -87,7 +87,7 @@ public class AdvancedCellposeCLI extends CellposeCLI
 	 * (resample=True). resample=True will create smoother ROIs when the cells
 	 * are large but will be slower in case; resample=False will find more ROIs
 	 * when the cells are small but will be slower in this case. By default in
-	 * versions >=1.0 resample=True.
+	 * versions &ge; 1.0 resample=True.
 	 */
 	public static final String KEY_NO_RESAMPLE = "NO_RESAMPLE";
 
@@ -95,7 +95,8 @@ public class AdvancedCellposeCLI extends CellposeCLI
 
 	/**
 	 * The key to the parameter that store the minimum size to keep masks. Used
-	 * only if do_3D mode or 2D+Z and stitch_threshold > 0 From cellpose docs:
+	 * only if do_3D mode or 2D+Z and stitch_threshold &gt; 0 From cellpose
+	 * docs:
 	 * <p>
 	 * Minimum number of pixels per mask, can turn off with -1.
 	 */
@@ -111,9 +112,9 @@ public class AdvancedCellposeCLI extends CellposeCLI
 	 * unable to be used for 3D segmentation. I’d recommend viewing the volume
 	 * in those dimensions if the segmentation is failing. In those instances,
 	 * you may want to turn off 3D segmentation (do_3D=False) and run instead
-	 * with stitch_threshold>0. Cellpose will create ROIs in 2D on each XY slice
-	 * and then stitch them across slices if the IoU between the mask on the
-	 * current slice and the next slice is greater than or equal to the
+	 * with stitch_threshold &gt; 0. Cellpose will create ROIs in 2D on each XY
+	 * slice and then stitch them across slices if the IoU between the mask on
+	 * the current slice and the next slice is greater than or equal to the
 	 * stitch_threshold.
 	 */
 	public static final Boolean DEFAULT_DO2DZ = false;
