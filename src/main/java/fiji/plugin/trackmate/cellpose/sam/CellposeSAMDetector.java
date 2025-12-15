@@ -159,19 +159,27 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 
 		final int nConcurrentTasks;
 		if ( !cli.useGPU().getValue() && IJ.isMacintosh() )
+		{
 			nConcurrentTasks = numThreads;
+		}
 		else
+		{
 			nConcurrentTasks = 1;
+		}
 
 		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
 		for ( int i = 0; i < nConcurrentTasks; i++ )
+		{
 			timepoints.add( new ArrayList<>() );
+		}
 
 		Iterator< List< ImagePlus > > it = timepoints.iterator();
 		for ( int t = 0; t < imps.size(); t++ )
 		{
 			if ( !it.hasNext() )
+			{
 				it = timepoints.iterator();
+			}
 			it.next().add( imps.get( t ) );
 		}
 
@@ -181,7 +189,9 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 
 		processes.clear();
 		for ( final List< ImagePlus > list : timepoints )
+		{
 			processes.add( new CellposeTask( list ) );
+		}
 
 		/*
 		 * Pass tasks to executors.
@@ -202,7 +212,9 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 		{
 			results = executors.invokeAll( processes );
 			for ( final Future< String > future : results )
+			{
 				resultDirs.add( future.get() );
+			}
 		}
 		catch ( final InterruptedException | ExecutionException e )
 		{
@@ -226,7 +238,9 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 		for ( final CellposeTask task : processes )
 		{
 			if ( !task.isOk() )
+			{
 				return false;
+			}
 		}
 
 		/*
@@ -251,9 +265,13 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 					if ( tpImp.getType() != ImagePlus.GRAY16 )
 					{
 						if ( nslices > 1 )
+						{
 							new StackConverter( tpImp ).convertToGray16();
+						}
 						else
+						{
 							new ImageConverter( tpImp ).convertToGray16();
+						}
 					}
 					break;
 				}
@@ -389,7 +407,9 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 		isCanceled = true;
 		cancelReason = reason;
 		for ( final CellposeTask task : processes )
+		{
 			task.cancel();
+		}
 	}
 
 	@Override
@@ -443,7 +463,10 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 		void cancel()
 		{
 			if ( process != null )
-				process.destroy();
+			{
+				process.toHandle().descendants().forEach( ProcessHandle::destroyForcibly );
+				process.destroyForcibly();
+			}
 		}
 
 		@Override
@@ -480,9 +503,13 @@ public class CellposeSAMDetector< T extends RealType< T > & NativeType< T > > im
 				final int c = Integer.parseInt( cStr );
 				final ImagePlus chanImp;
 				if ( c <= 0 )
+				{
 					chanImp = imp; // all channels
+				}
 				else
+				{
 					chanImp = new Duplicator().run( imp, c, c, 0, 0, 0, 0 );
+				}
 				IJ.saveAsTiff( chanImp, Paths.get( tmpDir.toString(), name ).toString() );
 			}
 

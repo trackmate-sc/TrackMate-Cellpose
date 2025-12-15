@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -181,19 +181,27 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		 * factor, which is to be expected)
 		 */
 		if ( !cli.useGPU().getValue() && IJ.isMacintosh() )
+		{
 			nConcurrentTasks = numThreads;
+		}
 		else
+		{
 			nConcurrentTasks = 1;
+		}
 
 		final List< List< ImagePlus > > timepoints = new ArrayList<>( nConcurrentTasks );
 		for ( int i = 0; i < nConcurrentTasks; i++ )
+		{
 			timepoints.add( new ArrayList<>() );
+		}
 
 		Iterator< List< ImagePlus > > it = timepoints.iterator();
 		for ( int t = 0; t < imps.size(); t++ )
 		{
 			if ( !it.hasNext() )
+			{
 				it = timepoints.iterator();
+			}
 			it.next().add( imps.get( t ) );
 		}
 
@@ -203,7 +211,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		processes.clear();
 		for ( final List< ImagePlus > list : timepoints )
+		{
 			processes.add( new CellposeTask( list ) );
+		}
 
 		/*
 		 * Pass tasks to executors.
@@ -224,7 +234,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		{
 			results = executors.invokeAll( processes );
 			for ( final Future< String > future : results )
+			{
 				resultDirs.add( future.get() );
+			}
 		}
 		catch ( final InterruptedException | ExecutionException e )
 		{
@@ -248,7 +260,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		for ( final CellposeTask task : processes )
 		{
 			if ( !task.isOk() )
+			{
 				return false;
+			}
 		}
 
 		/*
@@ -273,9 +287,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 					if ( tpImp.getType() != ImagePlus.GRAY16 )
 					{
 						if ( nslices > 1 )
+						{
 							new StackConverter( tpImp ).convertToGray16();
+						}
 						else
+						{
 							new ImageConverter( tpImp ).convertToGray16();
+						}
 					}
 					break;
 				}
@@ -411,7 +429,9 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		isCanceled = true;
 		cancelReason = reason;
 		for ( final CellposeTask task : processes )
+		{
 			task.cancel();
+		}
 	}
 
 	@Override
@@ -465,7 +485,10 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		void cancel()
 		{
 			if ( process != null )
-				process.destroy();
+			{
+				process.toHandle().descendants().forEach( ProcessHandle::destroyForcibly );
+				process.destroyForcibly();
+			}
 		}
 
 		@Override
