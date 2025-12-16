@@ -93,7 +93,7 @@
 	    <scijava.jvm.version>21</scijava.jvm.version>
 	    <scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
 
-		<TrackMate.version>8.1.1-SNAPSHOT</TrackMate.version>
+		<TrackMate.version>8.1.2-SNAPSHOT</TrackMate.version>
 	</properties>
 
 	<dependencies>
