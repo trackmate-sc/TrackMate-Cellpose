@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>43.0.0</version>
+		<version>44.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -51,7 +51,7 @@
 			<url>https://imagej.net/people/ctrueden</url>
 			<properties><id>ctrueden</id></properties>
 		</contributor>
-                <contributor>
+		<contributor>
 			<name>Marie Anselmet</name>
 			<url>https://research.pasteur.fr/fr/member/marie-anselmet/</url>
 			<properties><id>manselmet</id></properties>
@@ -64,7 +64,7 @@
 			<archive>https://forum.image.sc/tag/trackmate</archive>
 		</mailingList>
 	</mailingLists>
-        
+
 	<scm>
 		<connection>scm:git:https://github.com/trackmate-sc/TrackMate-Cellpose</connection>
 		<developerConnection>scm:git:git@github.com:trackmate-sc/TrackMate-Cellpose</developerConnection>
@@ -93,7 +93,7 @@
 	    <scijava.jvm.version>21</scijava.jvm.version>
 	    <scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
 
-		<TrackMate.version>8.1.2-SNAPSHOT</TrackMate.version>
+		<TrackMate.version>8.1.6</TrackMate.version>
 	</properties>
 
 	<dependencies>
