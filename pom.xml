@@ -89,9 +89,16 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-	    <!-- TrackMate >=8 requires Java 21 -->			
-	    <scijava.jvm.version>21</scijava.jvm.version>
-	    <scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
+		<!-- TrackMate >=8 requires Java 21 -->
+		<scijava.jvm.version>21</scijava.jvm.version>
+		<scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
+		<!--
+		NB: Work around JPMS-related javadoc generation failure:
+		Unable to derive module descriptor for
+		.../Anisotropic_Diffusion_2D-2.0.1.jar: Anisotropic.Diffusion.2D:
+		Invalid module name: '2D' is not a Java identifier
+		-->
+		<legacyMode>true</legacyMode>
 
 		<TrackMate.version>8.1.6</TrackMate.version>
 	</properties>
