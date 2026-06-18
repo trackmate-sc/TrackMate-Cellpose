@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>43.0.0</version>
+		<version>44.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -51,7 +51,7 @@
 			<url>https://imagej.net/people/ctrueden</url>
 			<properties><id>ctrueden</id></properties>
 		</contributor>
-                <contributor>
+		<contributor>
 			<name>Marie Anselmet</name>
 			<url>https://research.pasteur.fr/fr/member/marie-anselmet/</url>
 			<properties><id>manselmet</id></properties>
@@ -64,7 +64,6 @@
 			<archive>https://forum.image.sc/tag/trackmate</archive>
 		</mailingList>
 	</mailingLists>
-        
 	<scm>
 		<connection>scm:git:https://github.com/trackmate-sc/TrackMate-Cellpose</connection>
 		<developerConnection>scm:git:git@github.com:trackmate-sc/TrackMate-Cellpose</developerConnection>
@@ -89,14 +88,18 @@
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
-	    <!-- TrackMate >=8 requires Java 21 -->			
-	    <scijava.jvm.version>21</scijava.jvm.version>
-	    <scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
+		<!-- TrackMate >=8 requires Java 21 -->
+		<scijava.jvm.version>21</scijava.jvm.version>
+		<scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
+		<!--
+		NB: Work around JPMS-related javadoc generation failure:
+		Unable to derive module descriptor for
+		.../Anisotropic_Diffusion_2D-2.0.1.jar: Anisotropic.Diffusion.2D:
+		Invalid module name: '2D' is not a Java identifier
+		-->
+		<legacyMode>true</legacyMode>
 
 		<TrackMate.version>8.1.7-SNAPSHOT</TrackMate.version>
-
-		<!-- Skip reproducible-builds enforcement during development against SNAPSHOT TrackMate. -->
-		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
 	<dependencies>
