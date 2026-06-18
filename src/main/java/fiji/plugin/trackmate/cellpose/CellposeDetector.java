@@ -620,8 +620,11 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				else
 				{
 					final ProcessBuilder pb = new ProcessBuilder( cmd );
-					pb.redirectOutput( ProcessBuilder.Redirect.INHERIT );
-					pb.redirectError( ProcessBuilder.Redirect.INHERIT );
+					// stdout → log file (tailed to TrackMate logger for live output).
+					// stderr → pipe so we can capture it and show it in the error message.
+					cellposeLogFile.getParentFile().mkdirs();
+					pb.redirectOutput( ProcessBuilder.Redirect.appendTo( cellposeLogFile ) );
+					pb.redirectError( ProcessBuilder.Redirect.PIPE );
 					// Env variables.
 					final Map< String, String > env = new HashMap<>();
 					final String condaRootPrefix = CLIUtils.getCondaRootPrefix();
@@ -630,7 +633,32 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 					pb.environment().putAll( env );
 
 					process = pb.start();
-					process.waitFor();
+					// Drain stderr in a background thread to prevent buffer blocking.
+					final StringBuilder stderrCapture = new StringBuilder();
+					final Thread stderrThread = new Thread( () -> {
+						try ( final BufferedReader reader = new BufferedReader(
+								new InputStreamReader( process.getErrorStream() ) ) )
+						{
+							reader.lines().forEach( line -> stderrCapture.append( line ).append( '\n' ) );
+						}
+						catch ( final IOException ignored )
+						{}
+					}, command + "-stderr-reader" );
+					stderrThread.setDaemon( true );
+					stderrThread.start();
+
+					final int exitCode = process.waitFor();
+					stderrThread.join( 5000L );
+
+					if ( exitCode != 0 )
+					{
+						final String stderr = stderrCapture.toString().trim();
+						final String detail = stderr.isEmpty() ? "" : "\n" + stderr;
+						logger.log( baseErrorMessage + command + " exited with code " + exitCode + detail + "\n" );
+						errorMessage = baseErrorMessage + command + " process exited with code " + exitCode + detail;
+						ok.set( false );
+						return null;
+					}
 				}
 			}
 			catch ( final Exception e )
