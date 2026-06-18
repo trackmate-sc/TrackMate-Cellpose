@@ -100,6 +100,9 @@
 		<legacyMode>true</legacyMode>
 
 		<TrackMate.version>8.1.7-SNAPSHOT</TrackMate.version>
+
+		<!-- NB: Skip reproducible-builds enforcement during development against SNAPSHOT TrackMate. -->
+		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
 	<dependencies>
