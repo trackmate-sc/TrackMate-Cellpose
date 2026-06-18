@@ -27,7 +27,7 @@ import static fiji.plugin.trackmate.detection.DetectorKeys.KEY_TARGET_CHANNEL;
 
 import fiji.plugin.trackmate.cellpose.CellposeCLIBase;
 
-public class CellposeSAMCLI extends CellposeCLIBase
+public class CellposeSAMCLI extends CellposeCLIBase implements ICellposeSAMCLI
 {
 
 	private final ChoiceArgument modelPretrained;

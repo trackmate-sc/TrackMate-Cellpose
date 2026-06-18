@@ -93,7 +93,10 @@
 	    <scijava.jvm.version>21</scijava.jvm.version>
 	    <scijava.jvm.build.version>[21,)</scijava.jvm.build.version>
 
-		<TrackMate.version>8.1.2-SNAPSHOT</TrackMate.version>
+		<TrackMate.version>8.1.7-SNAPSHOT</TrackMate.version>
+
+		<!-- Skip reproducible-builds enforcement during development against SNAPSHOT TrackMate. -->
+		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
 	<dependencies>

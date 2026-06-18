@@ -28,7 +28,6 @@ import javax.swing.ImageIcon;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 
-import fiji.plugin.trackmate.cellpose.CellposeCLI;
 import fiji.plugin.trackmate.cellpose.CellposeDetector;
 import fiji.plugin.trackmate.cellpose.CellposeUtils;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
@@ -84,11 +83,9 @@ public class AdvancedCellposeDetectorFactory< T extends RealType< T > & NativeTy
 	public SpotGlobalDetector< T > getDetector( final ImgPlus< T > img, final Map< String, Object > settings, final Interval interval )
 	{
 		// Create the CLI and loads settings into it.
-		final CellposeCLI cli = getConfigurator( img );
+		final AdvancedCellposeCLI cli = getConfigurator( img );
 		TrackMateSettingsBuilder.fromTrackMateSettings( settings, cli );
-		// Create the detector.
-		final CellposeDetector< T > detector = new CellposeDetector<>( img, interval, cli );
-		return detector;
+		return new CellposeDetector<>( img, interval, cli );
 	}
 
 	@Override

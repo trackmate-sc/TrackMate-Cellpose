@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -63,8 +63,9 @@ public class OmniposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "Please follow the instructions on the TrackMate wiki, linked below, to install "
 			+ "omnipose on your computer."
 			+ "<p>"
-			+ "You must also configure properly the conda (or mamba) executable in Fiji. "
-			+ "Run <u>Edit >  Options > Configure TrackMate Conda path...</u> to do so."
+			+ "You must also configure either Conda or Pixi for TrackMate. "
+			+ "Run <u>Edit > Options > Configure TrackMate Conda path...</u> or "
+			+ "<u>Edit > Options > Configure TrackMate Pixi path...</u> to do so."
 			+ "<p>"
 			+ "If you use this detector for your work, please be so kind as to "
 			+ "also cite the omnipose paper: <a href=\"https://doi.org/10.1038/s41592-022-01639-4\">Cutler, Kevin J., et al., "

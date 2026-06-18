@@ -59,6 +59,7 @@ import fiji.plugin.trackmate.detection.LabelImageDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.omnipose.OmniposeCLI;
 import fiji.plugin.trackmate.util.TMUtils;
+import fiji.plugin.trackmate.util.cli.CLIConfigurator;
 import fiji.plugin.trackmate.util.cli.CLIUtils;
 import fiji.plugin.trackmate.util.cli.CLIUtils.LoggerTailerListener;
 import fiji.plugin.trackmate.util.cli.CommandBuilder;
@@ -105,12 +106,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private final File cellposeLogFile;
 
-	private final CellposeCLIBase cli;
+	private final ICellposeCLI cli;
 
 	public CellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final CellposeCLIBase cli )
+			final ICellposeCLI cli )
 	{
 		this.img = img;
 		this.interval = interval;
@@ -553,7 +554,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 					 * several threads.
 					 */
 					cli.imageFolder().set( tmpDir.toString() );
-					cmd = CommandBuilder.build( cli );
+					cmd = CommandBuilder.build( ( CLIConfigurator ) cli );
 				}
 				logger.setStatus( "Running " + command );
 				logger.log( "Running " + command + " with args:\n" );
