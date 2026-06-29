@@ -100,13 +100,20 @@
 		-->
 		<legacyMode>true</legacyMode>
 
-		<TrackMate.version>8.1.6</TrackMate.version>
+		<TrackMate.version>9.0.0-SNAPSHOT</TrackMate.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>TrackMate</artifactId>
+		</dependency>
+		
+		<!-- Config UI -->
+		<dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>config-ui</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- ImageJ dependencies -->
@@ -122,15 +129,8 @@
 		<!-- ImgLib2 dependencies -->
 		<dependency>
 			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ij</artifactId>
+			<artifactId>imglib2-cellpose</artifactId>
+			<version>0.0.6</version>
 		</dependency>
 
 		<!-- SciJava dependencies -->
