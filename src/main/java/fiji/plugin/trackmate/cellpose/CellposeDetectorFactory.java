@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,21 +27,23 @@ import javax.swing.ImageIcon;
 
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.config.visitors.Maps;
 
+import fiji.plugin.trackmate.Model;
+import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
-import fiji.plugin.trackmate.detection.SpotDetectorFactoryGenericConfig;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
-import fiji.plugin.trackmate.util.cli.TrackMateSettingsBuilder;
-import ij.ImagePlus;
+import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
 import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 @Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
 public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > >
-		implements SpotGlobalDetectorFactory< T >, SpotDetectorFactoryGenericConfig< T, CellposeCLI >
+		implements SpotGlobalDetectorFactory< T >
 {
 
 	/** A string key identifying this factory. */
@@ -54,15 +56,11 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 
 	/** An html information text. */
 	public static final String INFO_TEXT = "<html>"
-			+ "This detector relies on cellpose to detect objects."
+			+ "This detector relies on Cellpose to detect objects."
 			+ "<p>"
-			+ "The detector simply calls an external <b>cellpose 3</b> installation. So for this "
-			+ "to work, you must have a cellpose installation running on your computer. "
-			+ "Please follow the instructions on the TrackMate-Cellpose page, linked below, to install"
-			+ "cellpose 3 on your computer."
-			+ "<p>"
-			+ "You must also configure properly the conda (or mamba) executable in Fiji. "
-			+ "Run <u>Edit >  Options > Configure TrackMate Conda path...</u> to do so."
+			+ "The detector simply calls <b>Cellpose 3</b>, that will be installed on "
+			+ "your system via Appose. Appose will download and install Cellpose for you, "
+			+ "but it might take a few minutes the first time you use it."
 			+ "<p>"
 			+ "If you use this detector for your work, please be so kind as to "
 			+ "also cite the cellpose paper: <a href=\"https://doi.org/10.1038/s41592-020-01018-x\">Stringer, C., Wang, T., Michaelos, M. et al. "
@@ -71,26 +69,43 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 			+ "</html>";
 
 	@Override
-	public CellposeCLI getConfigurator( final ImagePlus imp )
+	public SpotGlobalDetector< T > getDetector( final ImgPlus< T > img, final Map< String, Object > settings, final Interval interval )
 	{
-		final int nChannels = ( imp == null ) ? 1 : imp.getNChannels();
-		final String units = ( imp == null ) ? "no input image" : imp.getCalibration().getUnit();
-		final double pixelSize = ( imp == null ) ? 1. : imp.getCalibration().pixelWidth;
-		return new CellposeCLI( nChannels, units, pixelSize );
+		final int nChannels = img.dimensionIndex( Axes.CHANNEL ) < 0 ? 1 : ( int ) img.dimension( img.dimensionIndex( Axes.CHANNEL ) );
+		final double pixelSize = img.averageScale( img.dimensionIndex( Axes.X ) );
+		final String units = img.axis( img.dimensionIndex( Axes.X ) ).unit();
+		final Cellpose3Config config = new Cellpose3Config( nChannels, pixelSize, units );
+		Maps.fromMap( settings, config );
+
+		return new CellposeDetector<>( img, interval, config );
+
 	}
 
 	@Override
-	public SpotGlobalDetector< T > getDetector( final ImgPlus< T > img, final Map< String, Object > settings, final Interval interval )
+	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		// Create the CLI and loads settings into it.
-		final CellposeCLI cli = getConfigurator( img );
-		TrackMateSettingsBuilder.fromTrackMateSettings( settings, cli );
-		// Create the detector.
-		return new CellposeDetector<>( img, interval, cli );
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map< String, Object > getDefaultSettings()
+	{
+		final int nChannels = 3;
+		final double pixelSize = 1.;
+		final String units = "pixel";
+		final Cellpose3Config config = new Cellpose3Config( nChannels, pixelSize, units );
+		return Maps.toMap( config );
 	}
 
 	@Override
 	public boolean has2Dsegmentation()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean has3Dsegmentation()
 	{
 		return true;
 	}
@@ -134,5 +149,4 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 		 */
 		return true;
 	}
-
 }
