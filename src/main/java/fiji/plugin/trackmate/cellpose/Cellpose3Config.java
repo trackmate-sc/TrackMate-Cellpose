@@ -1,0 +1,52 @@
+package fiji.plugin.trackmate.cellpose;
+
+import org.scijava.ui.config.Parameters.IntParam;
+
+import net.imglib2.cellpose.Cellpose3BuiltinModels;
+
+public class Cellpose3Config extends CellposeBaseConfig< Cellpose3BuiltinModels >
+{
+
+	private final IntParam chan1;
+
+	private final IntParam chan2;
+
+	public Cellpose3Config( final int nChannels, final double pixelSize, final String units )
+	{
+		super( "Cellpose 3", "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose", Cellpose3BuiltinModels.class, pixelSize, units );
+
+		// Channels, two int params.
+		this.chan1 = addIntParameter()
+				.key( "CHAN1" )
+				.name( "Main channel" )
+				.help( "The main channel to segment. Select 0 to use a grayscale blend of all channels." )
+				.defaultValue( 1 )
+				.min( 0 )
+				.max( nChannels )
+				.get();
+		this.chan2 = addIntParameter()
+				.key( "CHAN2" )
+				.name( "Optional channel" )
+				.help( "The second channel to segment. Select 0 to skip using a second channel." )
+				.defaultValue( 0 )
+				.min( 0 )
+				.max( nChannels )
+				.get();
+
+		// Change their order.
+		orderedElements.remove( chan1 );
+		orderedElements.add( 2, chan1 );
+		orderedElements.remove( chan2 );
+		orderedElements.add( 3, chan2 );
+	}
+
+	public IntParam chan1()
+	{
+		return chan1;
+	}
+
+	public IntParam chan2()
+	{
+		return chan2;
+	}
+}
