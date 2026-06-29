@@ -21,9 +21,9 @@ import org.scijava.ui.config.listeners.ApposeTaskListener;
 import ij.IJ;
 
 /**
- * An implementation of {@link ProgressApposeListener} that uses TrackMate to
- * report task progress, and env installation via a custom progress dialog. The
- * dialog is only shown if the installation takes more than 1 second.
+ * An implementation of ApposeTaskListener that uses TrackMate to report task
+ * progress, and env installation via a custom progress dialog. The dialog is
+ * only shown if the installation takes more than 1 second.
  */
 public class TrackMateApposeProgressListener implements ApposeTaskListener
 {
