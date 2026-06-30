@@ -21,6 +21,9 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
+import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
+import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOTHING_SCALE;
+
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -35,6 +38,8 @@ import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
+import fiji.plugin.trackmate.util.TMUtils;
+import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
@@ -71,21 +76,35 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	@Override
 	public SpotGlobalDetector< T > getDetector( final ImgPlus< T > img, final Map< String, Object > settings, final Interval interval )
 	{
+		final Cellpose3Config config = createConfig( img );
+		Maps.fromMap( settings, config );
+
+		final boolean simplifyContours = ( Boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
+		final double smoothingScale = ( Double ) settings.get( KEY_SMOOTHING_SCALE );
+
+		return new CellposeDetector<>( img, interval, config, simplifyContours, smoothingScale );
+	}
+
+	private Cellpose3Config createConfig( final ImgPlus< ? > img )
+	{
 		final int nChannels = img.dimensionIndex( Axes.CHANNEL ) < 0 ? 1 : ( int ) img.dimension( img.dimensionIndex( Axes.CHANNEL ) );
 		final double pixelSize = img.averageScale( img.dimensionIndex( Axes.X ) );
 		final String units = img.axis( img.dimensionIndex( Axes.X ) ).unit();
-		final Cellpose3Config config = new Cellpose3Config( nChannels, pixelSize, units );
-		Maps.fromMap( settings, config );
+		return new Cellpose3Config( nChannels, pixelSize, units );
+	}
 
-		return new CellposeDetector<>( img, interval, config );
-
+	private Cellpose3Config createConfig( final Settings settings )
+	{
+		final ImagePlus imp = settings.imp;
+		if ( imp == null )
+			return new Cellpose3Config( 1, 1., "pixel" );
+		return createConfig( TMUtils.rawWraps( imp ) );
 	}
 
 	@Override
 	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new CellposeConfigPanel( settings, model, createConfig( settings ), () -> this );
 	}
 
 	@Override
