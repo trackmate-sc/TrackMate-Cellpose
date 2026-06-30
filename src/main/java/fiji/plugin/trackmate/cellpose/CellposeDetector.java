@@ -22,20 +22,28 @@
 package fiji.plugin.trackmate.cellpose;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apposed.appose.BuildException;
 import org.apposed.appose.TaskException;
 import org.scijava.Cancelable;
 
 import fiji.plugin.trackmate.Logger;
+import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.SpotCollection;
 import fiji.plugin.trackmate.TrackMateApposeProgressListener;
+import fiji.plugin.trackmate.detection.DetectionUtils;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
+import fiji.plugin.trackmate.detection.SpotMeshUtils;
+import fiji.plugin.trackmate.detection.SpotRoiUtils;
+import fiji.plugin.trackmate.util.TMUtils;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.MultiThreaded;
 import net.imglib2.appose.ShmImg;
 import net.imglib2.cellpose.ApposeTaskListener;
@@ -43,9 +51,12 @@ import net.imglib2.cellpose.AxisInfo;
 import net.imglib2.cellpose.Cellpose;
 import net.imglib2.cellpose.Cellpose3Parameters;
 import net.imglib2.cellpose.CellposeRunner;
+import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.util.ImgUtil;
+import net.imglib2.view.Views;
 
 public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
@@ -70,14 +81,22 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private final Cellpose3Config config;
 
+	private final boolean simplify;
+
+	private final double smoothingScale;
+
 	public CellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final Cellpose3Config config )
+			final Cellpose3Config config,
+			final boolean simplify,
+			final double smoothingScale )
 	{
 		this.img = img;
 		this.interval = interval;
 		this.config = config;
+		this.simplify = simplify;
+		this.smoothingScale = smoothingScale;
 		final String command = "Cellpose 3";
 		this.baseErrorMessage = "[" + command + "Detector] ";
 	}
@@ -88,62 +107,134 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final long start = System.currentTimeMillis();
 		isCanceled = false;
 		cancelReason = null;
+		spots = new SpotCollection();
 
 		// Convert config to Cellpose parameters.
 		final Cellpose3Parameters params = toParams( config );
 
 		// Axis info
 		final AxisInfo axisInfo = getAxisInfo( img );
+		final double[] calibration = TMUtils.getSpatialCalibration( img );
 
 		// Adapt listener -> TrackMate logger.
 		final TrackMateApposeProgressListener l = new TrackMateApposeProgressListener( "TrackMate-Cellpose 3", logger );
-		final ApposeTaskListener listener; // TODO adapt to Cellpose task listener.
+		final ApposeTaskListener listener = CellposeApposeListener.of( l );
 
-		try (ShmImg< T > inputShmImg = createInputShmImg( img, interval );
-				ShmImg< UnsignedShortType > outputShmImg = createOutputShmImg( inputShmImg );
-				CellposeRunner< T, UnsignedShortType > runner = Cellpose.cellposeRunner(
-						params, listener, inputShmImg, axisInfo, outputShmImg, null );)
+		// Single time point for creating placeholders
+		RandomAccessibleInterval< T > singleTP;
+		final int timeAxis = img.dimensionIndex( Axes.TIME );
+		long nT;
+		if ( timeAxis < 0 )
 		{
-			// TODO
+			singleTP = Views.interval( img, interval );
+			nT = 1;
+		}
+		else
+		{
+			singleTP = Views.hyperSlice( Views.interval( img, interval ), timeAxis, 0 );
+			nT = img.dimension( timeAxis );
+		}
+
+		try (final ShmImg< T > inputShmImg = Cellpose.createInputShmImg( singleTP );
+				final ShmImg< UnsignedShortType > outputShmImg = Cellpose.createOutputLabelsShmImg( singleTP, axisInfo.removeTimeDim(), new UnsignedShortType() );
+				CellposeRunner< T, UnsignedShortType > runner = Cellpose.cellposeRunner( params, listener, inputShmImg, axisInfo, outputShmImg, null );)
+		{
+			// Init the Cellpose runner.
+			logger.log( "Initializing Cellpose..." );
+			runner.init();
+
+			// Loop over time points.
+			logger.log( "Cellpose running..." );
+			for ( long t = 0; t < nT; t++ )
+			{
+				if ( isCanceled() )
+				{
+					logger.log( "Canceled" );
+					return false;
+				}
+
+				// Copy current time point into inputShmImg.
+				if ( timeAxis < 0 )
+				{
+					ImgUtil.copy( Views.interval( img, interval ), inputShmImg );
+				}
+				else
+				{
+					final RandomAccessibleInterval< T > currentTP = Views.hyperSlice( Views.interval( img, interval ), timeAxis, t );
+					ImgUtil.copy( currentTP, inputShmImg );
+				}
+
+				// Run Cellpose on the current time point.
+				runner.run();
+
+				// Build a labeling from Cellpose outputShmImg.
+				final AtomicInteger max = new AtomicInteger( 0 );
+				outputShmImg.forEach( p -> {
+					final int val = p.getInteger();
+					if ( val != 0 && val > max.get() )
+						max.set( val );
+				} );
+				final List< Integer > indices = new ArrayList<>( max.get() );
+				for ( int i = 0; i < max.get(); i++ )
+					indices.add( Integer.valueOf( i + 1 ) );
+
+				final ImgLabeling< Integer, UnsignedShortType > labeling = ImgLabeling.fromImageAndLabels( outputShmImg, indices );
+
+				// Detect spots from the labeling.
+				final List< Spot > frameSpots;
+				if ( DetectionUtils.is2D( img ) )
+				{
+					frameSpots = SpotRoiUtils.from2DLabelingWithROI(
+							labeling,
+							interval.minAsDoubleArray(),
+							calibration,
+							simplify,
+							smoothingScale,
+							null );
+				}
+				else
+				{
+					frameSpots = SpotMeshUtils.from3DLabelingWithROI(
+							labeling,
+							interval.minAsDoubleArray(),
+							calibration,
+							simplify,
+							smoothingScale,
+							null );
+				}
+				spots.put( ( int ) t, frameSpots );
+				logger.setProgress( ( double ) ( t + 1 ) / nT );
+			}
+			logger.log( "Cellpose done." );
+			return true;
 		}
 		catch ( final BuildException e )
 		{
-			// TODO Auto-generated catch block
+			logger.error( "Cellpose environment build error: " + e.getMessage() );
 			e.printStackTrace();
 		}
 		catch ( final IOException e )
 		{
-			// TODO Auto-generated catch block
+			logger.error( "Cellpose script I/O error: " + e.getMessage() );
 			e.printStackTrace();
 		}
 		catch ( final InterruptedException e )
 		{
-			// TODO Auto-generated catch block
+			logger.error( "Cellpose process interrupted: " + e.getMessage() );
 			e.printStackTrace();
 		}
 		catch ( final TaskException e )
 		{
-			// TODO Auto-generated catch block
+			logger.error( "Error running Cellpose: " + e.getMessage() );
 			e.printStackTrace();
 		}
 		finally
 		{
+			logger.setProgress( 1. );
 			final long end = System.currentTimeMillis();
 			this.processingTime = end - start;
 		}
-		return true;
-	}
-
-	private static final ShmImg< UnsignedShortType > createOutputShmImg( final ShmImg< ? > inputShmImg )
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private static final < T > ShmImg< T > createInputShmImg( final ImgPlus< T > img, final Interval interval )
-	{
-		// TODO Auto-generated method stub
-		return null;
+		return false;
 	}
 
 	@Override
