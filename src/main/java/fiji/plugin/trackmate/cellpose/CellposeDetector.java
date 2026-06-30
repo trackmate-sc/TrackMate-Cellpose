@@ -160,11 +160,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			errorMessage = baseErrorMessage + "Image is null.";
 			return false;
 		}
-		if ( img.dimensionIndex( Axes.Z ) >= 0 )
-		{
-			errorMessage = baseErrorMessage + "Image must be 2D over time, got an image with multiple Z.";
-			return false;
-		}
 		return true;
 	}
 
