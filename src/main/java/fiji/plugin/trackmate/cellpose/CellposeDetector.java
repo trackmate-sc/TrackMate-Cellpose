@@ -171,11 +171,11 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				CellposeRunner< T, UnsignedShortType > runner = Cellpose.cellposeRunner( params, listener, inputShmImg, axisInfo, outputShmImg, null );)
 		{
 			// Init the Cellpose runner.
-			logger.log( "Initializing Cellpose..." );
+			logger.setStatus( "Initializing Cellpose..." );
 			runner.init();
 
 			// Loop over time points.
-			logger.log( "Cellpose running..." );
+			logger.setStatus( "Cellpose running..." );
 			for ( long t = minT; t < maxT; t++ )
 			{
 				if ( isCanceled() )
@@ -237,7 +237,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				spots.put( ( int ) t, frameSpots );
 				logger.setProgress( ( double ) ( t + 1 ) / nT );
 			}
-			logger.log( "Cellpose done." );
+			logger.setStatus( "Cellpose done" );
 			return true;
 		}
 		catch ( final BuildException e )

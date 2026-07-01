@@ -49,18 +49,18 @@ public class TrackMateApposeProgressListener implements ApposeTaskListener
 
 	public void error( final String msg )
 	{
-		logger.error( msg );
+		logger.error( msg + '\n' );
 	}
 
 	@Override
 	public void message( final String msg )
 	{
-		logger.log( msg );
+		// Ignore. We don't want to spam the user.
 	}
 
 	public void progress( final double progress )
 	{
-		logger.setProgress( progress );
+		// Ignored.
 	}
 
 	@Override
