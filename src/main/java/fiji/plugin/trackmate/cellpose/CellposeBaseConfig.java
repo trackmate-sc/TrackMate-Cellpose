@@ -2,7 +2,6 @@ package fiji.plugin.trackmate.cellpose;
 
 import javax.swing.ImageIcon;
 
-import org.scijava.ui.config.Configurator;
 import org.scijava.ui.config.Parameters.BooleanParam;
 import org.scijava.ui.config.Parameters.ChoiceParam;
 import org.scijava.ui.config.Parameters.DoubleParam;
@@ -10,7 +9,9 @@ import org.scijava.ui.config.Parameters.EnumParam;
 import org.scijava.ui.config.Parameters.IntParam;
 import org.scijava.ui.config.Parameters.PathParam;
 
-public class CellposeBaseConfig< CBM extends Enum< CBM > > extends Configurator
+import fiji.plugin.trackmate.TrackMateConfigurator;
+
+public class CellposeBaseConfig< CBM extends Enum< CBM > > extends TrackMateConfigurator
 {
 
 	private final EnumParam< CBM > builtinModel;
@@ -36,6 +37,10 @@ public class CellposeBaseConfig< CBM extends Enum< CBM > > extends Configurator
 	private final BooleanParam useGpu;
 
 	private final ChoiceParam torchVersion;
+
+	private final BooleanParam simplifyContour;
+
+	private final DoubleParam smoothingScale;
 
 	protected CellposeBaseConfig(
 			final String name,
@@ -190,6 +195,23 @@ public class CellposeBaseConfig< CBM extends Enum< CBM > > extends Configurator
 				.collapsed( true )
 				.get();
 
+		/*
+		 * Smooth contour.
+		 */
+
+		this.simplifyContour = addSimplifyContour();
+		this.smoothingScale = addSmoothContour( units );
+
+		addGroup( "Output smoothing" )
+				.add( simplifyContour )
+				.add( smoothingScale )
+				.collapsed( false )
+				.get();
+
+		/*
+		 * Icons.
+		 */
+
 		addIcon( new ImageIcon( this.getClass().getResource( "/images/cellposelogo.png" ) ).getImage() );
 		addIcon( new ImageIcon( this.getClass().getResource( "/images/favicon.ico" ) ).getImage() );
 	}
@@ -252,5 +274,15 @@ public class CellposeBaseConfig< CBM extends Enum< CBM > > extends Configurator
 	public ChoiceParam torchVersion()
 	{
 		return torchVersion;
+	}
+
+	public BooleanParam simplifyContour()
+	{
+		return simplifyContour;
+	}
+
+	public DoubleParam smoothingScale()
+	{
+		return smoothingScale;
 	}
 }

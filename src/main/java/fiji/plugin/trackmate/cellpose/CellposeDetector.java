@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apposed.appose.BuildException;
@@ -42,6 +43,8 @@ import fiji.plugin.trackmate.detection.SpotRoiUtils;
 import fiji.plugin.trackmate.util.TMUtils;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.algorithm.MultiThreaded;
@@ -81,28 +84,66 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private final Cellpose3Config config;
 
-	private final boolean simplify;
-
-	private final double smoothingScale;
-
 	public CellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final Cellpose3Config config,
-			final boolean simplify,
-			final double smoothingScale )
+			final Cellpose3Config config )
 	{
 		this.img = img;
-		this.interval = interval;
 		this.config = config;
-		this.simplify = simplify;
-		this.smoothingScale = smoothingScale;
 		final String command = "Cellpose 3";
 		this.baseErrorMessage = "[" + command + "Detector] ";
+		/*
+		 * Preprocess the interval. TrackMate gives us an interval where the
+		 * C-axis is missing. But Cellpose needs it.
+		 */
+		final int cAxis = img.dimensionIndex( Axes.CHANNEL );
+		final long[] min = img.minAsLongArray();
+		final long[] max = img.maxAsLongArray();
+		for ( final AxisType axisType : Axes.knownTypes() )
+		{
+			final int index = img.dimensionIndex( axisType );
+			if ( index < 0 )
+				continue;
+			if ( axisType.equals( Axes.CHANNEL ) )
+			{
+				min[ index ] = 0;
+				max[ index ] = img.dimension( index ) - 1;
+			}
+			else
+			{
+				int id;
+				if ( cAxis >= 0 && index >= cAxis )
+					id = index - 1;
+				else
+					id = index;
+				min[ index ] = interval.min( id );
+				max[ index ] = interval.max( id );
+			}
+		}
+		this.interval = new FinalInterval( min, max );
 	}
 
 	@Override
 	public boolean process()
+	{
+		final AtomicBoolean success = new AtomicBoolean( false );
+		final Thread thread = new Thread( () -> success.set( trololo() ) );
+		thread.start();
+		try
+		{
+			thread.join();
+		}
+		catch ( final InterruptedException e )
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return success.get();
+	}
+
+	private boolean trololo()
 	{
 		final long start = System.currentTimeMillis();
 		isCanceled = false;
@@ -111,6 +152,10 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		// Convert config to Cellpose parameters.
 		final Cellpose3Parameters params = toParams( config );
+
+		// Other params.
+		final boolean simplify = config.simplifyContour().getValue();
+		final double smoothingScale = config.smoothingScale().getValue();
 
 		// Axis info
 		final AxisInfo axisInfo = getAxisInfo( img );
@@ -181,6 +226,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 				final ImgLabeling< Integer, UnsignedShortType > labeling = ImgLabeling.fromImageAndLabels( outputShmImg, indices );
 
 				// Detect spots from the labeling.
+
 				final List< Spot > frameSpots;
 				if ( DetectionUtils.is2D( img ) )
 				{

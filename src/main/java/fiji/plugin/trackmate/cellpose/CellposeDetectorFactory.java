@@ -21,9 +21,6 @@
  */
 package fiji.plugin.trackmate.cellpose;
 
-import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SIMPLIFY_CONTOURS;
-import static fiji.plugin.trackmate.detection.ThresholdDetectorFactory.KEY_SMOOTHING_SCALE;
-
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -78,11 +75,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	{
 		final Cellpose3Config config = createConfig( img );
 		Maps.fromMap( settings, config );
-
-		final boolean simplifyContours = ( Boolean ) settings.get( KEY_SIMPLIFY_CONTOURS );
-		final double smoothingScale = ( Double ) settings.get( KEY_SMOOTHING_SCALE );
-
-		return new CellposeDetector<>( img, interval, config, simplifyContours, smoothingScale );
+		return new CellposeDetector<>( img, interval, config );
 	}
 
 	private Cellpose3Config createConfig( final ImgPlus< ? > img )
