@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apposed.appose.BuildException;
@@ -127,24 +126,6 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 	@Override
 	public boolean process()
 	{
-		final AtomicBoolean success = new AtomicBoolean( false );
-		final Thread thread = new Thread( () -> success.set( trololo() ) );
-		thread.start();
-		try
-		{
-			thread.join();
-		}
-		catch ( final InterruptedException e )
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return success.get();
-	}
-
-	private boolean trololo()
-	{
 		final long start = System.currentTimeMillis();
 		isCanceled = false;
 		cancelReason = null;
@@ -157,27 +138,32 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		final boolean simplify = config.simplifyContour().getValue();
 		final double smoothingScale = config.smoothingScale().getValue();
 
-		// Axis info
-		final AxisInfo axisInfo = getAxisInfo( img );
+		// Axis info (for one time point).
+		final AxisInfo axisInfo = getAxisInfo( img ).removeTimeDim();
 		final double[] calibration = TMUtils.getSpatialCalibration( img );
 
 		// Adapt listener -> TrackMate logger.
-		final TrackMateApposeProgressListener l = new TrackMateApposeProgressListener( "TrackMate-Cellpose 3", logger );
-		final ApposeTaskListener listener = CellposeApposeListener.of( l );
+		final ApposeTaskListener listener = new TrackMateApposeProgressListener( "TrackMate-Cellpose 3", logger );
 
 		// Single time point for creating placeholders
 		RandomAccessibleInterval< T > singleTP;
 		final int timeAxis = img.dimensionIndex( Axes.TIME );
 		long nT;
+		long minT;
+		long maxT;
 		if ( timeAxis < 0 )
 		{
 			singleTP = Views.interval( img, interval );
 			nT = 1;
+			minT = 0;
+			maxT = 1;
 		}
 		else
 		{
 			singleTP = Views.hyperSlice( Views.interval( img, interval ), timeAxis, 0 );
-			nT = img.dimension( timeAxis );
+			nT = interval.dimension( timeAxis );
+			minT = interval.min( timeAxis );
+			maxT = interval.max( timeAxis ) + 1;
 		}
 
 		try (final ShmImg< T > inputShmImg = Cellpose.createInputShmImg( singleTP );
@@ -190,7 +176,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 			// Loop over time points.
 			logger.log( "Cellpose running..." );
-			for ( long t = 0; t < nT; t++ )
+			for ( long t = minT; t < maxT; t++ )
 			{
 				if ( isCanceled() )
 				{
