@@ -16,9 +16,9 @@ import javax.swing.WindowConstants;
 
 import org.apposed.appose.Builder.ProgressConsumer;
 import org.apposed.appose.TaskEvent;
-import org.scijava.ui.config.listeners.ApposeTaskListener;
 
 import ij.IJ;
+import net.imglib2.cellpose.ApposeTaskListener;
 
 /**
  * An implementation of ApposeTaskListener that uses TrackMate to report task
@@ -47,7 +47,6 @@ public class TrackMateApposeProgressListener implements ApposeTaskListener
 	 * Normal task messages -> TrackMate logger.
 	 */
 
-	@Override
 	public void error( final String msg )
 	{
 		logger.error( msg );
