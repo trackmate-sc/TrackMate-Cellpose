@@ -104,7 +104,7 @@ public class CellposeBaseConfig< CBM extends Enum< CBM > > extends TrackMateConf
 
 		this.cellprobThreshold = addDoubleParameter()
 				.key( "CELLPROB_THRESHOLD" )
-				.name( "Cell probability threshold" )
+				.name( "Cell threshold" )
 				.help( "<html>Threshold for cell probability. Increase to filter low-confidence detections.</html>" )
 				.defaultValue( 0.0 )
 				.min( -6. )
