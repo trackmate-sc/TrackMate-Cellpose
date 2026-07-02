@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.cellpose.cp3;
 
 import java.util.Map;
 
@@ -31,6 +31,8 @@ import org.scijava.ui.config.visitors.Maps;
 
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.Settings;
+import fiji.plugin.trackmate.cellpose.CellposeConfigPanel;
+import fiji.plugin.trackmate.cellpose.CellposeUtils;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
@@ -44,7 +46,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 @Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
-public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > >
+public class Cellpose3DetectorFactory< T extends RealType< T > & NativeType< T > >
 		implements SpotGlobalDetectorFactory< T >
 {
 
@@ -52,7 +54,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	public static final String DETECTOR_KEY = "CELLPOSE_DETECTOR";
 
 	/** The pretty name of the target detector. */
-	public static final String NAME = "Cellpose detector";
+	public static final String NAME = "Cellpose-3 detector";
 
 	public static final String DOC_CELLPOSE_URL = "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose";
 
@@ -75,7 +77,7 @@ public class CellposeDetectorFactory< T extends RealType< T > & NativeType< T > 
 	{
 		final Cellpose3Config config = createConfig( img );
 		Maps.fromMap( settings, config );
-		return new CellposeDetector<>( img, interval, config );
+		return new Cellpose3Detector<>( img, interval, config );
 	}
 
 	private Cellpose3Config createConfig( final ImgPlus< ? > img )

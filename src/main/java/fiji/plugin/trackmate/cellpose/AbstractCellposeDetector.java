@@ -23,7 +23,6 @@ package fiji.plugin.trackmate.cellpose;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,7 +50,7 @@ import net.imglib2.appose.ShmImg;
 import net.imglib2.cellpose.ApposeTaskListener;
 import net.imglib2.cellpose.AxisInfo;
 import net.imglib2.cellpose.Cellpose;
-import net.imglib2.cellpose.Cellpose3Parameters;
+import net.imglib2.cellpose.CellposeParameters;
 import net.imglib2.cellpose.CellposeRunner;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.NativeType;
@@ -60,7 +59,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.util.ImgUtil;
 import net.imglib2.view.Views;
 
-public class CellposeDetector< T extends RealType< T > & NativeType< T > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
+public abstract class AbstractCellposeDetector< T extends RealType< T > & NativeType< T >, C extends CellposeBaseConfig< ? > > implements SpotGlobalDetector< T >, Cancelable, MultiThreaded
 {
 
 	private final ImgPlus< T > img;
@@ -81,12 +80,12 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 	private boolean isCanceled;
 
-	private final Cellpose3Config config;
+	private final C config;
 
-	public CellposeDetector(
+	public AbstractCellposeDetector(
 			final ImgPlus< T > img,
 			final Interval interval,
-			final Cellpose3Config config )
+			final C config )
 	{
 		this.img = img;
 		this.config = config;
@@ -132,7 +131,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		spots = new SpotCollection();
 
 		// Convert config to Cellpose parameters.
-		final Cellpose3Parameters params = toParams( config );
+		final CellposeParameters params = toParams( config );
 
 		// Other params.
 		final boolean simplify = config.simplifyContour().getValue();
@@ -168,7 +167,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 
 		try (final ShmImg< T > inputShmImg = Cellpose.createInputShmImg( singleTP );
 				final ShmImg< UnsignedShortType > outputShmImg = Cellpose.createOutputLabelsShmImg( singleTP, axisInfo.removeTimeDim(), new UnsignedShortType() );
-				CellposeRunner< T, UnsignedShortType > runner = Cellpose.cellposeRunner( params, listener, inputShmImg, axisInfo, outputShmImg, null );)
+				CellposeRunner< T, UnsignedShortType > runner = createRunner( params, listener, inputShmImg, axisInfo, outputShmImg );)
 		{
 			// Init the Cellpose runner.
 			logger.setStatus( "Initializing Cellpose..." );
@@ -269,6 +268,25 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		return false;
 	}
 
+	/**
+	 * Instantiates a CellposeRunner for the given parameters and input/output
+	 * images. Subclasses can override this method to provide a different runner
+	 * for different versions of Cellpose.
+	 *
+	 * @param params
+	 *            the Cellpose parameters.
+	 * @param listener
+	 *            the listener to report progress to.
+	 * @param inputShmImg
+	 *            the input image in shared memory.
+	 * @param axisInfo
+	 *            the axis information of the input image.
+	 * @param outputShmImg
+	 *            the output image in shared memory.
+	 * @return a CellposeRunner instance.
+	 */
+	protected abstract CellposeRunner< T, UnsignedShortType > createRunner( final CellposeParameters params, final ApposeTaskListener listener, final ShmImg< T > inputShmImg, final AxisInfo axisInfo, final ShmImg< UnsignedShortType > outputShmImg ) throws BuildException, IOException, InterruptedException, TaskException;
+
 	@Override
 	public SpotCollection getResult()
 	{
@@ -325,33 +343,7 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 		this.logger = logger;
 	}
 
-	private final static Cellpose3Parameters toParams( final Cellpose3Config config )
-	{
-		final List< Integer > channels = Arrays.asList(
-				config.chan1().getValue(),
-				config.chan2().getValue() );
-
-		final String selection = config.builtinOrCustom().getSelection().getKey();
-		final boolean isBuiltin = selection.equals( "BUILTIN_MODEL" );
-
-		final Cellpose3Parameters params = Cellpose3Parameters.builder()
-				.model( isBuiltin ? config.builtinModel().getValue() : null )
-				.customModel( isBuiltin ? null : config.customModel().getValue() )
-				.diameter( config.diameter().getValue() )
-				.channels( channels )
-				.minSize( config.minSize().getValue() )
-				.resample( true ) // Must be true here, as we expect the output
-									// to have the same size as the input.
-				.cellProbThreshold( config.flowThreshold().getValue() )
-				.flowThreshold( config.flowThreshold().getValue() )
-				.do3D( config.mode3D().getValue() )
-				.stitchThreshold( config.stitchThreshold().getValue() )
-				.flow3dSmooth( config.flow3DSmooth().getValue() )
-				.torchVersion( config.torchVersion().getValue() )
-				.useGpu( config.useGpu().getValue() )
-				.build();
-		return params;
-	}
+	protected abstract CellposeParameters toParams( final C config );
 
 	private static AxisInfo getAxisInfo( final ImgPlus< ? > img )
 	{

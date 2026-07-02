@@ -1,7 +1,8 @@
-package fiji.plugin.trackmate.cellpose;
+package fiji.plugin.trackmate.cellpose.cp3;
 
 import org.scijava.ui.config.Parameters.IntParam;
 
+import fiji.plugin.trackmate.cellpose.CellposeBaseConfig;
 import net.imglib2.cellpose.Cellpose3BuiltinModels;
 
 public class Cellpose3Config extends CellposeBaseConfig< Cellpose3BuiltinModels >
@@ -13,7 +14,10 @@ public class Cellpose3Config extends CellposeBaseConfig< Cellpose3BuiltinModels 
 
 	public Cellpose3Config( final int nChannels, final double pixelSize, final String units )
 	{
-		super( "Cellpose 3", "https://imagej.net/plugins/trackmate/detectors/trackmate-cellpose", Cellpose3BuiltinModels.class, pixelSize, units );
+		super(
+				Cellpose3DetectorFactory.NAME,
+				Cellpose3DetectorFactory.DOC_CELLPOSE_URL,
+				Cellpose3BuiltinModels.class, pixelSize, units );
 
 		// Channels, two int params.
 		this.chan1 = addIntParameter()
