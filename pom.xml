@@ -108,13 +108,6 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>TrackMate</artifactId>
 		</dependency>
-		
-		<!-- Config UI -->
-		<dependency>
-            <groupId>org.scijava</groupId>
-            <artifactId>config-ui</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 
 		<!-- ImageJ dependencies -->
 		<dependency>

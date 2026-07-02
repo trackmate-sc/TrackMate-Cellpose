@@ -35,6 +35,7 @@ import fiji.plugin.trackmate.Settings;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
 import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
 import fiji.plugin.trackmate.util.TMUtils;
+import fiji.plugin.trackmate.util.config.GenericConfigPanel;
 import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
@@ -65,7 +66,7 @@ public abstract class AbstractCellposeDetectorFactory< T extends RealType< T > &
 	@Override
 	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
 	{
-		return new CellposeConfigPanel( settings, model, createConfig( settings ), () -> this );
+		return new GenericConfigPanel( settings, model, createConfig( settings ), () -> this );
 	}
 
 	@Override

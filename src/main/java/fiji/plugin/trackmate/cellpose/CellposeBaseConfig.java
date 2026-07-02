@@ -9,7 +9,7 @@ import org.scijava.ui.config.Parameters.EnumParam;
 import org.scijava.ui.config.Parameters.IntParam;
 import org.scijava.ui.config.Parameters.PathParam;
 
-import fiji.plugin.trackmate.TrackMateConfigurator;
+import fiji.plugin.trackmate.util.config.TrackMateConfigurator;
 
 public class CellposeBaseConfig< CBM extends Enum< CBM > > extends TrackMateConfigurator
 {
