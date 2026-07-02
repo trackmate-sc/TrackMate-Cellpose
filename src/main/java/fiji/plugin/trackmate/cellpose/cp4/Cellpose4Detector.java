@@ -37,7 +37,7 @@ public class Cellpose4Detector< T extends RealType< T > & NativeType< T > > exte
 	protected Cellpose4Parameters toParams( final Cellpose4Config config )
 	{
 		final String selection = config.builtinOrCustom().getSelection().getKey();
-		final boolean isBuiltin = selection.equals( "BUILTIN_MODEL" );
+		final boolean isBuiltin = selection.equals( Cellpose4Config.BUILTIN_MODEL_KEY );
 
 		final Cellpose4Parameters params = Cellpose4Parameters.builder()
 				.model( isBuiltin ? config.builtinModel().getValue() : null )

@@ -8,6 +8,8 @@ import net.imglib2.cellpose.Cellpose4BuiltinModels;
 public class Cellpose4Config extends CellposeBaseConfig< Cellpose4BuiltinModels >
 {
 
+	static final String BUILTIN_MODEL_KEY = "CELLPOSE_SAM_BUILTIN_MODEL";
+
 	private final IntParam chan1;
 
 	private final IntParam chan2;
@@ -19,7 +21,9 @@ public class Cellpose4Config extends CellposeBaseConfig< Cellpose4BuiltinModels 
 		super(
 				Cellpose4DetectorFactory.NAME,
 				Cellpose4DetectorFactory.DOC_CELLPOSE_URL,
-				Cellpose4BuiltinModels.class, pixelSize, units );
+				BUILTIN_MODEL_KEY,
+				Cellpose4BuiltinModels.class,
+				pixelSize, units );
 
 		// Channels, two int params.
 		this.chan1 = addIntParameter()

@@ -45,6 +45,7 @@ public class CellposeBaseConfig< CBM extends Enum< CBM > > extends TrackMateConf
 	protected CellposeBaseConfig(
 			final String name,
 			final String help,
+			final String builtinModelKey,
 			final Class< CBM > builtinModelEnum,
 			final double pixelSize,
 			final String units )
@@ -53,7 +54,7 @@ public class CellposeBaseConfig< CBM extends Enum< CBM > > extends TrackMateConf
 
 		// Choice among an enum.
 		this.builtinModel = addEnumParameter( builtinModelEnum )
-				.key( "BUILTIN_MODEL" )
+				.key( builtinModelKey )
 				.name( "Builtin model" )
 				.help( "Select a builtin model to use. " )
 				.get();

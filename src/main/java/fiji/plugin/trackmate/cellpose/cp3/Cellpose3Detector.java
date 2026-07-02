@@ -43,7 +43,7 @@ public class Cellpose3Detector< T extends RealType< T > & NativeType< T > > exte
 				config.chan2().getValue() );
 
 		final String selection = config.builtinOrCustom().getSelection().getKey();
-		final boolean isBuiltin = selection.equals( "BUILTIN_MODEL" );
+		final boolean isBuiltin = selection.equals( Cellpose3Config.BUILTIN_MODEL_KEY );
 
 		final Cellpose3Parameters params = Cellpose3Parameters.builder()
 				.model( isBuiltin ? config.builtinModel().getValue() : null )
