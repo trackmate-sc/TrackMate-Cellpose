@@ -175,13 +175,13 @@ public class CellposeDetector< T extends RealType< T > & NativeType< T > > imple
 			runner.init();
 
 			// Loop over time points.
-			logger.setStatus( "Cellpose running..." );
 			for ( long t = minT; t < maxT; t++ )
 			{
+				logger.setStatus( "Cellpose running " + ( t - minT + 1 ) + "/" + nT + "..." );
 				if ( isCanceled() )
 				{
-					logger.log( "Canceled" );
-					return false;
+					logger.log( "Canceled.\n" );
+					return true;
 				}
 
 				// Copy current time point into inputShmImg.
