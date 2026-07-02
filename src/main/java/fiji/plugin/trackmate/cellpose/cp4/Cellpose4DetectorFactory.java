@@ -23,31 +23,21 @@ package fiji.plugin.trackmate.cellpose.cp4;
 
 import java.util.Map;
 
-import javax.swing.ImageIcon;
-
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.config.visitors.Maps;
 
-import fiji.plugin.trackmate.Model;
-import fiji.plugin.trackmate.Settings;
-import fiji.plugin.trackmate.cellpose.CellposeConfigPanel;
-import fiji.plugin.trackmate.cellpose.CellposeUtils;
+import fiji.plugin.trackmate.cellpose.AbstractCellposeDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
-import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
-import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
-import fiji.plugin.trackmate.util.TMUtils;
-import ij.ImagePlus;
 import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
 @Plugin( type = SpotDetectorFactory.class, priority = Priority.LOW )
 public class Cellpose4DetectorFactory< T extends RealType< T > & NativeType< T > >
-		implements SpotGlobalDetectorFactory< T >
+		extends AbstractCellposeDetectorFactory< T, Cellpose4Config >
 {
 
 	/** A string key identifying this factory. */
@@ -83,48 +73,10 @@ public class Cellpose4DetectorFactory< T extends RealType< T > & NativeType< T >
 		return new Cellpose4Detector< T >( img, interval, config );
 	}
 
-	private Cellpose4Config createConfig( final ImgPlus< ? > img )
+	@Override
+	protected Cellpose4Config createConfig( final int nChannels, final double pixelSize, final String units )
 	{
-		final int nChannels = img.dimensionIndex( Axes.CHANNEL ) < 0 ? 1 : ( int ) img.dimension( img.dimensionIndex( Axes.CHANNEL ) );
-		final double pixelSize = img.averageScale( img.dimensionIndex( Axes.X ) );
-		final String units = img.axis( img.dimensionIndex( Axes.X ) ).unit();
 		return new Cellpose4Config( nChannels, pixelSize, units );
-	}
-
-	private Cellpose4Config createConfig( final Settings settings )
-	{
-		final ImagePlus imp = settings.imp;
-		if ( imp == null )
-			return new Cellpose4Config( 1, 1., "pixel" );
-		return createConfig( TMUtils.rawWraps( imp ) );
-	}
-
-	@Override
-	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
-	{
-		return new CellposeConfigPanel( settings, model, createConfig( settings ), () -> this );
-	}
-
-	@Override
-	public Map< String, Object > getDefaultSettings()
-	{
-		final int nChannels = 3;
-		final double pixelSize = 1.;
-		final String units = "pixel";
-		final Cellpose4Config config = new Cellpose4Config( nChannels, pixelSize, units );
-		return Maps.toMap( config );
-	}
-
-	@Override
-	public boolean has2Dsegmentation()
-	{
-		return true;
-	}
-
-	@Override
-	public boolean has3Dsegmentation()
-	{
-		return true;
 	}
 
 	@Override
@@ -149,21 +101,5 @@ public class Cellpose4DetectorFactory< T extends RealType< T > & NativeType< T >
 	public String getUrl()
 	{
 		return DOC_CELLPOSE_URL;
-	}
-
-	@Override
-	public ImageIcon getIcon()
-	{
-		return CellposeUtils.cellposeLogo64();
-	}
-
-	@Override
-	public boolean forbidMultithreading()
-	{
-		/*
-		 * We want to run one frame after another, because the inference for one
-		 * frame takes all the resources anyway.
-		 */
-		return true;
 	}
 }
