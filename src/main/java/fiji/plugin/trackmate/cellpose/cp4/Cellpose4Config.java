@@ -52,12 +52,9 @@ public class Cellpose4Config extends CellposeBaseConfig< Cellpose4BuiltinModels 
 				.get();
 
 		// Change their order.
-		orderedElements.remove( chan1 );
-		orderedElements.add( 2, chan1 );
-		orderedElements.remove( chan2 );
-		orderedElements.add( 3, chan2 );
-		orderedElements.remove( chan3 );
-		orderedElements.add( 4, chan3 );
+		reorder( chan1, 2 );
+		reorder( chan2, 3 );
+		reorder( chan3, 4 );
 	}
 
 	public IntParam chan1()

@@ -43,10 +43,8 @@ public class Cellpose3Config extends CellposeBaseConfig< Cellpose3BuiltinModels 
 				.get();
 
 		// Change their order.
-		orderedElements.remove( chan1 );
-		orderedElements.add( 2, chan1 );
-		orderedElements.remove( chan2 );
-		orderedElements.add( 3, chan2 );
+		reorder( chan1, 2 );
+		reorder( chan2, 3 );
 	}
 
 	public IntParam chan1()
