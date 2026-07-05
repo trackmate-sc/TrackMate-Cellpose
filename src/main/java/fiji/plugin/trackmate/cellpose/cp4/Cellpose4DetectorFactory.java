@@ -30,6 +30,7 @@ import org.scijava.ui.config.visitors.Maps;
 import fiji.plugin.trackmate.cellpose.AbstractCellposeDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotDetectorFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetector;
+import ij.ImagePlus;
 import net.imagej.ImgPlus;
 import net.imglib2.Interval;
 import net.imglib2.type.NativeType;
@@ -74,8 +75,14 @@ public class Cellpose4DetectorFactory< T extends RealType< T > & NativeType< T >
 	}
 
 	@Override
-	protected Cellpose4Config createConfig( final int nChannels, final double pixelSize, final String units )
+	public Cellpose4Config createConfig( final ImagePlus imp )
 	{
+		if ( imp == null )
+			return new Cellpose4Config( 3, 1., "pixel" );
+
+		final int nChannels = imp.getNChannels();
+		final double pixelSize = imp.getCalibration().pixelWidth;
+		final String units = imp.getCalibration().getUnit();
 		return new Cellpose4Config( nChannels, pixelSize, units );
 	}
 

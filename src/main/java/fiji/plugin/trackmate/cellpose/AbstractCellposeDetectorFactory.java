@@ -24,60 +24,16 @@ package fiji.plugin.trackmate.cellpose;
 import static fiji.plugin.trackmate.gui.GuiUtils.getResource;
 import static fiji.plugin.trackmate.gui.GuiUtils.scaleImage;
 
-import java.util.Map;
-
 import javax.swing.ImageIcon;
 
-import org.scijava.ui.config.visitors.Maps;
-
-import fiji.plugin.trackmate.Model;
-import fiji.plugin.trackmate.Settings;
+import fiji.plugin.trackmate.detection.SpotDetectorConfigFactory;
 import fiji.plugin.trackmate.detection.SpotGlobalDetectorFactory;
-import fiji.plugin.trackmate.gui.components.ConfigurationPanel;
-import fiji.plugin.trackmate.util.TMUtils;
-import fiji.plugin.trackmate.util.config.GenericConfigPanel;
-import ij.ImagePlus;
-import net.imagej.ImgPlus;
-import net.imagej.axis.Axes;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-public abstract class AbstractCellposeDetectorFactory< T extends RealType< T > & NativeType< T >, C extends CellposeBaseConfig< ? > > implements SpotGlobalDetectorFactory< T >
+public abstract class AbstractCellposeDetectorFactory< T extends RealType< T > & NativeType< T >, C extends CellposeBaseConfig< ? > >
+		implements SpotDetectorConfigFactory< T, C >, SpotGlobalDetectorFactory< T >
 {
-
-	protected abstract C createConfig( int nChannels, double pixelSize, String units );
-
-	protected C createConfig( final ImgPlus< ? > img )
-	{
-		final int nChannels = img.dimensionIndex( Axes.CHANNEL ) < 0 ? 1 : ( int ) img.dimension( img.dimensionIndex( Axes.CHANNEL ) );
-		final double pixelSize = img.averageScale( img.dimensionIndex( Axes.X ) );
-		final String units = img.axis( img.dimensionIndex( Axes.X ) ).unit();
-		return createConfig( nChannels, pixelSize, units );
-	}
-
-	private C createConfig( final Settings settings )
-	{
-		final ImagePlus imp = settings.imp;
-		if ( imp == null )
-			return createConfig( 1, 1., "pixel" );
-		return createConfig( TMUtils.rawWraps( imp ) );
-	}
-
-	@Override
-	public ConfigurationPanel getDetectorConfigurationPanel( final Settings settings, final Model model )
-	{
-		return new GenericConfigPanel( settings, model, createConfig( settings ), () -> this );
-	}
-
-	@Override
-	public Map< String, Object > getDefaultSettings()
-	{
-		final int nChannels = 3;
-		final double pixelSize = 1.;
-		final String units = "pixel";
-		final C config = createConfig( nChannels, pixelSize, units );
-		return Maps.toMap( config );
-	}
 
 	@Override
 	public boolean has2Dsegmentation()
