@@ -1,0 +1,62 @@
+package fiji.plugin.trackmate.cellpose.cp4;
+
+import java.io.IOException;
+
+import org.apposed.appose.BuildException;
+import org.apposed.appose.TaskException;
+
+import fiji.plugin.trackmate.cellpose.AbstractCellposeDetector;
+import net.imagej.ImgPlus;
+import net.imglib2.Interval;
+import net.imglib2.appose.ShmImg;
+import net.imglib2.cellpose.ApposeTaskListener;
+import net.imglib2.cellpose.AxisInfo;
+import net.imglib2.cellpose.Cellpose;
+import net.imglib2.cellpose.Cellpose4Parameters;
+import net.imglib2.cellpose.CellposeParameters;
+import net.imglib2.cellpose.CellposeRunner;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+
+public class Cellpose4Detector< T extends RealType< T > & NativeType< T > > extends AbstractCellposeDetector< T, Cellpose4Config >
+{
+
+	public Cellpose4Detector( final ImgPlus< T > img, final Interval interval, final Cellpose4Config config )
+	{
+		super( img, interval, config );
+	}
+
+	@Override
+	protected CellposeRunner< T, UnsignedShortType > createRunner( final CellposeParameters params, final ApposeTaskListener listener, final ShmImg< T > inputShmImg, final AxisInfo axisInfo, final ShmImg< UnsignedShortType > outputShmImg ) throws BuildException, IOException, InterruptedException, TaskException
+	{
+		return Cellpose.cellposeRunner( ( Cellpose4Parameters ) params, listener, inputShmImg, axisInfo, outputShmImg, null );
+	}
+
+	@Override
+	protected Cellpose4Parameters toParams( final Cellpose4Config config )
+	{
+		final String selection = config.builtinOrCustom().getSelection().getKey();
+		final boolean isBuiltin = selection.equals( Cellpose4Config.BUILTIN_MODEL_KEY );
+
+		final Cellpose4Parameters params = Cellpose4Parameters.builder()
+				.model( isBuiltin ? config.builtinModel().getValue() : null )
+				.customModel( isBuiltin ? null : config.customModel().getValue() )
+				.diameter( config.diameter().getValue() )
+				.chan0( config.chan1().getValue() )
+				.chan1( config.chan2().getValue() )
+				.chan2( config.chan3().getValue() )
+				.minSize( config.minSize().getValue() )
+				.resample( true ) // Must be true here, as we expect the output
+									// to have the same size as the input.
+				.cellProbThreshold( config.flowThreshold().getValue() )
+				.flowThreshold( config.flowThreshold().getValue() )
+				.do3D( config.mode3D().getValue() )
+				.stitchThreshold( config.stitchThreshold().getValue() )
+				.flow3dSmooth( config.flow3DSmooth().getValue() )
+				.torchVersion( config.torchVersion().getValue() )
+				.useGpu( config.useGpu().getValue() )
+				.build();
+		return params;
+	}
+}

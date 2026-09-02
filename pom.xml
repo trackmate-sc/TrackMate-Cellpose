@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>44.0.0</version>
+		<version>45.1.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>TrackMate-Cellpose</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 
 	<name>TrackMate-Cellpose</name>
 	<description>TrackMate detector based on cellpose and omnipose.</description>
@@ -100,7 +100,7 @@
 		-->
 		<legacyMode>true</legacyMode>
 
-		<TrackMate.version>8.1.6</TrackMate.version>
+		<TrackMate.version>9.0.0-SNAPSHOT</TrackMate.version>
 	</properties>
 
 	<dependencies>
@@ -122,15 +122,8 @@
 		<!-- ImgLib2 dependencies -->
 		<dependency>
 			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-algorithm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-ij</artifactId>
+			<artifactId>imglib2-cellpose</artifactId>
+			<version>0.0.8</version>
 		</dependency>
 
 		<!-- SciJava dependencies -->
