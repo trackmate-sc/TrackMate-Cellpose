@@ -123,7 +123,7 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-cellpose</artifactId>
-			<version>0.0.8-SNAPSHOT</version>
+			<version>0.0.8</version>
 		</dependency>
 
 		<!-- SciJava dependencies -->
